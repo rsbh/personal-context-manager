@@ -36,6 +36,9 @@ pcm get contexts
 pcm get context go -s review
 pcm get projects
 
+pcm config set remote git@github.com:you/contexts.git
+pcm sync                            # commit, pull, push
+
 pcm server stop
 ```
 
@@ -68,6 +71,9 @@ After a code change: `make install && make restart`.
 | `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...]` | Create context |
 | `pcm delete context <name> -s <section>` | Delete context |
 | `pcm skill install\|uninstall\|show` | Claude Code skill in `~/.claude/skills/pcm/` |
+| `pcm config get [key]` / `pcm config set <key> <value>` | Config: `path`, `remote`, `port` |
+| `pcm sync` | Commit, pull (rebase), push the context repo |
+| `pcm sync status` / `pcm sync log [-n 10]` | Repo changes / recent commits |
 
 Scope: `-p <project>` or `-g` (global). No flag: current git repo root name (`My.Repo` → `my-repo`).
 
