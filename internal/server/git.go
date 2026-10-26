@@ -1,15 +1,20 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
 )
 
-const defaultLogN = 10
+const (
+	defaultLogN = 10
+	syncTimeout = 5 * time.Minute
+)
 
 type conflictResponse struct {
 	Error string   `json:"error"`
@@ -52,7 +57,10 @@ func (s *server) gitSync(w http.ResponseWriter, r *http.Request) {
 	if !s.requireGit(w) {
 		return
 	}
-	res, err := s.git.Sync(r.Context())
+	// A client disconnect must not kill git in the middle of a push.
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), syncTimeout)
+	defer cancel()
+	res, err := s.git.Sync(ctx)
 	if err != nil {
 		writeGitError(w, err)
 		return

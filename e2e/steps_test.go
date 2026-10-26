@@ -63,6 +63,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
 	sc.Step(`^the global section "([^"]*)" has no contexts$`, w.globalSectionEmpty)
 	sc.Step(`^a git remote$`, w.aGitRemote)
+	sc.Step(`^a slow git remote$`, w.aSlowGitRemote)
 	sc.Step(`^the remote is set$`, w.remoteIsSet)
 	sc.Step(`^the remote has the file "([^"]*)"$`, w.remoteHasFile)
 	sc.Step(`^another clone pushes "([^"]*)" with content "([^"]*)"$`, w.otherClonePushes)
@@ -580,6 +581,15 @@ func (w *world) aGitRemote() error {
 	w.remote = filepath.Join(w.home, "remote.git")
 	_, err := w.git(w.home, "init", "--quiet", "--bare", "-b", "main", w.remote)
 	return err
+}
+
+// aSlowGitRemote is a remote whose push takes 3s: longer than the old 2s client timeout.
+func (w *world) aSlowGitRemote() error {
+	if err := w.aGitRemote(); err != nil {
+		return err
+	}
+	hook := filepath.Join(w.remote, "hooks", "pre-receive")
+	return os.WriteFile(hook, []byte("#!/bin/sh\nsleep 3\n"), 0o755)
 }
 
 func (w *world) remoteIsSet() error {

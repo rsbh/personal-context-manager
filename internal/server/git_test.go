@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -103,4 +105,20 @@ func TestGitSyncConflictResponse(t *testing.T) {
 func TestGitNotConfigured(t *testing.T) {
 	h, _ := newTestServer(t)
 	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/git/sync", ""), http.StatusNotImplemented)
+}
+
+func TestGitSyncSurvivesClientCancel(t *testing.T) {
+	h, _, _ := newGitServer(t)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/sections", `{"scope":"global","name":"style"}`), http.StatusCreated)
+
+	// The client is gone before git runs. Sync must still finish.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/git/sync", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	expectStatus(t, rec, http.StatusOK)
+	if res := decodeBody[gitsync.SyncResult](t, rec); res.Committed != 1 {
+		t.Errorf("sync = %+v", res)
+	}
 }
