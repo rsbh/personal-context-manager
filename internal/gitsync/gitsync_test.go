@@ -231,3 +231,19 @@ func TestLog(t *testing.T) {
 		t.Errorf("log = %+v", commits)
 	}
 }
+
+func TestStatusAheadWithoutUpstream(t *testing.T) {
+	local, remote := setup(t, "main")
+	write(t, local, "a.md", "x")
+	if _, err := New(local, fixedRemote("")).Sync(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	// Remote set after the first local commit: origin/main does not exist yet.
+	st, err := New(local, fixedRemote(remote)).Status(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Ahead != 1 || st.Behind != 0 {
+		t.Errorf("status = %+v, want ahead 1", st)
+	}
+}

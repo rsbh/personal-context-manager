@@ -152,16 +152,22 @@ func (r *Repo) Status(ctx context.Context) (Status, error) {
 	}
 	st.Changes = append(st.Changes, lines(porcelain)...)
 
+	if remote == "" || !r.hasCommits(ctx) {
+		return st, nil
+	}
 	upstream := "origin/" + branch
-	if remote != "" && r.hasCommits(ctx) && r.ok(ctx, "rev-parse", "--verify", "--quiet", "refs/remotes/"+upstream) {
-		out, err := r.git(ctx, "rev-list", "--left-right", "--count", "HEAD..."+upstream)
-		if err != nil {
-			return st, err
-		}
-		if f := strings.Fields(out); len(f) == 2 {
-			st.Ahead, _ = strconv.Atoi(f[0])
-			st.Behind, _ = strconv.Atoi(f[1])
-		}
+	if !r.ok(ctx, "rev-parse", "--verify", "--quiet", "refs/remotes/"+upstream) {
+		// Never pushed: all local commits are ahead.
+		st.Ahead, err = r.count(ctx, "HEAD")
+		return st, err
+	}
+	out, err := r.git(ctx, "rev-list", "--left-right", "--count", "HEAD..."+upstream)
+	if err != nil {
+		return st, err
+	}
+	if f := strings.Fields(out); len(f) == 2 {
+		st.Ahead, _ = strconv.Atoi(f[0])
+		st.Behind, _ = strconv.Atoi(f[1])
 	}
 	return st, nil
 }

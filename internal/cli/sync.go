@@ -91,8 +91,11 @@ func (a *app) syncStatus(cmd *cobra.Command, _ []string) error {
 		{"ahead", strconv.Itoa(st.Ahead)},
 		{"behind", strconv.Itoa(st.Behind)},
 	}
-	if st.Remote == "" {
+	switch {
+	case st.Remote == "":
 		fields = append(fields, remoteNotSet...)
+	case st.Ahead > 0:
+		fields = append(fields, field{"hint", "run pcm sync to push"})
 	}
 	out := cmd.OutOrStdout()
 	printFields(out, fields)

@@ -22,6 +22,7 @@
   3. Conflict: `git rebase --abort`, 409 with files. Fix by hand in repo, then `pcm sync`.
   4. Push if ahead (`-u origin main`).
   Server reads `remote` from `config.yaml` on each call: no restart needed.
+  Timeouts: CLI health 2s, API calls 30s, sync 5m. Server finishes a sync even if the client disconnects. `pcm sync status` before the first push: `ahead` = local commits, hint `run pcm sync to push`.
 - **Claude Code**: skill calls CLI. No MCP.
 
 ## REST API (`/api/v1`)

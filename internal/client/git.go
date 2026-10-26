@@ -17,7 +17,7 @@ func (c *Client) GitStatus(ctx context.Context) (gitsync.Status, error) {
 // Sync commits, pulls and pushes. A conflict is an *APIError with status 409 and Files.
 func (c *Client) Sync(ctx context.Context) (gitsync.SyncResult, error) {
 	var out gitsync.SyncResult
-	err := c.do(ctx, http.MethodPost, "/api/v1/git/sync", nil, &out)
+	err := c.doTimeout(ctx, c.syncTimeout, http.MethodPost, "/api/v1/git/sync", nil, &out)
 	return out, err
 }
 
