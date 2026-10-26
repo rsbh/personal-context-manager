@@ -46,9 +46,20 @@ func (s *server) listProjects(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, projects)
 }
 
-type createProjectRequest struct {
+type project struct {
 	Name string `json:"name"`
 }
+
+func (s *server) getProject(w http.ResponseWriter, r *http.Request) {
+	name := chi.URLParam(r, "project")
+	if err := s.store.GetProject(name); err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, project{Name: name})
+}
+
+type createProjectRequest = project
 
 func (s *server) createProject(w http.ResponseWriter, r *http.Request) {
 	var req createProjectRequest

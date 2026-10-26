@@ -28,6 +28,7 @@
 |---|---|---|
 | GET | `/projects` | List projects |
 | POST | `/projects` | Create project |
+| GET | `/projects/{project}` | Get project |
 | DELETE | `/projects/{project}` | Delete project |
 | GET | `/sections` | List sections |
 | POST | `/sections` | Create section |
@@ -48,6 +49,8 @@
 
 ## CLI (`pcm`)
 
+k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short names.
+
 | Command | Purpose |
 |---|---|
 | `pcm add [text] -s <section> [-p <project> \| -g] [-n <name>]` | Save text (arg or stdin) |
@@ -57,7 +60,9 @@
 | `pcm rm <id>` | Delete context |
 | `pcm search <query>` | Search contexts |
 | `pcm context [-s <section>] [-n <name>]` | Print merged global + current project contexts (for skill) |
-| `pcm project add\|list\|rm <name>` | Manage projects |
+| `pcm get project(s) [name]` | List projects or show one |
+| `pcm create project <name>` | Create project |
+| `pcm delete project <name> [--force]` | Delete project (`--force` if not empty) |
 | `pcm section add\|list\|rm <name>` | Manage sections |
 | `pcm sync` | Git pull, commit, push |
 | `pcm status` | Git status |

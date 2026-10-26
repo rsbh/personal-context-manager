@@ -130,6 +130,19 @@ func (s *Store) ListProjects() ([]string, error) {
 	return listDirs(filepath.Join(s.root, projectsDir))
 }
 
+// GetProject returns nil if the project exists.
+func (s *Store) GetProject(name string) error {
+	if err := validName("project", name); err != nil {
+		return err
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if !isDir(filepath.Join(s.root, projectsDir, name)) {
+		return fmt.Errorf("project %q: %w", name, ErrNotFound)
+	}
+	return nil
+}
+
 func (s *Store) CreateProject(name string) error {
 	if err := validName("project", name); err != nil {
 		return err
@@ -402,7 +415,7 @@ func removeDir(dir, label string, force bool) error {
 	if !force {
 		for _, e := range entries {
 			if e.Name() != keepFile {
-				return fmt.Errorf("%s: %w, use force", label, ErrNotEmpty)
+				return fmt.Errorf("%s: %w", label, ErrNotEmpty)
 			}
 		}
 	}

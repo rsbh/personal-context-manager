@@ -87,6 +87,14 @@ func TestProjects(t *testing.T) {
 		t.Errorf("projects = %v, want [pcm]", got)
 	}
 
+	rec = do(t, h, http.MethodGet, "/api/v1/projects/pcm", "")
+	expectStatus(t, rec, http.StatusOK)
+	if got := decodeBody[map[string]string](t, rec); got["name"] != "pcm" {
+		t.Errorf("project = %v, want name pcm", got)
+	}
+	expectStatus(t, do(t, h, http.MethodGet, "/api/v1/projects/none", ""), http.StatusNotFound)
+	expectStatus(t, do(t, h, http.MethodGet, "/api/v1/projects/Bad", ""), http.StatusBadRequest)
+
 	// Not empty: needs force.
 	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/sections", `{"scope":"project","project":"pcm","name":"style"}`), http.StatusCreated)
 	expectStatus(t, do(t, h, http.MethodDelete, "/api/v1/projects/pcm", ""), http.StatusConflict)

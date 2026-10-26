@@ -27,6 +27,7 @@ func NewRouter(st *store.Store) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/projects", s.listProjects)
 		r.Post("/projects", s.createProject)
+		r.Get("/projects/{project}", s.getProject)
 		r.Delete("/projects/{project}", s.deleteProject)
 
 		r.Get("/sections", s.listSections)
