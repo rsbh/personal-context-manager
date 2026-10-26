@@ -73,6 +73,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^I GET "([^"]*)"$`, w.iGet)
 	sc.Step(`^I GET "([^"]*)" with header "([^:]+): ([^"]*)"$`, w.iGetWithHeader)
 	sc.Step(`^I POST "([^"]*)"$`, w.iPost)
+	sc.Step(`^I (POST|PUT) "([^"]*)" with body:$`, w.iSendWithBody)
 	sc.Step(`^the status is (\d+)$`, w.statusIs)
 	sc.Step(`^the header "([^"]*)" is "([^"]*)"$`, w.headerIs)
 	sc.Step(`^the body contains "(.*)"$`, w.bodyContains)
@@ -532,6 +533,25 @@ func (w *world) iPost(path string) error {
 		return err
 	}
 	w.resp = &httpResult{status: resp.StatusCode, header: resp.Header, body: string(body)}
+	return nil
+}
+
+func (w *world) iSendWithBody(method, path string, body *godog.DocString) error {
+	req, err := http.NewRequest(method, w.url(path), strings.NewReader(body.Content))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	w.resp = &httpResult{status: resp.StatusCode, header: resp.Header, body: string(data)}
 	return nil
 }
 

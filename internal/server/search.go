@@ -32,6 +32,7 @@ func (s *server) requireSearch(w http.ResponseWriter) bool {
 // searchContexts godoc
 //
 //	@Summary	Full-text search of contexts
+//	@ID			searchContexts
 //	@Tags		search
 //	@Produce	json
 //	@Param		q		query		string	true	"Search text"
@@ -86,6 +87,7 @@ func (s *server) searchContexts(w http.ResponseWriter, r *http.Request) {
 // rebuildIndex godoc
 //
 //	@Summary	Rebuild the search index from all contexts
+//	@ID			rebuildIndex
 //	@Tags		search
 //	@Produce	json
 //	@Success	200	{object}	rebuildResponse

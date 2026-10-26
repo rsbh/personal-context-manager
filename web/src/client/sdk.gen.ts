@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteApiV1ContextsByIdData, DeleteApiV1ContextsByIdErrors, DeleteApiV1ContextsByIdResponses, DeleteApiV1ProjectsByProjectData, DeleteApiV1ProjectsByProjectErrors, DeleteApiV1ProjectsByProjectResponses, DeleteApiV1SectionsBySectionData, DeleteApiV1SectionsBySectionErrors, DeleteApiV1SectionsBySectionResponses, GetApiV1ContextsByIdData, GetApiV1ContextsByIdErrors, GetApiV1ContextsByIdResponses, GetApiV1ContextsData, GetApiV1ContextsErrors, GetApiV1ContextsResponses, GetApiV1GitLogData, GetApiV1GitLogErrors, GetApiV1GitLogResponses, GetApiV1GitStatusData, GetApiV1GitStatusErrors, GetApiV1GitStatusResponses, GetApiV1ProjectsByProjectData, GetApiV1ProjectsByProjectErrors, GetApiV1ProjectsByProjectResponses, GetApiV1ProjectsData, GetApiV1ProjectsErrors, GetApiV1ProjectsResponses, GetApiV1ResolveData, GetApiV1ResolveErrors, GetApiV1ResolveResponses, GetApiV1SearchData, GetApiV1SearchErrors, GetApiV1SearchResponses, GetApiV1SectionsData, GetApiV1SectionsErrors, GetApiV1SectionsResponses, GetHealthData, GetHealthResponses, PostApiV1ContextsData, PostApiV1ContextsErrors, PostApiV1ContextsResponses, PostApiV1GitSyncData, PostApiV1GitSyncErrors, PostApiV1GitSyncResponses, PostApiV1IndexRebuildData, PostApiV1IndexRebuildErrors, PostApiV1IndexRebuildResponses, PostApiV1ProjectsData, PostApiV1ProjectsErrors, PostApiV1ProjectsResponses, PostApiV1SectionsData, PostApiV1SectionsErrors, PostApiV1SectionsResponses, PutApiV1ContextsByIdData, PutApiV1ContextsByIdErrors, PutApiV1ContextsByIdResponses } from './types.gen';
+import type { CreateContextData, CreateContextErrors, CreateContextResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateSectionData, CreateSectionErrors, CreateSectionResponses, DeleteContextData, DeleteContextErrors, DeleteContextResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteSectionData, DeleteSectionErrors, DeleteSectionResponses, GetContextData, GetContextErrors, GetContextResponses, GetHealthData, GetHealthResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GitLogData, GitLogErrors, GitLogResponses, GitStatusData, GitStatusErrors, GitStatusResponses, GitSyncData, GitSyncErrors, GitSyncResponses, ListContextsData, ListContextsErrors, ListContextsResponses, ListProjectsData, ListProjectsErrors, ListProjectsResponses, ListSectionsData, ListSectionsErrors, ListSectionsResponses, RebuildIndexData, RebuildIndexErrors, RebuildIndexResponses, ResolveContextsData, ResolveContextsErrors, ResolveContextsResponses, SearchContextsData, SearchContextsErrors, SearchContextsResponses, UpdateContextData, UpdateContextErrors, UpdateContextResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -21,12 +21,12 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * List contexts
  */
-export const getApiV1Contexts = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1ContextsData, ThrowOnError>): RequestResult<GetApiV1ContextsResponses, GetApiV1ContextsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1ContextsResponses, GetApiV1ContextsErrors, ThrowOnError>({ url: '/api/v1/contexts', ...options });
+export const listContexts = <ThrowOnError extends boolean = false>(options?: Options<ListContextsData, ThrowOnError>): RequestResult<ListContextsResponses, ListContextsErrors, ThrowOnError> => (options?.client ?? client).get<ListContextsResponses, ListContextsErrors, ThrowOnError>({ url: '/api/v1/contexts', ...options });
 
 /**
  * Create a context
  */
-export const postApiV1Contexts = <ThrowOnError extends boolean = false>(options: Options<PostApiV1ContextsData, ThrowOnError>): RequestResult<PostApiV1ContextsResponses, PostApiV1ContextsErrors, ThrowOnError> => (options.client ?? client).post<PostApiV1ContextsResponses, PostApiV1ContextsErrors, ThrowOnError>({
+export const createContext = <ThrowOnError extends boolean = false>(options: Options<CreateContextData, ThrowOnError>): RequestResult<CreateContextResponses, CreateContextErrors, ThrowOnError> => (options.client ?? client).post<CreateContextResponses, CreateContextErrors, ThrowOnError>({
     url: '/api/v1/contexts',
     ...options,
     headers: {
@@ -40,21 +40,21 @@ export const postApiV1Contexts = <ThrowOnError extends boolean = false>(options:
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const deleteApiV1ContextsById = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1ContextsByIdData, ThrowOnError>): RequestResult<DeleteApiV1ContextsByIdResponses, DeleteApiV1ContextsByIdErrors, ThrowOnError> => (options.client ?? client).delete<DeleteApiV1ContextsByIdResponses, DeleteApiV1ContextsByIdErrors, ThrowOnError>({ url: '/api/v1/contexts/{id}', ...options });
+export const deleteContext = <ThrowOnError extends boolean = false>(options: Options<DeleteContextData, ThrowOnError>): RequestResult<DeleteContextResponses, DeleteContextErrors, ThrowOnError> => (options.client ?? client).delete<DeleteContextResponses, DeleteContextErrors, ThrowOnError>({ url: '/api/v1/contexts/{id}', ...options });
 
 /**
  * Get a context
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const getApiV1ContextsById = <ThrowOnError extends boolean = false>(options: Options<GetApiV1ContextsByIdData, ThrowOnError>): RequestResult<GetApiV1ContextsByIdResponses, GetApiV1ContextsByIdErrors, ThrowOnError> => (options.client ?? client).get<GetApiV1ContextsByIdResponses, GetApiV1ContextsByIdErrors, ThrowOnError>({ url: '/api/v1/contexts/{id}', ...options });
+export const getContext = <ThrowOnError extends boolean = false>(options: Options<GetContextData, ThrowOnError>): RequestResult<GetContextResponses, GetContextErrors, ThrowOnError> => (options.client ?? client).get<GetContextResponses, GetContextErrors, ThrowOnError>({ url: '/api/v1/contexts/{id}', ...options });
 
 /**
  * Update a context
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const putApiV1ContextsById = <ThrowOnError extends boolean = false>(options: Options<PutApiV1ContextsByIdData, ThrowOnError>): RequestResult<PutApiV1ContextsByIdResponses, PutApiV1ContextsByIdErrors, ThrowOnError> => (options.client ?? client).put<PutApiV1ContextsByIdResponses, PutApiV1ContextsByIdErrors, ThrowOnError>({
+export const updateContext = <ThrowOnError extends boolean = false>(options: Options<UpdateContextData, ThrowOnError>): RequestResult<UpdateContextResponses, UpdateContextErrors, ThrowOnError> => (options.client ?? client).put<UpdateContextResponses, UpdateContextErrors, ThrowOnError>({
     url: '/api/v1/contexts/{id}',
     ...options,
     headers: {
@@ -66,32 +66,32 @@ export const putApiV1ContextsById = <ThrowOnError extends boolean = false>(optio
 /**
  * Recent commits of the context repo
  */
-export const getApiV1GitLog = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1GitLogData, ThrowOnError>): RequestResult<GetApiV1GitLogResponses, GetApiV1GitLogErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1GitLogResponses, GetApiV1GitLogErrors, ThrowOnError>({ url: '/api/v1/git/log', ...options });
+export const gitLog = <ThrowOnError extends boolean = false>(options?: Options<GitLogData, ThrowOnError>): RequestResult<GitLogResponses, GitLogErrors, ThrowOnError> => (options?.client ?? client).get<GitLogResponses, GitLogErrors, ThrowOnError>({ url: '/api/v1/git/log', ...options });
 
 /**
  * Git status of the context repo
  */
-export const getApiV1GitStatus = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1GitStatusData, ThrowOnError>): RequestResult<GetApiV1GitStatusResponses, GetApiV1GitStatusErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1GitStatusResponses, GetApiV1GitStatusErrors, ThrowOnError>({ url: '/api/v1/git/status', ...options });
+export const gitStatus = <ThrowOnError extends boolean = false>(options?: Options<GitStatusData, ThrowOnError>): RequestResult<GitStatusResponses, GitStatusErrors, ThrowOnError> => (options?.client ?? client).get<GitStatusResponses, GitStatusErrors, ThrowOnError>({ url: '/api/v1/git/status', ...options });
 
 /**
  * Commit, pull and push the context repo
  */
-export const postApiV1GitSync = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1GitSyncData, ThrowOnError>): RequestResult<PostApiV1GitSyncResponses, PostApiV1GitSyncErrors, ThrowOnError> => (options?.client ?? client).post<PostApiV1GitSyncResponses, PostApiV1GitSyncErrors, ThrowOnError>({ url: '/api/v1/git/sync', ...options });
+export const gitSync = <ThrowOnError extends boolean = false>(options?: Options<GitSyncData, ThrowOnError>): RequestResult<GitSyncResponses, GitSyncErrors, ThrowOnError> => (options?.client ?? client).post<GitSyncResponses, GitSyncErrors, ThrowOnError>({ url: '/api/v1/git/sync', ...options });
 
 /**
  * Rebuild the search index from all contexts
  */
-export const postApiV1IndexRebuild = <ThrowOnError extends boolean = false>(options?: Options<PostApiV1IndexRebuildData, ThrowOnError>): RequestResult<PostApiV1IndexRebuildResponses, PostApiV1IndexRebuildErrors, ThrowOnError> => (options?.client ?? client).post<PostApiV1IndexRebuildResponses, PostApiV1IndexRebuildErrors, ThrowOnError>({ url: '/api/v1/index/rebuild', ...options });
+export const rebuildIndex = <ThrowOnError extends boolean = false>(options?: Options<RebuildIndexData, ThrowOnError>): RequestResult<RebuildIndexResponses, RebuildIndexErrors, ThrowOnError> => (options?.client ?? client).post<RebuildIndexResponses, RebuildIndexErrors, ThrowOnError>({ url: '/api/v1/index/rebuild', ...options });
 
 /**
  * List projects
  */
-export const getApiV1Projects = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1ProjectsData, ThrowOnError>): RequestResult<GetApiV1ProjectsResponses, GetApiV1ProjectsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1ProjectsResponses, GetApiV1ProjectsErrors, ThrowOnError>({ url: '/api/v1/projects', ...options });
+export const listProjects = <ThrowOnError extends boolean = false>(options?: Options<ListProjectsData, ThrowOnError>): RequestResult<ListProjectsResponses, ListProjectsErrors, ThrowOnError> => (options?.client ?? client).get<ListProjectsResponses, ListProjectsErrors, ThrowOnError>({ url: '/api/v1/projects', ...options });
 
 /**
  * Create a project
  */
-export const postApiV1Projects = <ThrowOnError extends boolean = false>(options: Options<PostApiV1ProjectsData, ThrowOnError>): RequestResult<PostApiV1ProjectsResponses, PostApiV1ProjectsErrors, ThrowOnError> => (options.client ?? client).post<PostApiV1ProjectsResponses, PostApiV1ProjectsErrors, ThrowOnError>({
+export const createProject = <ThrowOnError extends boolean = false>(options: Options<CreateProjectData, ThrowOnError>): RequestResult<CreateProjectResponses, CreateProjectErrors, ThrowOnError> => (options.client ?? client).post<CreateProjectResponses, CreateProjectErrors, ThrowOnError>({
     url: '/api/v1/projects',
     ...options,
     headers: {
@@ -103,32 +103,32 @@ export const postApiV1Projects = <ThrowOnError extends boolean = false>(options:
 /**
  * Delete a project
  */
-export const deleteApiV1ProjectsByProject = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1ProjectsByProjectData, ThrowOnError>): RequestResult<DeleteApiV1ProjectsByProjectResponses, DeleteApiV1ProjectsByProjectErrors, ThrowOnError> => (options.client ?? client).delete<DeleteApiV1ProjectsByProjectResponses, DeleteApiV1ProjectsByProjectErrors, ThrowOnError>({ url: '/api/v1/projects/{project}', ...options });
+export const deleteProject = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>): RequestResult<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError> => (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({ url: '/api/v1/projects/{project}', ...options });
 
 /**
  * Get a project
  */
-export const getApiV1ProjectsByProject = <ThrowOnError extends boolean = false>(options: Options<GetApiV1ProjectsByProjectData, ThrowOnError>): RequestResult<GetApiV1ProjectsByProjectResponses, GetApiV1ProjectsByProjectErrors, ThrowOnError> => (options.client ?? client).get<GetApiV1ProjectsByProjectResponses, GetApiV1ProjectsByProjectErrors, ThrowOnError>({ url: '/api/v1/projects/{project}', ...options });
+export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>): RequestResult<GetProjectResponses, GetProjectErrors, ThrowOnError> => (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({ url: '/api/v1/projects/{project}', ...options });
 
 /**
  * Resolve contexts for a project
  */
-export const getApiV1Resolve = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1ResolveData, ThrowOnError>): RequestResult<GetApiV1ResolveResponses, GetApiV1ResolveErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1ResolveResponses, GetApiV1ResolveErrors, ThrowOnError>({ url: '/api/v1/resolve', ...options });
+export const resolveContexts = <ThrowOnError extends boolean = false>(options?: Options<ResolveContextsData, ThrowOnError>): RequestResult<ResolveContextsResponses, ResolveContextsErrors, ThrowOnError> => (options?.client ?? client).get<ResolveContextsResponses, ResolveContextsErrors, ThrowOnError>({ url: '/api/v1/resolve', ...options });
 
 /**
  * Full-text search of contexts
  */
-export const getApiV1Search = <ThrowOnError extends boolean = false>(options: Options<GetApiV1SearchData, ThrowOnError>): RequestResult<GetApiV1SearchResponses, GetApiV1SearchErrors, ThrowOnError> => (options.client ?? client).get<GetApiV1SearchResponses, GetApiV1SearchErrors, ThrowOnError>({ url: '/api/v1/search', ...options });
+export const searchContexts = <ThrowOnError extends boolean = false>(options: Options<SearchContextsData, ThrowOnError>): RequestResult<SearchContextsResponses, SearchContextsErrors, ThrowOnError> => (options.client ?? client).get<SearchContextsResponses, SearchContextsErrors, ThrowOnError>({ url: '/api/v1/search', ...options });
 
 /**
  * List sections
  */
-export const getApiV1Sections = <ThrowOnError extends boolean = false>(options?: Options<GetApiV1SectionsData, ThrowOnError>): RequestResult<GetApiV1SectionsResponses, GetApiV1SectionsErrors, ThrowOnError> => (options?.client ?? client).get<GetApiV1SectionsResponses, GetApiV1SectionsErrors, ThrowOnError>({ url: '/api/v1/sections', ...options });
+export const listSections = <ThrowOnError extends boolean = false>(options?: Options<ListSectionsData, ThrowOnError>): RequestResult<ListSectionsResponses, ListSectionsErrors, ThrowOnError> => (options?.client ?? client).get<ListSectionsResponses, ListSectionsErrors, ThrowOnError>({ url: '/api/v1/sections', ...options });
 
 /**
  * Create a section
  */
-export const postApiV1Sections = <ThrowOnError extends boolean = false>(options: Options<PostApiV1SectionsData, ThrowOnError>): RequestResult<PostApiV1SectionsResponses, PostApiV1SectionsErrors, ThrowOnError> => (options.client ?? client).post<PostApiV1SectionsResponses, PostApiV1SectionsErrors, ThrowOnError>({
+export const createSection = <ThrowOnError extends boolean = false>(options: Options<CreateSectionData, ThrowOnError>): RequestResult<CreateSectionResponses, CreateSectionErrors, ThrowOnError> => (options.client ?? client).post<CreateSectionResponses, CreateSectionErrors, ThrowOnError>({
     url: '/api/v1/sections',
     ...options,
     headers: {
@@ -140,7 +140,7 @@ export const postApiV1Sections = <ThrowOnError extends boolean = false>(options:
 /**
  * Delete a section
  */
-export const deleteApiV1SectionsBySection = <ThrowOnError extends boolean = false>(options: Options<DeleteApiV1SectionsBySectionData, ThrowOnError>): RequestResult<DeleteApiV1SectionsBySectionResponses, DeleteApiV1SectionsBySectionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteApiV1SectionsBySectionResponses, DeleteApiV1SectionsBySectionErrors, ThrowOnError>({ url: '/api/v1/sections/{section}', ...options });
+export const deleteSection = <ThrowOnError extends boolean = false>(options: Options<DeleteSectionData, ThrowOnError>): RequestResult<DeleteSectionResponses, DeleteSectionErrors, ThrowOnError> => (options.client ?? client).delete<DeleteSectionResponses, DeleteSectionErrors, ThrowOnError>({ url: '/api/v1/sections/{section}', ...options });
 
 /**
  * Health check

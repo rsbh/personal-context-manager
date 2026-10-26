@@ -54,20 +54,20 @@ export type ServerConflictResponse = {
 export type ServerCreateContextRequest = {
     content?: string;
     frontmatter?: StoreFrontmatter;
-    name?: string;
+    name: string;
     project?: string;
-    scope?: string;
-    section?: string;
+    scope: 'global' | 'project';
+    section: string;
 };
 
 export type ServerCreateProjectRequest = {
-    name?: string;
+    name: string;
 };
 
 export type ServerCreateSectionRequest = {
-    name?: string;
+    name: string;
     project?: string;
-    scope?: string;
+    scope: 'global' | 'project';
 };
 
 export type ServerErrorResponse = {
@@ -75,7 +75,7 @@ export type ServerErrorResponse = {
 };
 
 export type ServerProject = {
-    name?: string;
+    name: string;
 };
 
 export type ServerRebuildResponse = {
@@ -104,7 +104,7 @@ export type StoreFrontmatter = {
     title?: string;
 };
 
-export type GetApiV1ContextsData = {
+export type ListContextsData = {
     body?: never;
     path?: never;
     query?: {
@@ -124,7 +124,7 @@ export type GetApiV1ContextsData = {
     url: '/api/v1/contexts';
 };
 
-export type GetApiV1ContextsErrors = {
+export type ListContextsErrors = {
     /**
      * Bad Request
      */
@@ -135,18 +135,18 @@ export type GetApiV1ContextsErrors = {
     404: ServerErrorResponse;
 };
 
-export type GetApiV1ContextsError = GetApiV1ContextsErrors[keyof GetApiV1ContextsErrors];
+export type ListContextsError = ListContextsErrors[keyof ListContextsErrors];
 
-export type GetApiV1ContextsResponses = {
+export type ListContextsResponses = {
     /**
      * OK
      */
     200: Array<StoreContext>;
 };
 
-export type GetApiV1ContextsResponse = GetApiV1ContextsResponses[keyof GetApiV1ContextsResponses];
+export type ListContextsResponse = ListContextsResponses[keyof ListContextsResponses];
 
-export type PostApiV1ContextsData = {
+export type CreateContextData = {
     /**
      * Context
      */
@@ -156,7 +156,7 @@ export type PostApiV1ContextsData = {
     url: '/api/v1/contexts';
 };
 
-export type PostApiV1ContextsErrors = {
+export type CreateContextErrors = {
     /**
      * Bad Request
      */
@@ -171,18 +171,18 @@ export type PostApiV1ContextsErrors = {
     409: ServerErrorResponse;
 };
 
-export type PostApiV1ContextsError = PostApiV1ContextsErrors[keyof PostApiV1ContextsErrors];
+export type CreateContextError = CreateContextErrors[keyof CreateContextErrors];
 
-export type PostApiV1ContextsResponses = {
+export type CreateContextResponses = {
     /**
      * Created
      */
     201: StoreContext;
 };
 
-export type PostApiV1ContextsResponse = PostApiV1ContextsResponses[keyof PostApiV1ContextsResponses];
+export type CreateContextResponse = CreateContextResponses[keyof CreateContextResponses];
 
-export type DeleteApiV1ContextsByIdData = {
+export type DeleteContextData = {
     body?: never;
     path: {
         /**
@@ -194,7 +194,7 @@ export type DeleteApiV1ContextsByIdData = {
     url: '/api/v1/contexts/{id}';
 };
 
-export type DeleteApiV1ContextsByIdErrors = {
+export type DeleteContextErrors = {
     /**
      * Bad Request
      */
@@ -205,16 +205,16 @@ export type DeleteApiV1ContextsByIdErrors = {
     404: ServerErrorResponse;
 };
 
-export type DeleteApiV1ContextsByIdError = DeleteApiV1ContextsByIdErrors[keyof DeleteApiV1ContextsByIdErrors];
+export type DeleteContextError = DeleteContextErrors[keyof DeleteContextErrors];
 
-export type DeleteApiV1ContextsByIdResponses = {
+export type DeleteContextResponses = {
     /**
      * No Content
      */
     204: unknown;
 };
 
-export type GetApiV1ContextsByIdData = {
+export type GetContextData = {
     body?: never;
     path: {
         /**
@@ -226,7 +226,7 @@ export type GetApiV1ContextsByIdData = {
     url: '/api/v1/contexts/{id}';
 };
 
-export type GetApiV1ContextsByIdErrors = {
+export type GetContextErrors = {
     /**
      * Bad Request
      */
@@ -237,18 +237,18 @@ export type GetApiV1ContextsByIdErrors = {
     404: ServerErrorResponse;
 };
 
-export type GetApiV1ContextsByIdError = GetApiV1ContextsByIdErrors[keyof GetApiV1ContextsByIdErrors];
+export type GetContextError = GetContextErrors[keyof GetContextErrors];
 
-export type GetApiV1ContextsByIdResponses = {
+export type GetContextResponses = {
     /**
      * OK
      */
     200: StoreContext;
 };
 
-export type GetApiV1ContextsByIdResponse = GetApiV1ContextsByIdResponses[keyof GetApiV1ContextsByIdResponses];
+export type GetContextResponse = GetContextResponses[keyof GetContextResponses];
 
-export type PutApiV1ContextsByIdData = {
+export type UpdateContextData = {
     /**
      * New frontmatter and content
      */
@@ -263,7 +263,7 @@ export type PutApiV1ContextsByIdData = {
     url: '/api/v1/contexts/{id}';
 };
 
-export type PutApiV1ContextsByIdErrors = {
+export type UpdateContextErrors = {
     /**
      * Bad Request
      */
@@ -274,18 +274,18 @@ export type PutApiV1ContextsByIdErrors = {
     404: ServerErrorResponse;
 };
 
-export type PutApiV1ContextsByIdError = PutApiV1ContextsByIdErrors[keyof PutApiV1ContextsByIdErrors];
+export type UpdateContextError = UpdateContextErrors[keyof UpdateContextErrors];
 
-export type PutApiV1ContextsByIdResponses = {
+export type UpdateContextResponses = {
     /**
      * OK
      */
     200: StoreContext;
 };
 
-export type PutApiV1ContextsByIdResponse = PutApiV1ContextsByIdResponses[keyof PutApiV1ContextsByIdResponses];
+export type UpdateContextResponse = UpdateContextResponses[keyof UpdateContextResponses];
 
-export type GetApiV1GitLogData = {
+export type GitLogData = {
     body?: never;
     path?: never;
     query?: {
@@ -297,7 +297,7 @@ export type GetApiV1GitLogData = {
     url: '/api/v1/git/log';
 };
 
-export type GetApiV1GitLogErrors = {
+export type GitLogErrors = {
     /**
      * Bad Request
      */
@@ -312,25 +312,25 @@ export type GetApiV1GitLogErrors = {
     501: ServerErrorResponse;
 };
 
-export type GetApiV1GitLogError = GetApiV1GitLogErrors[keyof GetApiV1GitLogErrors];
+export type GitLogError = GitLogErrors[keyof GitLogErrors];
 
-export type GetApiV1GitLogResponses = {
+export type GitLogResponses = {
     /**
      * OK
      */
     200: Array<GitsyncCommit>;
 };
 
-export type GetApiV1GitLogResponse = GetApiV1GitLogResponses[keyof GetApiV1GitLogResponses];
+export type GitLogResponse = GitLogResponses[keyof GitLogResponses];
 
-export type GetApiV1GitStatusData = {
+export type GitStatusData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/git/status';
 };
 
-export type GetApiV1GitStatusErrors = {
+export type GitStatusErrors = {
     /**
      * Internal Server Error
      */
@@ -341,25 +341,25 @@ export type GetApiV1GitStatusErrors = {
     501: ServerErrorResponse;
 };
 
-export type GetApiV1GitStatusError = GetApiV1GitStatusErrors[keyof GetApiV1GitStatusErrors];
+export type GitStatusError = GitStatusErrors[keyof GitStatusErrors];
 
-export type GetApiV1GitStatusResponses = {
+export type GitStatusResponses = {
     /**
      * OK
      */
     200: GitsyncStatus;
 };
 
-export type GetApiV1GitStatusResponse = GetApiV1GitStatusResponses[keyof GetApiV1GitStatusResponses];
+export type GitStatusResponse = GitStatusResponses[keyof GitStatusResponses];
 
-export type PostApiV1GitSyncData = {
+export type GitSyncData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/git/sync';
 };
 
-export type PostApiV1GitSyncErrors = {
+export type GitSyncErrors = {
     /**
      * Conflict
      */
@@ -374,25 +374,25 @@ export type PostApiV1GitSyncErrors = {
     501: ServerErrorResponse;
 };
 
-export type PostApiV1GitSyncError = PostApiV1GitSyncErrors[keyof PostApiV1GitSyncErrors];
+export type GitSyncError = GitSyncErrors[keyof GitSyncErrors];
 
-export type PostApiV1GitSyncResponses = {
+export type GitSyncResponses = {
     /**
      * OK
      */
     200: GitsyncSyncResult;
 };
 
-export type PostApiV1GitSyncResponse = PostApiV1GitSyncResponses[keyof PostApiV1GitSyncResponses];
+export type GitSyncResponse = GitSyncResponses[keyof GitSyncResponses];
 
-export type PostApiV1IndexRebuildData = {
+export type RebuildIndexData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/index/rebuild';
 };
 
-export type PostApiV1IndexRebuildErrors = {
+export type RebuildIndexErrors = {
     /**
      * Internal Server Error
      */
@@ -403,43 +403,43 @@ export type PostApiV1IndexRebuildErrors = {
     501: ServerErrorResponse;
 };
 
-export type PostApiV1IndexRebuildError = PostApiV1IndexRebuildErrors[keyof PostApiV1IndexRebuildErrors];
+export type RebuildIndexError = RebuildIndexErrors[keyof RebuildIndexErrors];
 
-export type PostApiV1IndexRebuildResponses = {
+export type RebuildIndexResponses = {
     /**
      * OK
      */
     200: ServerRebuildResponse;
 };
 
-export type PostApiV1IndexRebuildResponse = PostApiV1IndexRebuildResponses[keyof PostApiV1IndexRebuildResponses];
+export type RebuildIndexResponse = RebuildIndexResponses[keyof RebuildIndexResponses];
 
-export type GetApiV1ProjectsData = {
+export type ListProjectsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/api/v1/projects';
 };
 
-export type GetApiV1ProjectsErrors = {
+export type ListProjectsErrors = {
     /**
      * Internal Server Error
      */
     500: ServerErrorResponse;
 };
 
-export type GetApiV1ProjectsError = GetApiV1ProjectsErrors[keyof GetApiV1ProjectsErrors];
+export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
 
-export type GetApiV1ProjectsResponses = {
+export type ListProjectsResponses = {
     /**
      * OK
      */
     200: Array<string>;
 };
 
-export type GetApiV1ProjectsResponse = GetApiV1ProjectsResponses[keyof GetApiV1ProjectsResponses];
+export type ListProjectsResponse = ListProjectsResponses[keyof ListProjectsResponses];
 
-export type PostApiV1ProjectsData = {
+export type CreateProjectData = {
     /**
      * Project
      */
@@ -449,7 +449,7 @@ export type PostApiV1ProjectsData = {
     url: '/api/v1/projects';
 };
 
-export type PostApiV1ProjectsErrors = {
+export type CreateProjectErrors = {
     /**
      * Bad Request
      */
@@ -460,18 +460,18 @@ export type PostApiV1ProjectsErrors = {
     409: ServerErrorResponse;
 };
 
-export type PostApiV1ProjectsError = PostApiV1ProjectsErrors[keyof PostApiV1ProjectsErrors];
+export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
 
-export type PostApiV1ProjectsResponses = {
+export type CreateProjectResponses = {
     /**
      * Created
      */
     201: ServerProject;
 };
 
-export type PostApiV1ProjectsResponse = PostApiV1ProjectsResponses[keyof PostApiV1ProjectsResponses];
+export type CreateProjectResponse = CreateProjectResponses[keyof CreateProjectResponses];
 
-export type DeleteApiV1ProjectsByProjectData = {
+export type DeleteProjectData = {
     body?: never;
     path: {
         /**
@@ -488,7 +488,7 @@ export type DeleteApiV1ProjectsByProjectData = {
     url: '/api/v1/projects/{project}';
 };
 
-export type DeleteApiV1ProjectsByProjectErrors = {
+export type DeleteProjectErrors = {
     /**
      * Not Found
      */
@@ -499,16 +499,16 @@ export type DeleteApiV1ProjectsByProjectErrors = {
     409: ServerErrorResponse;
 };
 
-export type DeleteApiV1ProjectsByProjectError = DeleteApiV1ProjectsByProjectErrors[keyof DeleteApiV1ProjectsByProjectErrors];
+export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
 
-export type DeleteApiV1ProjectsByProjectResponses = {
+export type DeleteProjectResponses = {
     /**
      * No Content
      */
     204: unknown;
 };
 
-export type GetApiV1ProjectsByProjectData = {
+export type GetProjectData = {
     body?: never;
     path: {
         /**
@@ -520,7 +520,7 @@ export type GetApiV1ProjectsByProjectData = {
     url: '/api/v1/projects/{project}';
 };
 
-export type GetApiV1ProjectsByProjectErrors = {
+export type GetProjectErrors = {
     /**
      * Bad Request
      */
@@ -531,18 +531,18 @@ export type GetApiV1ProjectsByProjectErrors = {
     404: ServerErrorResponse;
 };
 
-export type GetApiV1ProjectsByProjectError = GetApiV1ProjectsByProjectErrors[keyof GetApiV1ProjectsByProjectErrors];
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
 
-export type GetApiV1ProjectsByProjectResponses = {
+export type GetProjectResponses = {
     /**
      * OK
      */
     200: ServerProject;
 };
 
-export type GetApiV1ProjectsByProjectResponse = GetApiV1ProjectsByProjectResponses[keyof GetApiV1ProjectsByProjectResponses];
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
-export type GetApiV1ResolveData = {
+export type ResolveContextsData = {
     body?: never;
     path?: never;
     query?: {
@@ -562,7 +562,7 @@ export type GetApiV1ResolveData = {
     url: '/api/v1/resolve';
 };
 
-export type GetApiV1ResolveErrors = {
+export type ResolveContextsErrors = {
     /**
      * Bad Request
      */
@@ -573,18 +573,18 @@ export type GetApiV1ResolveErrors = {
     404: ServerErrorResponse;
 };
 
-export type GetApiV1ResolveError = GetApiV1ResolveErrors[keyof GetApiV1ResolveErrors];
+export type ResolveContextsError = ResolveContextsErrors[keyof ResolveContextsErrors];
 
-export type GetApiV1ResolveResponses = {
+export type ResolveContextsResponses = {
     /**
      * OK
      */
     200: Array<StoreContext>;
 };
 
-export type GetApiV1ResolveResponse = GetApiV1ResolveResponses[keyof GetApiV1ResolveResponses];
+export type ResolveContextsResponse = ResolveContextsResponses[keyof ResolveContextsResponses];
 
-export type GetApiV1SearchData = {
+export type SearchContextsData = {
     body?: never;
     path?: never;
     query: {
@@ -616,7 +616,7 @@ export type GetApiV1SearchData = {
     url: '/api/v1/search';
 };
 
-export type GetApiV1SearchErrors = {
+export type SearchContextsErrors = {
     /**
      * Bad Request
      */
@@ -631,18 +631,18 @@ export type GetApiV1SearchErrors = {
     501: ServerErrorResponse;
 };
 
-export type GetApiV1SearchError = GetApiV1SearchErrors[keyof GetApiV1SearchErrors];
+export type SearchContextsError = SearchContextsErrors[keyof SearchContextsErrors];
 
-export type GetApiV1SearchResponses = {
+export type SearchContextsResponses = {
     /**
      * OK
      */
     200: Array<SearchHit>;
 };
 
-export type GetApiV1SearchResponse = GetApiV1SearchResponses[keyof GetApiV1SearchResponses];
+export type SearchContextsResponse = SearchContextsResponses[keyof SearchContextsResponses];
 
-export type GetApiV1SectionsData = {
+export type ListSectionsData = {
     body?: never;
     path?: never;
     query?: {
@@ -658,7 +658,7 @@ export type GetApiV1SectionsData = {
     url: '/api/v1/sections';
 };
 
-export type GetApiV1SectionsErrors = {
+export type ListSectionsErrors = {
     /**
      * Bad Request
      */
@@ -669,18 +669,18 @@ export type GetApiV1SectionsErrors = {
     404: ServerErrorResponse;
 };
 
-export type GetApiV1SectionsError = GetApiV1SectionsErrors[keyof GetApiV1SectionsErrors];
+export type ListSectionsError = ListSectionsErrors[keyof ListSectionsErrors];
 
-export type GetApiV1SectionsResponses = {
+export type ListSectionsResponses = {
     /**
      * OK
      */
     200: Array<string>;
 };
 
-export type GetApiV1SectionsResponse = GetApiV1SectionsResponses[keyof GetApiV1SectionsResponses];
+export type ListSectionsResponse = ListSectionsResponses[keyof ListSectionsResponses];
 
-export type PostApiV1SectionsData = {
+export type CreateSectionData = {
     /**
      * Section
      */
@@ -690,7 +690,7 @@ export type PostApiV1SectionsData = {
     url: '/api/v1/sections';
 };
 
-export type PostApiV1SectionsErrors = {
+export type CreateSectionErrors = {
     /**
      * Bad Request
      */
@@ -705,18 +705,18 @@ export type PostApiV1SectionsErrors = {
     409: ServerErrorResponse;
 };
 
-export type PostApiV1SectionsError = PostApiV1SectionsErrors[keyof PostApiV1SectionsErrors];
+export type CreateSectionError = CreateSectionErrors[keyof CreateSectionErrors];
 
-export type PostApiV1SectionsResponses = {
+export type CreateSectionResponses = {
     /**
      * Created
      */
     201: ServerCreateSectionRequest;
 };
 
-export type PostApiV1SectionsResponse = PostApiV1SectionsResponses[keyof PostApiV1SectionsResponses];
+export type CreateSectionResponse = CreateSectionResponses[keyof CreateSectionResponses];
 
-export type DeleteApiV1SectionsBySectionData = {
+export type DeleteSectionData = {
     body?: never;
     path: {
         /**
@@ -741,7 +741,7 @@ export type DeleteApiV1SectionsBySectionData = {
     url: '/api/v1/sections/{section}';
 };
 
-export type DeleteApiV1SectionsBySectionErrors = {
+export type DeleteSectionErrors = {
     /**
      * Bad Request
      */
@@ -756,9 +756,9 @@ export type DeleteApiV1SectionsBySectionErrors = {
     409: ServerErrorResponse;
 };
 
-export type DeleteApiV1SectionsBySectionError = DeleteApiV1SectionsBySectionErrors[keyof DeleteApiV1SectionsBySectionErrors];
+export type DeleteSectionError = DeleteSectionErrors[keyof DeleteSectionErrors];
 
-export type DeleteApiV1SectionsBySectionResponses = {
+export type DeleteSectionResponses = {
     /**
      * No Content
      */

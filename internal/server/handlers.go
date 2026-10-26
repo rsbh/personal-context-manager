@@ -22,6 +22,10 @@ func decode(w http.ResponseWriter, r *http.Request, v any) bool {
 		writeError(w, http.StatusBadRequest, "invalid JSON body: "+err.Error())
 		return false
 	}
+	if err := validate.Struct(v); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid body: "+validationMessage(err))
+		return false
+	}
 	return true
 }
 
@@ -44,6 +48,7 @@ func force(r *http.Request) bool {
 // listProjects godoc
 //
 //	@Summary	List projects
+//	@ID			listProjects
 //	@Tags		projects
 //	@Produce	json
 //	@Success	200	{array}		string
@@ -59,12 +64,13 @@ func (s *server) listProjects(w http.ResponseWriter, _ *http.Request) {
 }
 
 type project struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required"`
 }
 
 // getProject godoc
 //
 //	@Summary	Get a project
+//	@ID			getProject
 //	@Tags		projects
 //	@Produce	json
 //	@Param		project	path		string	true	"Project name"
@@ -86,6 +92,7 @@ type createProjectRequest = project
 // createProject godoc
 //
 //	@Summary	Create a project
+//	@ID			createProject
 //	@Tags		projects
 //	@Accept		json
 //	@Produce	json
@@ -109,6 +116,7 @@ func (s *server) createProject(w http.ResponseWriter, r *http.Request) {
 // deleteProject godoc
 //
 //	@Summary	Delete a project
+//	@ID			deleteProject
 //	@Tags		projects
 //	@Produce	json
 //	@Param		project	path	string	true	"Project name"
@@ -131,6 +139,7 @@ func (s *server) deleteProject(w http.ResponseWriter, r *http.Request) {
 // listSections godoc
 //
 //	@Summary	List sections
+//	@ID			listSections
 //	@Tags		sections
 //	@Produce	json
 //	@Param		scope	query		string	false	"global or project"
@@ -150,14 +159,15 @@ func (s *server) listSections(w http.ResponseWriter, r *http.Request) {
 }
 
 type createSectionRequest struct {
-	Scope   string `json:"scope"`
-	Project string `json:"project,omitempty"`
-	Name    string `json:"name"`
+	Scope   string `json:"scope" validate:"required,oneof=global project"`
+	Project string `json:"project,omitempty" validate:"required_if=Scope project,excluded_if=Scope global"`
+	Name    string `json:"name" validate:"required"`
 }
 
 // createSection godoc
 //
 //	@Summary	Create a section
+//	@ID			createSection
 //	@Tags		sections
 //	@Accept		json
 //	@Produce	json
@@ -182,6 +192,7 @@ func (s *server) createSection(w http.ResponseWriter, r *http.Request) {
 // deleteSection godoc
 //
 //	@Summary	Delete a section
+//	@ID			deleteSection
 //	@Tags		sections
 //	@Produce	json
 //	@Param		section	path	string	true	"Section name"
@@ -209,6 +220,7 @@ func (s *server) deleteSection(w http.ResponseWriter, r *http.Request) {
 // listContexts godoc
 //
 //	@Summary	List contexts
+//	@ID			listContexts
 //	@Tags		contexts
 //	@Produce	json
 //	@Param		scope	query		string	false	"global or project"
@@ -235,6 +247,7 @@ func (s *server) listContexts(w http.ResponseWriter, r *http.Request) {
 // getContext godoc
 //
 //	@Summary		Get a context
+//	@ID				getContext
 //	@Description	The id can contain "/" (raw or %2F), for example global/style/go.
 //	@Tags			contexts
 //	@Produce		json
@@ -257,10 +270,10 @@ func (s *server) getContext(w http.ResponseWriter, r *http.Request) {
 }
 
 type createContextRequest struct {
-	Scope       string            `json:"scope"`
-	Project     string            `json:"project,omitempty"`
-	Section     string            `json:"section"`
-	Name        string            `json:"name"`
+	Scope       string            `json:"scope" validate:"required,oneof=global project"`
+	Project     string            `json:"project,omitempty" validate:"required_if=Scope project,excluded_if=Scope global"`
+	Section     string            `json:"section" validate:"required"`
+	Name        string            `json:"name" validate:"required"`
 	Frontmatter store.Frontmatter `json:"frontmatter"`
 	Content     string            `json:"content"`
 }
@@ -268,6 +281,7 @@ type createContextRequest struct {
 // createContext godoc
 //
 //	@Summary	Create a context
+//	@ID			createContext
 //	@Tags		contexts
 //	@Accept		json
 //	@Produce	json
@@ -306,6 +320,7 @@ type updateContextRequest struct {
 // updateContext godoc
 //
 //	@Summary		Update a context
+//	@ID				updateContext
 //	@Description	The id can contain "/" (raw or %2F), for example global/style/go.
 //	@Tags			contexts
 //	@Accept			json
@@ -337,6 +352,7 @@ func (s *server) updateContext(w http.ResponseWriter, r *http.Request) {
 // deleteContext godoc
 //
 //	@Summary		Delete a context
+//	@ID				deleteContext
 //	@Description	The id can contain "/" (raw or %2F), for example global/style/go.
 //	@Tags			contexts
 //	@Produce		json
@@ -364,6 +380,7 @@ func (s *server) deleteContext(w http.ResponseWriter, r *http.Request) {
 // The format param wins over Accept.
 //
 //	@Summary	Resolve contexts for a project
+//	@ID			resolveContexts
 //	@Tags		resolve
 //	@Produce	json
 //	@Produce	text/markdown

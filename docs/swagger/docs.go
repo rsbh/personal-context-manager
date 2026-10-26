@@ -24,6 +24,7 @@ const docTemplate = `{
                     "contexts"
                 ],
                 "summary": "List contexts",
+                "operationId": "listContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -79,6 +80,7 @@ const docTemplate = `{
                     "contexts"
                 ],
                 "summary": "Create a context",
+                "operationId": "createContext",
                 "parameters": [
                     {
                         "description": "Context",
@@ -128,6 +130,7 @@ const docTemplate = `{
                     "contexts"
                 ],
                 "summary": "Get a context",
+                "operationId": "getContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -170,6 +173,7 @@ const docTemplate = `{
                     "contexts"
                 ],
                 "summary": "Update a context",
+                "operationId": "updateContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -218,6 +222,7 @@ const docTemplate = `{
                     "contexts"
                 ],
                 "summary": "Delete a context",
+                "operationId": "deleteContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -255,6 +260,7 @@ const docTemplate = `{
                     "git"
                 ],
                 "summary": "Recent commits of the context repo",
+                "operationId": "gitLog",
                 "parameters": [
                     {
                         "type": "integer",
@@ -304,6 +310,7 @@ const docTemplate = `{
                     "git"
                 ],
                 "summary": "Git status of the context repo",
+                "operationId": "gitStatus",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -335,6 +342,7 @@ const docTemplate = `{
                     "git"
                 ],
                 "summary": "Commit, pull and push the context repo",
+                "operationId": "gitSync",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -372,6 +380,7 @@ const docTemplate = `{
                     "search"
                 ],
                 "summary": "Rebuild the search index from all contexts",
+                "operationId": "rebuildIndex",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -403,6 +412,7 @@ const docTemplate = `{
                     "projects"
                 ],
                 "summary": "List projects",
+                "operationId": "listProjects",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -432,6 +442,7 @@ const docTemplate = `{
                     "projects"
                 ],
                 "summary": "Create a project",
+                "operationId": "createProject",
                 "parameters": [
                     {
                         "description": "Project",
@@ -474,6 +485,7 @@ const docTemplate = `{
                     "projects"
                 ],
                 "summary": "Get a project",
+                "operationId": "getProject",
                 "parameters": [
                     {
                         "type": "string",
@@ -512,6 +524,7 @@ const docTemplate = `{
                     "projects"
                 ],
                 "summary": "Delete a project",
+                "operationId": "deleteProject",
                 "parameters": [
                     {
                         "type": "string",
@@ -556,6 +569,7 @@ const docTemplate = `{
                     "resolve"
                 ],
                 "summary": "Resolve contexts for a project",
+                "operationId": "resolveContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -614,6 +628,7 @@ const docTemplate = `{
                     "search"
                 ],
                 "summary": "Full-text search of contexts",
+                "operationId": "searchContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -694,6 +709,7 @@ const docTemplate = `{
                     "sections"
                 ],
                 "summary": "List sections",
+                "operationId": "listSections",
                 "parameters": [
                     {
                         "type": "string",
@@ -743,6 +759,7 @@ const docTemplate = `{
                     "sections"
                 ],
                 "summary": "Create a section",
+                "operationId": "createSection",
                 "parameters": [
                     {
                         "description": "Section",
@@ -791,6 +808,7 @@ const docTemplate = `{
                     "sections"
                 ],
                 "summary": "Delete a section",
+                "operationId": "deleteSection",
                 "parameters": [
                     {
                         "type": "string",
@@ -852,6 +870,7 @@ const docTemplate = `{
                     "health"
                 ],
                 "summary": "Health check",
+                "operationId": "getHealth",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -972,6 +991,11 @@ const docTemplate = `{
         },
         "server.createContextRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "scope",
+                "section"
+            ],
             "properties": {
                 "content": {
                     "type": "string"
@@ -986,7 +1010,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scope": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "global",
+                        "project"
+                    ]
                 },
                 "section": {
                     "type": "string"
@@ -995,6 +1023,9 @@ const docTemplate = `{
         },
         "server.createProjectRequest": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1003,6 +1034,10 @@ const docTemplate = `{
         },
         "server.createSectionRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "scope"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1011,7 +1046,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "scope": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "global",
+                        "project"
+                    ]
                 }
             }
         },
@@ -1025,6 +1064,9 @@ const docTemplate = `{
         },
         "server.project": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"

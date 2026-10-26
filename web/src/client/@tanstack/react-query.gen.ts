@@ -3,8 +3,8 @@
 import { type DefaultError, queryOptions, type UseMutationOptions } from '@tanstack/react-query';
 
 import { client } from '../client.gen';
-import { deleteApiV1ContextsById, deleteApiV1ProjectsByProject, deleteApiV1SectionsBySection, getApiV1Contexts, getApiV1ContextsById, getApiV1GitLog, getApiV1GitStatus, getApiV1Projects, getApiV1ProjectsByProject, getApiV1Resolve, getApiV1Search, getApiV1Sections, getHealth, type Options, postApiV1Contexts, postApiV1GitSync, postApiV1IndexRebuild, postApiV1Projects, postApiV1Sections, putApiV1ContextsById } from '../sdk.gen';
-import type { DeleteApiV1ContextsByIdData, DeleteApiV1ContextsByIdError, DeleteApiV1ProjectsByProjectData, DeleteApiV1ProjectsByProjectError, DeleteApiV1SectionsBySectionData, DeleteApiV1SectionsBySectionError, GetApiV1ContextsByIdData, GetApiV1ContextsByIdError, GetApiV1ContextsByIdResponse, GetApiV1ContextsData, GetApiV1ContextsError, GetApiV1ContextsResponse, GetApiV1GitLogData, GetApiV1GitLogError, GetApiV1GitLogResponse, GetApiV1GitStatusData, GetApiV1GitStatusError, GetApiV1GitStatusResponse, GetApiV1ProjectsByProjectData, GetApiV1ProjectsByProjectError, GetApiV1ProjectsByProjectResponse, GetApiV1ProjectsData, GetApiV1ProjectsError, GetApiV1ProjectsResponse, GetApiV1ResolveData, GetApiV1ResolveError, GetApiV1ResolveResponse, GetApiV1SearchData, GetApiV1SearchError, GetApiV1SearchResponse, GetApiV1SectionsData, GetApiV1SectionsError, GetApiV1SectionsResponse, GetHealthData, GetHealthResponse, PostApiV1ContextsData, PostApiV1ContextsError, PostApiV1ContextsResponse, PostApiV1GitSyncData, PostApiV1GitSyncError, PostApiV1GitSyncResponse, PostApiV1IndexRebuildData, PostApiV1IndexRebuildError, PostApiV1IndexRebuildResponse, PostApiV1ProjectsData, PostApiV1ProjectsError, PostApiV1ProjectsResponse, PostApiV1SectionsData, PostApiV1SectionsError, PostApiV1SectionsResponse, PutApiV1ContextsByIdData, PutApiV1ContextsByIdError, PutApiV1ContextsByIdResponse } from '../types.gen';
+import { createContext, createProject, createSection, deleteContext, deleteProject, deleteSection, getContext, getHealth, getProject, gitLog, gitStatus, gitSync, listContexts, listProjects, listSections, type Options, rebuildIndex, resolveContexts, searchContexts, updateContext } from '../sdk.gen';
+import type { CreateContextData, CreateContextError, CreateContextResponse, CreateProjectData, CreateProjectError, CreateProjectResponse, CreateSectionData, CreateSectionError, CreateSectionResponse, DeleteContextData, DeleteContextError, DeleteProjectData, DeleteProjectError, DeleteSectionData, DeleteSectionError, GetContextData, GetContextError, GetContextResponse, GetHealthData, GetHealthResponse, GetProjectData, GetProjectError, GetProjectResponse, GitLogData, GitLogError, GitLogResponse, GitStatusData, GitStatusError, GitStatusResponse, GitSyncData, GitSyncError, GitSyncResponse, ListContextsData, ListContextsError, ListContextsResponse, ListProjectsData, ListProjectsError, ListProjectsResponse, ListSectionsData, ListSectionsError, ListSectionsResponse, RebuildIndexData, RebuildIndexError, RebuildIndexResponse, ResolveContextsData, ResolveContextsError, ResolveContextsResponse, SearchContextsData, SearchContextsError, SearchContextsResponse, UpdateContextData, UpdateContextError, UpdateContextResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -39,14 +39,14 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     return [params];
 };
 
-export const getApiV1ContextsQueryKey = (options?: Options<GetApiV1ContextsData>) => createQueryKey('getApiV1Contexts', options);
+export const listContextsQueryKey = (options?: Options<ListContextsData>) => createQueryKey('listContexts', options);
 
 /**
  * List contexts
  */
-export const getApiV1ContextsOptions = (options?: Options<GetApiV1ContextsData>) => queryOptions<GetApiV1ContextsResponse, GetApiV1ContextsError, GetApiV1ContextsResponse, ReturnType<typeof getApiV1ContextsQueryKey>>({
+export const listContextsOptions = (options?: Options<ListContextsData>) => queryOptions<ListContextsResponse, ListContextsError, ListContextsResponse, ReturnType<typeof listContextsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1Contexts({
+        const { data } = await listContexts({
             ...options,
             ...queryKey[0],
             signal,
@@ -54,16 +54,16 @@ export const getApiV1ContextsOptions = (options?: Options<GetApiV1ContextsData>)
         });
         return data;
     },
-    queryKey: getApiV1ContextsQueryKey(options)
+    queryKey: listContextsQueryKey(options)
 });
 
 /**
  * Create a context
  */
-export const postApiV1ContextsMutation = (options?: Partial<Options<PostApiV1ContextsData>>): UseMutationOptions<PostApiV1ContextsResponse, PostApiV1ContextsError, Options<PostApiV1ContextsData>> => {
-    const mutationOptions: UseMutationOptions<PostApiV1ContextsResponse, PostApiV1ContextsError, Options<PostApiV1ContextsData>> = {
+export const createContextMutation = (options?: Partial<Options<CreateContextData>>): UseMutationOptions<CreateContextResponse, CreateContextError, Options<CreateContextData>> => {
+    const mutationOptions: UseMutationOptions<CreateContextResponse, CreateContextError, Options<CreateContextData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postApiV1Contexts({
+            const { data } = await createContext({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -79,10 +79,10 @@ export const postApiV1ContextsMutation = (options?: Partial<Options<PostApiV1Con
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const deleteApiV1ContextsByIdMutation = (options?: Partial<Options<DeleteApiV1ContextsByIdData>>): UseMutationOptions<unknown, DeleteApiV1ContextsByIdError, Options<DeleteApiV1ContextsByIdData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DeleteApiV1ContextsByIdError, Options<DeleteApiV1ContextsByIdData>> = {
+export const deleteContextMutation = (options?: Partial<Options<DeleteContextData>>): UseMutationOptions<unknown, DeleteContextError, Options<DeleteContextData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DeleteContextError, Options<DeleteContextData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiV1ContextsById({
+            const { data } = await deleteContext({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -93,16 +93,16 @@ export const deleteApiV1ContextsByIdMutation = (options?: Partial<Options<Delete
     return mutationOptions;
 };
 
-export const getApiV1ContextsByIdQueryKey = (options: Options<GetApiV1ContextsByIdData>) => createQueryKey('getApiV1ContextsById', options);
+export const getContextQueryKey = (options: Options<GetContextData>) => createQueryKey('getContext', options);
 
 /**
  * Get a context
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const getApiV1ContextsByIdOptions = (options: Options<GetApiV1ContextsByIdData>) => queryOptions<GetApiV1ContextsByIdResponse, GetApiV1ContextsByIdError, GetApiV1ContextsByIdResponse, ReturnType<typeof getApiV1ContextsByIdQueryKey>>({
+export const getContextOptions = (options: Options<GetContextData>) => queryOptions<GetContextResponse, GetContextError, GetContextResponse, ReturnType<typeof getContextQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1ContextsById({
+        const { data } = await getContext({
             ...options,
             ...queryKey[0],
             signal,
@@ -110,7 +110,7 @@ export const getApiV1ContextsByIdOptions = (options: Options<GetApiV1ContextsByI
         });
         return data;
     },
-    queryKey: getApiV1ContextsByIdQueryKey(options)
+    queryKey: getContextQueryKey(options)
 });
 
 /**
@@ -118,10 +118,10 @@ export const getApiV1ContextsByIdOptions = (options: Options<GetApiV1ContextsByI
  *
  * The id can contain "/" (raw or %2F), for example global/style/go.
  */
-export const putApiV1ContextsByIdMutation = (options?: Partial<Options<PutApiV1ContextsByIdData>>): UseMutationOptions<PutApiV1ContextsByIdResponse, PutApiV1ContextsByIdError, Options<PutApiV1ContextsByIdData>> => {
-    const mutationOptions: UseMutationOptions<PutApiV1ContextsByIdResponse, PutApiV1ContextsByIdError, Options<PutApiV1ContextsByIdData>> = {
+export const updateContextMutation = (options?: Partial<Options<UpdateContextData>>): UseMutationOptions<UpdateContextResponse, UpdateContextError, Options<UpdateContextData>> => {
+    const mutationOptions: UseMutationOptions<UpdateContextResponse, UpdateContextError, Options<UpdateContextData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await putApiV1ContextsById({
+            const { data } = await updateContext({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -132,14 +132,14 @@ export const putApiV1ContextsByIdMutation = (options?: Partial<Options<PutApiV1C
     return mutationOptions;
 };
 
-export const getApiV1GitLogQueryKey = (options?: Options<GetApiV1GitLogData>) => createQueryKey('getApiV1GitLog', options);
+export const gitLogQueryKey = (options?: Options<GitLogData>) => createQueryKey('gitLog', options);
 
 /**
  * Recent commits of the context repo
  */
-export const getApiV1GitLogOptions = (options?: Options<GetApiV1GitLogData>) => queryOptions<GetApiV1GitLogResponse, GetApiV1GitLogError, GetApiV1GitLogResponse, ReturnType<typeof getApiV1GitLogQueryKey>>({
+export const gitLogOptions = (options?: Options<GitLogData>) => queryOptions<GitLogResponse, GitLogError, GitLogResponse, ReturnType<typeof gitLogQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1GitLog({
+        const { data } = await gitLog({
             ...options,
             ...queryKey[0],
             signal,
@@ -147,17 +147,17 @@ export const getApiV1GitLogOptions = (options?: Options<GetApiV1GitLogData>) => 
         });
         return data;
     },
-    queryKey: getApiV1GitLogQueryKey(options)
+    queryKey: gitLogQueryKey(options)
 });
 
-export const getApiV1GitStatusQueryKey = (options?: Options<GetApiV1GitStatusData>) => createQueryKey('getApiV1GitStatus', options);
+export const gitStatusQueryKey = (options?: Options<GitStatusData>) => createQueryKey('gitStatus', options);
 
 /**
  * Git status of the context repo
  */
-export const getApiV1GitStatusOptions = (options?: Options<GetApiV1GitStatusData>) => queryOptions<GetApiV1GitStatusResponse, GetApiV1GitStatusError, GetApiV1GitStatusResponse, ReturnType<typeof getApiV1GitStatusQueryKey>>({
+export const gitStatusOptions = (options?: Options<GitStatusData>) => queryOptions<GitStatusResponse, GitStatusError, GitStatusResponse, ReturnType<typeof gitStatusQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1GitStatus({
+        const { data } = await gitStatus({
             ...options,
             ...queryKey[0],
             signal,
@@ -165,16 +165,16 @@ export const getApiV1GitStatusOptions = (options?: Options<GetApiV1GitStatusData
         });
         return data;
     },
-    queryKey: getApiV1GitStatusQueryKey(options)
+    queryKey: gitStatusQueryKey(options)
 });
 
 /**
  * Commit, pull and push the context repo
  */
-export const postApiV1GitSyncMutation = (options?: Partial<Options<PostApiV1GitSyncData>>): UseMutationOptions<PostApiV1GitSyncResponse, PostApiV1GitSyncError, Options<PostApiV1GitSyncData>> => {
-    const mutationOptions: UseMutationOptions<PostApiV1GitSyncResponse, PostApiV1GitSyncError, Options<PostApiV1GitSyncData>> = {
+export const gitSyncMutation = (options?: Partial<Options<GitSyncData>>): UseMutationOptions<GitSyncResponse, GitSyncError, Options<GitSyncData>> => {
+    const mutationOptions: UseMutationOptions<GitSyncResponse, GitSyncError, Options<GitSyncData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postApiV1GitSync({
+            const { data } = await gitSync({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -188,10 +188,10 @@ export const postApiV1GitSyncMutation = (options?: Partial<Options<PostApiV1GitS
 /**
  * Rebuild the search index from all contexts
  */
-export const postApiV1IndexRebuildMutation = (options?: Partial<Options<PostApiV1IndexRebuildData>>): UseMutationOptions<PostApiV1IndexRebuildResponse, PostApiV1IndexRebuildError, Options<PostApiV1IndexRebuildData>> => {
-    const mutationOptions: UseMutationOptions<PostApiV1IndexRebuildResponse, PostApiV1IndexRebuildError, Options<PostApiV1IndexRebuildData>> = {
+export const rebuildIndexMutation = (options?: Partial<Options<RebuildIndexData>>): UseMutationOptions<RebuildIndexResponse, RebuildIndexError, Options<RebuildIndexData>> => {
+    const mutationOptions: UseMutationOptions<RebuildIndexResponse, RebuildIndexError, Options<RebuildIndexData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postApiV1IndexRebuild({
+            const { data } = await rebuildIndex({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -202,14 +202,14 @@ export const postApiV1IndexRebuildMutation = (options?: Partial<Options<PostApiV
     return mutationOptions;
 };
 
-export const getApiV1ProjectsQueryKey = (options?: Options<GetApiV1ProjectsData>) => createQueryKey('getApiV1Projects', options);
+export const listProjectsQueryKey = (options?: Options<ListProjectsData>) => createQueryKey('listProjects', options);
 
 /**
  * List projects
  */
-export const getApiV1ProjectsOptions = (options?: Options<GetApiV1ProjectsData>) => queryOptions<GetApiV1ProjectsResponse, GetApiV1ProjectsError, GetApiV1ProjectsResponse, ReturnType<typeof getApiV1ProjectsQueryKey>>({
+export const listProjectsOptions = (options?: Options<ListProjectsData>) => queryOptions<ListProjectsResponse, ListProjectsError, ListProjectsResponse, ReturnType<typeof listProjectsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1Projects({
+        const { data } = await listProjects({
             ...options,
             ...queryKey[0],
             signal,
@@ -217,16 +217,16 @@ export const getApiV1ProjectsOptions = (options?: Options<GetApiV1ProjectsData>)
         });
         return data;
     },
-    queryKey: getApiV1ProjectsQueryKey(options)
+    queryKey: listProjectsQueryKey(options)
 });
 
 /**
  * Create a project
  */
-export const postApiV1ProjectsMutation = (options?: Partial<Options<PostApiV1ProjectsData>>): UseMutationOptions<PostApiV1ProjectsResponse, PostApiV1ProjectsError, Options<PostApiV1ProjectsData>> => {
-    const mutationOptions: UseMutationOptions<PostApiV1ProjectsResponse, PostApiV1ProjectsError, Options<PostApiV1ProjectsData>> = {
+export const createProjectMutation = (options?: Partial<Options<CreateProjectData>>): UseMutationOptions<CreateProjectResponse, CreateProjectError, Options<CreateProjectData>> => {
+    const mutationOptions: UseMutationOptions<CreateProjectResponse, CreateProjectError, Options<CreateProjectData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postApiV1Projects({
+            const { data } = await createProject({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -240,10 +240,10 @@ export const postApiV1ProjectsMutation = (options?: Partial<Options<PostApiV1Pro
 /**
  * Delete a project
  */
-export const deleteApiV1ProjectsByProjectMutation = (options?: Partial<Options<DeleteApiV1ProjectsByProjectData>>): UseMutationOptions<unknown, DeleteApiV1ProjectsByProjectError, Options<DeleteApiV1ProjectsByProjectData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DeleteApiV1ProjectsByProjectError, Options<DeleteApiV1ProjectsByProjectData>> = {
+export const deleteProjectMutation = (options?: Partial<Options<DeleteProjectData>>): UseMutationOptions<unknown, DeleteProjectError, Options<DeleteProjectData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DeleteProjectError, Options<DeleteProjectData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiV1ProjectsByProject({
+            const { data } = await deleteProject({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -254,14 +254,14 @@ export const deleteApiV1ProjectsByProjectMutation = (options?: Partial<Options<D
     return mutationOptions;
 };
 
-export const getApiV1ProjectsByProjectQueryKey = (options: Options<GetApiV1ProjectsByProjectData>) => createQueryKey('getApiV1ProjectsByProject', options);
+export const getProjectQueryKey = (options: Options<GetProjectData>) => createQueryKey('getProject', options);
 
 /**
  * Get a project
  */
-export const getApiV1ProjectsByProjectOptions = (options: Options<GetApiV1ProjectsByProjectData>) => queryOptions<GetApiV1ProjectsByProjectResponse, GetApiV1ProjectsByProjectError, GetApiV1ProjectsByProjectResponse, ReturnType<typeof getApiV1ProjectsByProjectQueryKey>>({
+export const getProjectOptions = (options: Options<GetProjectData>) => queryOptions<GetProjectResponse, GetProjectError, GetProjectResponse, ReturnType<typeof getProjectQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1ProjectsByProject({
+        const { data } = await getProject({
             ...options,
             ...queryKey[0],
             signal,
@@ -269,17 +269,17 @@ export const getApiV1ProjectsByProjectOptions = (options: Options<GetApiV1Projec
         });
         return data;
     },
-    queryKey: getApiV1ProjectsByProjectQueryKey(options)
+    queryKey: getProjectQueryKey(options)
 });
 
-export const getApiV1ResolveQueryKey = (options?: Options<GetApiV1ResolveData>) => createQueryKey('getApiV1Resolve', options);
+export const resolveContextsQueryKey = (options?: Options<ResolveContextsData>) => createQueryKey('resolveContexts', options);
 
 /**
  * Resolve contexts for a project
  */
-export const getApiV1ResolveOptions = (options?: Options<GetApiV1ResolveData>) => queryOptions<GetApiV1ResolveResponse, GetApiV1ResolveError, GetApiV1ResolveResponse, ReturnType<typeof getApiV1ResolveQueryKey>>({
+export const resolveContextsOptions = (options?: Options<ResolveContextsData>) => queryOptions<ResolveContextsResponse, ResolveContextsError, ResolveContextsResponse, ReturnType<typeof resolveContextsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1Resolve({
+        const { data } = await resolveContexts({
             ...options,
             ...queryKey[0],
             signal,
@@ -287,17 +287,17 @@ export const getApiV1ResolveOptions = (options?: Options<GetApiV1ResolveData>) =
         });
         return data;
     },
-    queryKey: getApiV1ResolveQueryKey(options)
+    queryKey: resolveContextsQueryKey(options)
 });
 
-export const getApiV1SearchQueryKey = (options: Options<GetApiV1SearchData>) => createQueryKey('getApiV1Search', options);
+export const searchContextsQueryKey = (options: Options<SearchContextsData>) => createQueryKey('searchContexts', options);
 
 /**
  * Full-text search of contexts
  */
-export const getApiV1SearchOptions = (options: Options<GetApiV1SearchData>) => queryOptions<GetApiV1SearchResponse, GetApiV1SearchError, GetApiV1SearchResponse, ReturnType<typeof getApiV1SearchQueryKey>>({
+export const searchContextsOptions = (options: Options<SearchContextsData>) => queryOptions<SearchContextsResponse, SearchContextsError, SearchContextsResponse, ReturnType<typeof searchContextsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1Search({
+        const { data } = await searchContexts({
             ...options,
             ...queryKey[0],
             signal,
@@ -305,17 +305,17 @@ export const getApiV1SearchOptions = (options: Options<GetApiV1SearchData>) => q
         });
         return data;
     },
-    queryKey: getApiV1SearchQueryKey(options)
+    queryKey: searchContextsQueryKey(options)
 });
 
-export const getApiV1SectionsQueryKey = (options?: Options<GetApiV1SectionsData>) => createQueryKey('getApiV1Sections', options);
+export const listSectionsQueryKey = (options?: Options<ListSectionsData>) => createQueryKey('listSections', options);
 
 /**
  * List sections
  */
-export const getApiV1SectionsOptions = (options?: Options<GetApiV1SectionsData>) => queryOptions<GetApiV1SectionsResponse, GetApiV1SectionsError, GetApiV1SectionsResponse, ReturnType<typeof getApiV1SectionsQueryKey>>({
+export const listSectionsOptions = (options?: Options<ListSectionsData>) => queryOptions<ListSectionsResponse, ListSectionsError, ListSectionsResponse, ReturnType<typeof listSectionsQueryKey>>({
     queryFn: async ({ queryKey, signal }) => {
-        const { data } = await getApiV1Sections({
+        const { data } = await listSections({
             ...options,
             ...queryKey[0],
             signal,
@@ -323,16 +323,16 @@ export const getApiV1SectionsOptions = (options?: Options<GetApiV1SectionsData>)
         });
         return data;
     },
-    queryKey: getApiV1SectionsQueryKey(options)
+    queryKey: listSectionsQueryKey(options)
 });
 
 /**
  * Create a section
  */
-export const postApiV1SectionsMutation = (options?: Partial<Options<PostApiV1SectionsData>>): UseMutationOptions<PostApiV1SectionsResponse, PostApiV1SectionsError, Options<PostApiV1SectionsData>> => {
-    const mutationOptions: UseMutationOptions<PostApiV1SectionsResponse, PostApiV1SectionsError, Options<PostApiV1SectionsData>> = {
+export const createSectionMutation = (options?: Partial<Options<CreateSectionData>>): UseMutationOptions<CreateSectionResponse, CreateSectionError, Options<CreateSectionData>> => {
+    const mutationOptions: UseMutationOptions<CreateSectionResponse, CreateSectionError, Options<CreateSectionData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await postApiV1Sections({
+            const { data } = await createSection({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -346,10 +346,10 @@ export const postApiV1SectionsMutation = (options?: Partial<Options<PostApiV1Sec
 /**
  * Delete a section
  */
-export const deleteApiV1SectionsBySectionMutation = (options?: Partial<Options<DeleteApiV1SectionsBySectionData>>): UseMutationOptions<unknown, DeleteApiV1SectionsBySectionError, Options<DeleteApiV1SectionsBySectionData>> => {
-    const mutationOptions: UseMutationOptions<unknown, DeleteApiV1SectionsBySectionError, Options<DeleteApiV1SectionsBySectionData>> = {
+export const deleteSectionMutation = (options?: Partial<Options<DeleteSectionData>>): UseMutationOptions<unknown, DeleteSectionError, Options<DeleteSectionData>> => {
+    const mutationOptions: UseMutationOptions<unknown, DeleteSectionError, Options<DeleteSectionData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await deleteApiV1SectionsBySection({
+            const { data } = await deleteSection({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
