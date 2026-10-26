@@ -10,11 +10,14 @@ import (
 func TestContent(t *testing.T) {
 	c := string(Content())
 	for _, want := range []string{"---\nname: pcm\n", "description: ", "allowed-tools: Bash(pcm:*)", "pcm get contexts -o md", "pcm server start",
-		"## 5. Dump session", "pcm create context <name> -s <section> -f -", "--force",
-		"Bash(gh pr view:*)", "Bash(git branch:*)"} {
+		"## 5. Dump session", "pcm create context <name> -s <section> -f <file>", "--force", "scratchpad",
+		"If there is no branch", "Bash(gh pr view:*)", "Bash(git branch:*)", ", Write"} {
 		if !strings.Contains(c, want) {
 			t.Errorf("SKILL.md does not contain %q", want)
 		}
+	}
+	if strings.Contains(c, "<<'EOF'") {
+		t.Error("SKILL.md contains a heredoc")
 	}
 }
 

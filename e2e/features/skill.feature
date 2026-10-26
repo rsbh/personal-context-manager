@@ -35,7 +35,11 @@ Feature: Claude Code skill
     When I run "pcm skill show"
     Then the exit code is 0
     And the output contains "## 5. Dump session"
-    And the output contains "pcm create context <name> -s <section> -f -"
+    And the output contains "pcm create context <name> -s <section> -f <file>"
+    And the output does not contain "<<'EOF'"
+    And the output contains "scratchpad"
+    And the output contains "If there is no branch"
     And the output contains "--force"
     And the output contains "Bash(gh pr view:*)"
     And the output contains "Bash(git branch:*)"
+    And the output contains ", Write"
