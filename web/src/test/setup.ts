@@ -11,7 +11,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// Mantine needs these browser APIs. jsdom does not have them.
+// Apsara (Base UI) needs these browser APIs. jsdom does not have them.
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({

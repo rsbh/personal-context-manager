@@ -25,3 +25,11 @@ describe("Header nav", () => {
     expect(screen.getByRole("link", { name: "Current contexts" })).toHaveAttribute("href", "/current");
   });
 });
+
+describe("Header browse link", () => {
+  it("links to browse", async () => {
+    mockAPI({ "/health": { status: "ok" } });
+    renderUI(<Header />);
+    expect(screen.getByRole("link", { name: "Browse" })).toHaveAttribute("href", "/");
+  });
+});

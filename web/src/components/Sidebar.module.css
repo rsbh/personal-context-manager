@@ -1,0 +1,14 @@
+.sidebar {
+  width: 260px;
+  flex: none;
+}
+
+.empty {
+  padding: var(--rs-space-2) var(--rs-space-4);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+  }
+}

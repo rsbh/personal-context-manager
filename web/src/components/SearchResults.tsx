@@ -1,8 +1,9 @@
-import { Loader, NavLink, Stack, Text } from "@mantine/core";
+import { Sidebar, Spinner, Text } from "@raystack/apsara";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { searchContextsOptions } from "../client/@tanstack/react-query.gen";
 import { contextPath } from "../lib/format";
+import classes from "./SearchResults.module.css";
 
 interface SearchResultsProps {
   query: string;
@@ -17,30 +18,31 @@ export function SearchResults({ query }: SearchResultsProps) {
   const search = useQuery(searchContextsOptions({ query: { q: query } }));
 
   return (
-    <Stack gap={2} component="section" aria-label="Search results">
-      <Text size="xs" fw={600} tt="uppercase" c="dimmed" px="sm" py={6}>
+    <section aria-label="Search results" className={classes.results}>
+      <Text size="mini" weight="medium" variant="tertiary" className={classes.label}>
         Search results
       </Text>
-      {search.isPending && <Loader size="xs" mx="sm" />}
+      {search.isPending && <Spinner size={2} />}
       {search.isError && (
-        <Text size="sm" c="red" px="sm">
+        <Text size="small" variant="danger" className={classes.label}>
           Search failed
         </Text>
       )}
       {search.data?.length === 0 && (
-        <Text size="sm" c="dimmed" px="sm">
+        <Text size="small" variant="tertiary" className={classes.label}>
           No results
         </Text>
       )}
       {search.data?.map((hit) => (
-        <NavLink
-          key={hit.id}
-          component={Link}
-          to={contextPath(hit.id ?? "")}
-          label={hit.name}
-          description={`${hit.section} · ${hit.scope === "global" ? "global" : hit.project} — ${stripTags(hit.snippet)}`}
-        />
+        <Sidebar.Item key={hit.id} render={<Link to={contextPath(hit.id ?? "")} />}>
+          <span className={classes.hit}>
+            <span>{hit.name}</span>
+            <Text size="mini" variant="tertiary" lineClamp={2}>
+              {hit.section} · {hit.scope === "global" ? "global" : hit.project} — {stripTags(hit.snippet)}
+            </Text>
+          </span>
+        </Sidebar.Item>
       ))}
-    </Stack>
+    </section>
   );
 }

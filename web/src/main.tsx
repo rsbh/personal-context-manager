@@ -1,5 +1,5 @@
-import "@mantine/core/styles.css";
-import { MantineProvider } from "@mantine/core";
+import "@raystack/apsara/style.css";
+import { Theme } from "@raystack/apsara";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -12,12 +12,12 @@ const queryClient = newQueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MantineProvider>
+    <Theme isRoot hasBackground defaultValue={{ appearance: "system", accentColor: "indigo" }}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
       </QueryClientProvider>
-    </MantineProvider>
+    </Theme>
   </StrictMode>,
 );

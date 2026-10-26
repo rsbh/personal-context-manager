@@ -1,33 +1,44 @@
-import { Anchor, Badge, Group, Text } from "@mantine/core";
+import { Flex, Text } from "@raystack/apsara";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router";
+import { NavLink } from "react-router";
 import { getHealthOptions } from "../client/@tanstack/react-query.gen";
+import classes from "./Header.module.css";
+
+function navClass({ isActive }: { isActive: boolean }) {
+  return isActive ? `${classes.navLink} ${classes.active}` : classes.navLink;
+}
 
 export function Header() {
   const health = useQuery({ ...getHealthOptions(), refetchInterval: 10_000 });
   const ok = health.data?.status === "ok";
 
   return (
-    <Group h="100%" px="md" justify="space-between">
-      <Group gap="xs">
-        <Badge size="lg" radius="sm" variant="filled" aria-hidden="true">
+    <header className={classes.header}>
+      <Flex align="center" gap={3}>
+        <span className={classes.logo} aria-hidden="true">
           p
-        </Badge>
-        <Text fw={700} size="lg">
-          pcm
-        </Text>
-        <Text size="sm" c="dimmed" visibleFrom="sm">
+        </span>
+        <Text weight="medium">pcm</Text>
+        <Text size="small" variant="tertiary">
           personal context manager
         </Text>
-        <Anchor component={Link} to="/current" size="sm" ml="lg">
+      </Flex>
+      <nav aria-label="Main" className={classes.nav}>
+        <NavLink to="/" end className={navClass}>
+          Browse
+        </NavLink>
+        <NavLink to="/current" className={navClass}>
           Current contexts
-        </Anchor>
-      </Group>
+        </NavLink>
+      </nav>
       {!health.isPending && (
-        <Badge variant="dot" color={ok ? "green" : "red"}>
-          {ok ? "server ok" : "server down"}
-        </Badge>
+        <Flex align="center" gap={2} className={classes.status}>
+          <span className={`${classes.dot} ${ok ? classes.ok : classes.down}`} aria-hidden="true" />
+          <Text size="small" variant="secondary">
+            {ok ? "server ok" : "server down"}
+          </Text>
+        </Flex>
       )}
-    </Group>
+    </header>
   );
 }
