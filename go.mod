@@ -5,6 +5,8 @@ go 1.25.0
 require github.com/go-chi/chi/v5 v5.5.0
 
 require (
+	github.com/blevesearch/bleve/v2 v2.6.1
+	github.com/blevesearch/bleve_index_api v1.4.1
 	github.com/cucumber/godog v0.16.0
 	github.com/spf13/cobra v1.10.2
 	go.yaml.in/yaml/v3 v3.0.5
@@ -13,8 +15,6 @@ require (
 require (
 	github.com/RoaringBitmap/roaring/v2 v2.14.5 // indirect
 	github.com/bits-and-blooms/bitset v1.24.2 // indirect
-	github.com/blevesearch/bleve/v2 v2.6.1 // indirect
-	github.com/blevesearch/bleve_index_api v1.4.1 // indirect
 	github.com/blevesearch/geo v0.2.6 // indirect
 	github.com/blevesearch/go-faiss v1.1.5 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect

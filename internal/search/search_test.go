@@ -167,6 +167,20 @@ func TestSnippetLength(t *testing.T) {
 	}
 }
 
+func TestSnippetEscaped(t *testing.T) {
+	idx := newIndex(t, Doc{ID: "global/a/x", Scope: "global", Section: "a", Name: "x", Title: "Tags",
+		Content: "Use <b> & <i>."})
+	for _, q := range []string{"tags", "use"} { // title only (no fragment), content (fragment)
+		hits, err := idx.Search(Query{Q: q})
+		if err != nil || len(hits) != 1 {
+			t.Fatalf("%q: hits = %v, err = %v", q, hits, err)
+		}
+		if s := hits[0].Snippet; strings.Contains(s, "<b>") || !strings.Contains(s, "&lt;b&gt;") {
+			t.Errorf("%q: Snippet = %q, want HTML escaped", q, s)
+		}
+	}
+}
+
 func TestFuzzy(t *testing.T) {
 	idx := newIndex(t, Doc{ID: "global/a/x", Scope: "global", Section: "a", Name: "x", Content: "black formatting"})
 	for _, tc := range []struct {
@@ -174,7 +188,7 @@ func TestFuzzy(t *testing.T) {
 		want bool
 	}{
 		{"blac", true},      // 4 chars, 1 edit
-		{"blakk", false},    // 5 chars, 2 edits
+		{"bluuk", false},    // 5 chars, 2 edits
 		{"formating", true}, // long, 1 edit
 		{"frmating", true},  // long, 2 edits
 		{"frmatin", false},  // long, 3 edits
@@ -327,7 +341,7 @@ func TestRebuild(t *testing.T) {
 	}
 	got := ids(t, idx, Query{Q: "gofmt"})
 	slices.Sort(got)
-	if want := []string{apiGo.ID, goReview.ID}; !slices.Equal(got, want) {
+	if want := []string{goReview.ID, apiGo.ID}; !slices.Equal(got, want) {
 		t.Errorf("hits = %v, want %v", got, want)
 	}
 	idx.Close()
