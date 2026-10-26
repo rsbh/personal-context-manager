@@ -1,4 +1,4 @@
-.PHONY: build swagger client web install restart test web-test e2e e2e-ui fmt vet
+.PHONY: build swagger client web install restart test web-test web-lint web-fmt e2e e2e-ui fmt vet
 
 SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
 
@@ -44,7 +44,14 @@ e2e:
 e2e-ui: web
 	cd web && npm run e2e
 
-fmt:
+# Web lint: oxlint, oxfmt check, react-doctor.
+web-lint:
+	cd web && npm run lint && npm run fmt:check && npm run doctor
+
+web-fmt:
+	cd web && npm run fmt
+
+fmt: web-fmt
 	gofmt -w .
 
 vet:

@@ -72,6 +72,10 @@ jobs:
         run: |
           npm run gen:api
           git diff --exit-code -- src/client || { echo "Run make client and commit web/src/client"; exit 1; }
+      - name: lint
+        run: npm run lint
+      - name: format
+        run: npm run fmt:check
       - name: typecheck
         run: npm run typecheck
       - name: test

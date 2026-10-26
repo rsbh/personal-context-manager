@@ -3,10 +3,16 @@ import { shouldRetry, withStatus } from "./query";
 
 describe("withStatus", () => {
   it("adds the HTTP status to an error body", () => {
-    expect(withStatus({ error: "not found" }, new Response("", { status: 404 }))).toEqual({ error: "not found", status: 404 });
+    expect(withStatus({ error: "not found" }, new Response("", { status: 404 }))).toEqual({
+      error: "not found",
+      status: 404,
+    });
   });
   it("wraps a non-object error", () => {
-    expect(withStatus("boom", new Response("", { status: 500 }))).toEqual({ error: "boom", status: 500 });
+    expect(withStatus("boom", new Response("", { status: 500 }))).toEqual({
+      error: "boom",
+      status: 500,
+    });
   });
 });
 

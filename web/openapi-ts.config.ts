@@ -5,5 +5,10 @@ import { defineConfig } from "@hey-api/openapi-ts";
 export default defineConfig({
   input: "../docs/swagger/swagger.json",
   output: "src/client",
-  plugins: ["@hey-api/client-fetch", "@hey-api/typescript", "@hey-api/sdk", "@tanstack/react-query"],
+  plugins: [
+    "@hey-api/client-fetch",
+    "@hey-api/typescript",
+    "@hey-api/sdk",
+    "@tanstack/react-query",
+  ],
 });
