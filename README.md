@@ -27,6 +27,9 @@ pcm create section style -g         # global section
 cd ~/code/my-repo
 pcm create section review           # section in current project (auto-created)
 pcm get sections
+pcm create context go -s review -m 'Check error handling.' --title 'Go review'
+pcm get contexts
+pcm get context go -s review
 pcm get projects
 
 pcm server stop
@@ -54,6 +57,10 @@ After a code change: `make install && make restart`.
 | `pcm get sections [-p <project> \| -g]` | List sections |
 | `pcm create section <name> [-p <project> \| -g]` | Create section |
 | `pcm delete section <name> [-p <project> \| -g] [--force]` | Delete section |
+| `pcm get contexts [-s <section>] [-p <project> \| -g]` | List contexts |
+| `pcm get context <name> -s <section>` | Print context md |
+| `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...]` | Create context |
+| `pcm delete context <name> -s <section>` | Delete context |
 
 Scope: `-p <project>` or `-g` (global). No flag: current git repo root name (`My.Repo` → `my-repo`).
 
