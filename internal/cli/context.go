@@ -29,13 +29,22 @@ func requireSection(cmd *cobra.Command, section string) error {
 }
 
 func newGetContextCmd(a *app) *cobra.Command {
-	var flags contextFlags
+	var (
+		flags  contextFlags
+		output string
+	)
 	cmd := &cobra.Command{
 		Use:     "context [name]",
 		Aliases: []string{"contexts"},
 		Short:   "List contexts, or show one context",
 		Args:    optionalNameArg,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := checkOutput(cmd, output, args); err != nil {
+				return err
+			}
+			if output == outputMD {
+				return a.resolveContexts(cmd, flags)
+			}
 			if len(args) == 1 {
 				return a.getContext(cmd, flags, args[0])
 			}
@@ -43,6 +52,7 @@ func newGetContextCmd(a *app) *cobra.Command {
 		},
 	}
 	flags.register(cmd)
+	cmd.Flags().StringVarP(&output, "output", "o", outputTable, "output format: table or md (merged global + project contexts)")
 	return cmd
 }
 

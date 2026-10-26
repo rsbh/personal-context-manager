@@ -39,7 +39,7 @@
 | PUT | `/contexts/{id}` | Update context |
 | DELETE | `/contexts/{id}` | Delete context |
 | GET | `/search?q=&scope=&section=` | Full-text search (SQLite FTS) |
-| GET | `/resolve?project=&section=&name=` | Merged global + project contexts |
+| GET | `/resolve?project=&section=` | Merged global + project contexts with content. Project overrides global on same section/name. No project: global only |
 | GET | `/git/status` | Repo status |
 | POST | `/git/sync` | Pull, commit, push |
 | GET | `/git/log` | Recent commits |
@@ -59,7 +59,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
 | `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
 | `pcm search <query>` | Search contexts |
-| `pcm context [-s <section>] [-n <name>]` | Print merged global + current project contexts (for skill) |
+| `pcm get contexts -o md [-s <section>] [-p <project> \| -g]` | Merged global + project contexts as markdown (for skill). Not in git repo: global only |
 | `pcm get project(s) [name]` | List projects or show one |
 | `pcm create project <name>` | Create project |
 | `pcm delete project <name> [--force]` | Delete project (`--force` if not empty) |

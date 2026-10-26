@@ -39,6 +39,8 @@ func NewRouter(st *store.Store) http.Handler {
 		r.Get("/contexts/*", s.getContext)
 		r.Put("/contexts/*", s.updateContext)
 		r.Delete("/contexts/*", s.deleteContext)
+
+		r.Get("/resolve", s.resolve)
 	})
 	return r
 }

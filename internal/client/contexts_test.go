@@ -72,3 +72,21 @@ func TestDeleteContext(t *testing.T) {
 	}
 	f.expect(t, http.MethodDelete, "/api/v1/contexts/projects/api/style/go", "", "")
 }
+
+func TestResolve(t *testing.T) {
+	f := &fakeAPI{status: http.StatusOK, resp: `[{"id":"global/style/go","content":"x"}]`}
+	got, err := f.start(t).Resolve(context.Background(), "api", "style")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.expect(t, http.MethodGet, "/api/v1/resolve", "project=api&section=style", "")
+	if len(got) != 1 || got[0].Content != "x" {
+		t.Errorf("resolve = %+v", got)
+	}
+
+	f = &fakeAPI{status: http.StatusOK, resp: `[]`}
+	if _, err := f.start(t).Resolve(context.Background(), "", ""); err != nil {
+		t.Fatal(err)
+	}
+	f.expect(t, http.MethodGet, "/api/v1/resolve", "", "")
+}

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -46,12 +47,16 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a project "([^"]*)" with a section "([^"]*)"$`, w.aProjectWithSection)
 	sc.Step(`^a global section "([^"]*)"$`, w.aGlobalSection)
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)"$`, w.aGlobalSectionWithContext)
+	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.globalContext)
+	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)" and description "([^"]*)"$`, w.globalContextWithDescription)
+	sc.Step(`^a project "([^"]*)" section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.projectContext)
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
 	sc.Step(`^I am not in a git repo$`, w.notInGitRepo)
 	sc.Step(`^I run "([^"]*)"$`, w.iRun)
 	sc.Step(`^the exit code is (\d+)$`, w.exitCodeIs)
 	sc.Step(`^the output contains "(.*)"$`, w.outputContains)
 	sc.Step(`^the output does not contain "(.*)"$`, w.outputNotContains)
+	sc.Step(`^the output is:$`, w.outputIs)
 	sc.Step(`^the output contains the server pid$`, w.outputContainsPID)
 	sc.Step(`^the pid file exists$`, w.pidFileExists)
 	sc.Step(`^the pid file does not exist$`, w.pidFileNotExists)
@@ -150,6 +155,30 @@ func (w *world) aGlobalSectionWithContext(section, name string) error {
 	return w.post("/api/v1/contexts", fmt.Sprintf(`{"scope":"global","section":%q,"name":%q,"content":"x"}`, section, name))
 }
 
+func (w *world) globalContext(section, name, content string) error {
+	return w.globalContextWithDescription(section, name, content, "")
+}
+
+func (w *world) globalContextWithDescription(section, name, content, description string) error {
+	if err := w.ensure("/api/v1/sections", fmt.Sprintf(`{"scope":"global","name":%q}`, section)); err != nil {
+		return err
+	}
+	return w.post("/api/v1/contexts", fmt.Sprintf(
+		`{"scope":"global","section":%q,"name":%q,"content":%q,"frontmatter":{"description":%q}}`,
+		section, name, content, description))
+}
+
+func (w *world) projectContext(project, section, name, content string) error {
+	if err := w.ensure("/api/v1/projects", fmt.Sprintf(`{"name":%q}`, project)); err != nil {
+		return err
+	}
+	if err := w.ensure("/api/v1/sections", fmt.Sprintf(`{"scope":"project","project":%q,"name":%q}`, project, section)); err != nil {
+		return err
+	}
+	return w.post("/api/v1/contexts", fmt.Sprintf(
+		`{"scope":"project","project":%q,"section":%q,"name":%q,"content":%q}`, project, section, name, content))
+}
+
 func (w *world) inGitRepo(name string) error {
 	dir := filepath.Join(w.home, "src", name)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -171,13 +200,22 @@ func (w *world) notInGitRepo() error {
 
 // post calls the API directly, to set up state without the CLI.
 func (w *world) post(path, body string) error {
+	return w.postExpect(path, body, http.StatusCreated)
+}
+
+// ensure is post, but "already exists" (409) is also ok.
+func (w *world) ensure(path, body string) error {
+	return w.postExpect(path, body, http.StatusCreated, http.StatusConflict)
+}
+
+func (w *world) postExpect(path, body string, ok ...int) error {
 	url := fmt.Sprintf("http://localhost:%d%s", w.port, path)
 	resp, err := http.Post(url, "application/json", strings.NewReader(body))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusCreated {
+	if !slices.Contains(ok, resp.StatusCode) {
 		msg, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("POST %s: status %d: %s", path, resp.StatusCode, msg)
 	}
@@ -213,6 +251,13 @@ func (w *world) outputContains(want string) error {
 	want = strings.ReplaceAll(want, `\"`, `"`)
 	if !strings.Contains(w.output, want) {
 		return fmt.Errorf("output does not contain %q:\n%s", want, w.output)
+	}
+	return nil
+}
+
+func (w *world) outputIs(doc *godog.DocString) error {
+	if got := strings.TrimRight(w.output, "\n"); got != doc.Content {
+		return fmt.Errorf("output:\n%s\nwant:\n%s", got, doc.Content)
 	}
 	return nil
 }
