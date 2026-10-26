@@ -2,7 +2,7 @@ import { Alert, Badge, Code, Group, Loader, Paper, Stack, Text, Title, Typograph
 import { useQuery } from "@tanstack/react-query";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getApiV1ContextsByIdOptions } from "../client/@tanstack/react-query.gen";
+import { getContextOptions } from "../client/@tanstack/react-query.gen";
 import { age, rawFile } from "../lib/format";
 
 interface ContextViewProps {
@@ -10,7 +10,7 @@ interface ContextViewProps {
 }
 
 export function ContextView({ id }: ContextViewProps) {
-  const ctx = useQuery(getApiV1ContextsByIdOptions({ path: { id } }));
+  const ctx = useQuery(getContextOptions({ path: { id } }));
 
   if (ctx.isPending) return <Loader />;
   if (ctx.isError || !ctx.data) {

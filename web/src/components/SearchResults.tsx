@@ -1,7 +1,7 @@
 import { Loader, NavLink, Stack, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { getApiV1SearchOptions } from "../client/@tanstack/react-query.gen";
+import { searchContextsOptions } from "../client/@tanstack/react-query.gen";
 import { contextPath } from "../lib/format";
 
 interface SearchResultsProps {
@@ -14,7 +14,7 @@ function stripTags(s: string | undefined): string {
 }
 
 export function SearchResults({ query }: SearchResultsProps) {
-  const search = useQuery(getApiV1SearchOptions({ query: { q: query } }));
+  const search = useQuery(searchContextsOptions({ query: { q: query } }));
 
   return (
     <Stack gap={2} component="section" aria-label="Search results">

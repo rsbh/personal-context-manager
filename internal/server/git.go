@@ -44,6 +44,7 @@ func writeGitError(w http.ResponseWriter, err error) {
 // gitStatus godoc
 //
 //	@Summary	Git status of the context repo
+//	@ID			gitStatus
 //	@Tags		git
 //	@Produce	json
 //	@Success	200	{object}	gitsync.Status
@@ -65,6 +66,7 @@ func (s *server) gitStatus(w http.ResponseWriter, r *http.Request) {
 // gitSync godoc
 //
 //	@Summary	Commit, pull and push the context repo
+//	@ID			gitSync
 //	@Tags		git
 //	@Produce	json
 //	@Success	200	{object}	gitsync.SyncResult
@@ -92,6 +94,7 @@ func (s *server) gitSync(w http.ResponseWriter, r *http.Request) {
 // gitLog godoc
 //
 //	@Summary	Recent commits of the context repo
+//	@ID			gitLog
 //	@Tags		git
 //	@Produce	json
 //	@Param		n	query		int	false	"Number of commits"	default(10)

@@ -17,6 +17,7 @@
                     "contexts"
                 ],
                 "summary": "List contexts",
+                "operationId": "listContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -72,6 +73,7 @@
                     "contexts"
                 ],
                 "summary": "Create a context",
+                "operationId": "createContext",
                 "parameters": [
                     {
                         "description": "Context",
@@ -121,6 +123,7 @@
                     "contexts"
                 ],
                 "summary": "Get a context",
+                "operationId": "getContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -163,6 +166,7 @@
                     "contexts"
                 ],
                 "summary": "Update a context",
+                "operationId": "updateContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -211,6 +215,7 @@
                     "contexts"
                 ],
                 "summary": "Delete a context",
+                "operationId": "deleteContext",
                 "parameters": [
                     {
                         "type": "string",
@@ -248,6 +253,7 @@
                     "git"
                 ],
                 "summary": "Recent commits of the context repo",
+                "operationId": "gitLog",
                 "parameters": [
                     {
                         "type": "integer",
@@ -297,6 +303,7 @@
                     "git"
                 ],
                 "summary": "Git status of the context repo",
+                "operationId": "gitStatus",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -328,6 +335,7 @@
                     "git"
                 ],
                 "summary": "Commit, pull and push the context repo",
+                "operationId": "gitSync",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -365,6 +373,7 @@
                     "search"
                 ],
                 "summary": "Rebuild the search index from all contexts",
+                "operationId": "rebuildIndex",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -396,6 +405,7 @@
                     "projects"
                 ],
                 "summary": "List projects",
+                "operationId": "listProjects",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -425,6 +435,7 @@
                     "projects"
                 ],
                 "summary": "Create a project",
+                "operationId": "createProject",
                 "parameters": [
                     {
                         "description": "Project",
@@ -467,6 +478,7 @@
                     "projects"
                 ],
                 "summary": "Get a project",
+                "operationId": "getProject",
                 "parameters": [
                     {
                         "type": "string",
@@ -505,6 +517,7 @@
                     "projects"
                 ],
                 "summary": "Delete a project",
+                "operationId": "deleteProject",
                 "parameters": [
                     {
                         "type": "string",
@@ -549,6 +562,7 @@
                     "resolve"
                 ],
                 "summary": "Resolve contexts for a project",
+                "operationId": "resolveContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -607,6 +621,7 @@
                     "search"
                 ],
                 "summary": "Full-text search of contexts",
+                "operationId": "searchContexts",
                 "parameters": [
                     {
                         "type": "string",
@@ -687,6 +702,7 @@
                     "sections"
                 ],
                 "summary": "List sections",
+                "operationId": "listSections",
                 "parameters": [
                     {
                         "type": "string",
@@ -736,6 +752,7 @@
                     "sections"
                 ],
                 "summary": "Create a section",
+                "operationId": "createSection",
                 "parameters": [
                     {
                         "description": "Section",
@@ -784,6 +801,7 @@
                     "sections"
                 ],
                 "summary": "Delete a section",
+                "operationId": "deleteSection",
                 "parameters": [
                     {
                         "type": "string",
@@ -845,6 +863,7 @@
                     "health"
                 ],
                 "summary": "Health check",
+                "operationId": "getHealth",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -965,6 +984,11 @@
         },
         "server.createContextRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "scope",
+                "section"
+            ],
             "properties": {
                 "content": {
                     "type": "string"
@@ -979,7 +1003,11 @@
                     "type": "string"
                 },
                 "scope": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "global",
+                        "project"
+                    ]
                 },
                 "section": {
                     "type": "string"
@@ -988,6 +1016,9 @@
         },
         "server.createProjectRequest": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -996,6 +1027,10 @@
         },
         "server.createSectionRequest": {
             "type": "object",
+            "required": [
+                "name",
+                "scope"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -1004,7 +1039,11 @@
                     "type": "string"
                 },
                 "scope": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "global",
+                        "project"
+                    ]
                 }
             }
         },
@@ -1018,6 +1057,9 @@
         },
         "server.project": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
                 "name": {
                     "type": "string"

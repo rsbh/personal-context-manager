@@ -2,9 +2,9 @@ import { Badge, Group, Select, Stack, Table, Text, Title } from "@mantine/core";
 import { useQueries } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import {
-  getApiV1ProjectsOptions,
-  getApiV1ResolveOptions,
-  getApiV1SectionsOptions,
+  listProjectsOptions,
+  resolveContextsOptions,
+  listSectionsOptions,
 } from "../client/@tanstack/react-query.gen";
 import { age, contextPath } from "../lib/format";
 
@@ -20,10 +20,10 @@ export function CurrentContexts() {
 
   const [projects, globalSections, projectSections, resolved] = useQueries({
     queries: [
-      getApiV1ProjectsOptions(),
-      getApiV1SectionsOptions({ query: { scope: "global" } }),
-      { ...getApiV1SectionsOptions({ query: { scope: "project", project } }), enabled: project !== "" },
-      getApiV1ResolveOptions(Object.keys(resolveQuery).length ? { query: resolveQuery } : undefined),
+      listProjectsOptions(),
+      listSectionsOptions({ query: { scope: "global" } }),
+      { ...listSectionsOptions({ query: { scope: "project", project } }), enabled: project !== "" },
+      resolveContextsOptions(Object.keys(resolveQuery).length ? { query: resolveQuery } : undefined),
     ],
   });
 

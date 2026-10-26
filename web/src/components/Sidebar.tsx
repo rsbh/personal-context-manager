@@ -4,9 +4,9 @@ import { useQueries } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router";
 import {
-  getApiV1ContextsOptions,
-  getApiV1ProjectsOptions,
-  getApiV1SectionsOptions,
+  listContextsOptions,
+  listProjectsOptions,
+  listSectionsOptions,
 } from "../client/@tanstack/react-query.gen";
 import type { StoreContext } from "../client/types.gen";
 import { contextPath } from "../lib/format";
@@ -66,8 +66,8 @@ function ProjectNode({ project }: ProjectNodeProps) {
   const scope = { scope: "project", project };
   const [sections, contexts] = useQueries({
     queries: [
-      { ...getApiV1SectionsOptions({ query: scope }), enabled: opened },
-      { ...getApiV1ContextsOptions({ query: scope }), enabled: opened },
+      { ...listSectionsOptions({ query: scope }), enabled: opened },
+      { ...listContextsOptions({ query: scope }), enabled: opened },
     ],
   });
 
@@ -91,9 +91,9 @@ export function Sidebar() {
   const [debounced] = useDebouncedValue(query.trim(), 250);
   const [sections, contexts, projects] = useQueries({
     queries: [
-      getApiV1SectionsOptions({ query: { scope: "global" } }),
-      getApiV1ContextsOptions({ query: { scope: "global" } }),
-      getApiV1ProjectsOptions(),
+      listSectionsOptions({ query: { scope: "global" } }),
+      listContextsOptions({ query: { scope: "global" } }),
+      listProjectsOptions(),
     ],
   });
 

@@ -83,6 +83,7 @@ func NewRouter(st *store.Store, opts ...Option) http.Handler {
 // healthHandler godoc
 //
 //	@Summary	Health check
+//	@ID			getHealth
 //	@Tags		health
 //	@Produce	json
 //	@Success	200	{object}	map[string]string

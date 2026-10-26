@@ -79,14 +79,23 @@ definitions:
       project:
         type: string
       scope:
+        enum:
+        - global
+        - project
         type: string
       section:
         type: string
+    required:
+    - name
+    - scope
+    - section
     type: object
   server.createProjectRequest:
     properties:
       name:
         type: string
+    required:
+    - name
     type: object
   server.createSectionRequest:
     properties:
@@ -95,7 +104,13 @@ definitions:
       project:
         type: string
       scope:
+        enum:
+        - global
+        - project
         type: string
+    required:
+    - name
+    - scope
     type: object
   server.errorResponse:
     properties:
@@ -106,6 +121,8 @@ definitions:
     properties:
       name:
         type: string
+    required:
+    - name
     type: object
   server.rebuildResponse:
     properties:
@@ -157,6 +174,7 @@ info:
 paths:
   /api/v1/contexts:
     get:
+      operationId: listContexts
       parameters:
       - description: global or project
         in: query
@@ -193,6 +211,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: createContext
       parameters:
       - description: Context
         in: body
@@ -225,6 +244,7 @@ paths:
   /api/v1/contexts/{id}:
     delete:
       description: The id can contain "/" (raw or %2F), for example global/style/go.
+      operationId: deleteContext
       parameters:
       - description: Context id
         in: path
@@ -249,6 +269,7 @@ paths:
       - contexts
     get:
       description: The id can contain "/" (raw or %2F), for example global/style/go.
+      operationId: getContext
       parameters:
       - description: Context id
         in: path
@@ -277,6 +298,7 @@ paths:
       consumes:
       - application/json
       description: The id can contain "/" (raw or %2F), for example global/style/go.
+      operationId: updateContext
       parameters:
       - description: Context id
         in: path
@@ -309,6 +331,7 @@ paths:
       - contexts
   /api/v1/git/log:
     get:
+      operationId: gitLog
       parameters:
       - default: 10
         description: Number of commits
@@ -341,6 +364,7 @@ paths:
       - git
   /api/v1/git/status:
     get:
+      operationId: gitStatus
       produces:
       - application/json
       responses:
@@ -361,6 +385,7 @@ paths:
       - git
   /api/v1/git/sync:
     post:
+      operationId: gitSync
       produces:
       - application/json
       responses:
@@ -385,6 +410,7 @@ paths:
       - git
   /api/v1/index/rebuild:
     post:
+      operationId: rebuildIndex
       produces:
       - application/json
       responses:
@@ -405,6 +431,7 @@ paths:
       - search
   /api/v1/projects:
     get:
+      operationId: listProjects
       produces:
       - application/json
       responses:
@@ -424,6 +451,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: createProject
       parameters:
       - description: Project
         in: body
@@ -451,6 +479,7 @@ paths:
       - projects
   /api/v1/projects/{project}:
     delete:
+      operationId: deleteProject
       parameters:
       - description: Project name
         in: path
@@ -478,6 +507,7 @@ paths:
       tags:
       - projects
     get:
+      operationId: getProject
       parameters:
       - description: Project name
         in: path
@@ -504,6 +534,7 @@ paths:
       - projects
   /api/v1/resolve:
     get:
+      operationId: resolveContexts
       parameters:
       - description: Project name
         in: query
@@ -543,6 +574,7 @@ paths:
       - resolve
   /api/v1/search:
     get:
+      operationId: searchContexts
       parameters:
       - description: Search text
         in: query
@@ -596,6 +628,7 @@ paths:
       - search
   /api/v1/sections:
     get:
+      operationId: listSections
       parameters:
       - description: global or project
         in: query
@@ -628,6 +661,7 @@ paths:
     post:
       consumes:
       - application/json
+      operationId: createSection
       parameters:
       - description: Section
         in: body
@@ -659,6 +693,7 @@ paths:
       - sections
   /api/v1/sections/{section}:
     delete:
+      operationId: deleteSection
       parameters:
       - description: Section name
         in: path
@@ -699,6 +734,7 @@ paths:
       - sections
   /health:
     get:
+      operationId: getHealth
       produces:
       - application/json
       responses:
