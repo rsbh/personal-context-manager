@@ -30,3 +30,12 @@ Feature: Claude Code skill
     When I run "pcm skill uninstall"
     Then the exit code is 0
     And the output contains "skill/pcm not installed"
+
+  Scenario: Skill dumps session
+    When I run "pcm skill show"
+    Then the exit code is 0
+    And the output contains "## 5. Dump session"
+    And the output contains "pcm create context <name> -s <section> -f -"
+    And the output contains "--force"
+    And the output contains "Bash(gh pr view:*)"
+    And the output contains "Bash(git branch:*)"
