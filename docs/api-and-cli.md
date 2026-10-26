@@ -6,7 +6,9 @@
 - **Project**: name = basename of git repo root of cwd. No `.pcm` file in project.
 - **Section**: user defined (e.g. `style`, `review`). One folder per section.
 - **Context**: one md file. A section can have many contexts (e.g. `backend.md`, `ui.md`). Many contexts can apply to one project.
-- **Repo**: separate git repo. Default `~/.pcm/`, user can select other path with `pcm config set path <dir>`.
+- **Binaries**: `pcm-server` (API server, runs in background) and `pcm` (CLI client, calls API).
+- **Home**: `~/.pcm/` holds `config.yaml`, `server.pid`, `server.log`, `index.db` and `repo/`. Only `repo/` is synced.
+- **Repo**: separate git repo. Default `~/.pcm/repo`, user can select other path with `pcm config set path <dir>`.
 - **First run**: no init command. If repo folder is missing, pcm creates it and runs `git init`. If `remote` is not set, CLI prints info:
   ```
   info: remote not set. Contexts are local only.
@@ -20,9 +22,10 @@
 
 ## REST API (`/api/v1`)
 
+`GET /health` (root, not under `/api/v1`): health check.
+
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/health` | Health check |
 | GET | `/projects` | List projects |
 | POST | `/projects` | Create project |
 | DELETE | `/projects/{project}` | Delete project |
@@ -58,7 +61,10 @@
 | `pcm section add\|list\|rm <name>` | Manage sections |
 | `pcm sync` | Git pull, commit, push |
 | `pcm status` | Git status |
-| `pcm serve [--port <n>] [--open]` | Start API + web UI |
+| `pcm health` | Check server is reachable (text output, exit 1 if not) |
+| `pcm server start` | Start `pcm-server` in background (pid/log in `~/.pcm/`) |
+| `pcm server stop` | Stop background server |
+| `pcm server status` | Show server health and pid |
 | `pcm config get\|set <key> [value]` | Read/write config. Keys: `path`, `remote` |
 
 Default project for `add`, `list`, `context`: current repo root. `-p` overrides. `-g` selects global.
