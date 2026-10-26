@@ -25,6 +25,7 @@ import (
 type world struct {
 	home   string
 	cwd    string // pcm runs here. Default: home, which is not a git repo.
+	remote string // bare git repo used as remote
 	port   int
 	output string
 	code   int
@@ -60,6 +61,11 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a project "([^"]*)" section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.projectContext)
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
 	sc.Step(`^the global section "([^"]*)" has no contexts$`, w.globalSectionEmpty)
+	sc.Step(`^a git remote$`, w.aGitRemote)
+	sc.Step(`^the remote is set$`, w.remoteIsSet)
+	sc.Step(`^the remote has the file "([^"]*)"$`, w.remoteHasFile)
+	sc.Step(`^another clone pushes "([^"]*)" with content "([^"]*)"$`, w.otherClonePushes)
+	sc.Step(`^the context "([^"]*)" has content "([^"]*)"$`, w.contextHasContent)
 	sc.Step(`^I GET "([^"]*)"$`, w.iGet)
 	sc.Step(`^I GET "([^"]*)" with header "([^:]+): ([^"]*)"$`, w.iGetWithHeader)
 	sc.Step(`^the status is (\d+)$`, w.statusIs)
@@ -111,7 +117,7 @@ func (w *world) teardown() {
 // run executes pcm with HOME set to the scenario home.
 func (w *world) run(args ...string) (int, error) {
 	cmd := exec.Command(filepath.Join(binDir, "pcm"), args...)
-	cmd.Env = append(os.Environ(), "HOME="+w.home)
+	cmd.Env = w.env()
 	cmd.Dir = w.cwd
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
@@ -247,7 +253,7 @@ func (w *world) postExpect(path, body string, ok ...int) error {
 // When
 
 func (w *world) iRun(command string) error {
-	args, err := splitArgs(command)
+	args, err := splitArgs(strings.ReplaceAll(command, "<remote>", w.remote))
 	if err != nil {
 		return err
 	}
@@ -535,6 +541,97 @@ func (w *world) errorIs(want string) error {
 	}
 	if want = unescape(want); e.Error != want {
 		return fmt.Errorf("error = %q, want %q", e.Error, want)
+	}
+	return nil
+}
+
+// env is the environment for pcm and git: scenario HOME and a fixed git author.
+func (w *world) env() []string {
+	return append(os.Environ(),
+		"HOME="+w.home,
+		"GIT_CONFIG_NOSYSTEM=1",
+		"GIT_AUTHOR_NAME=pcm-test", "GIT_AUTHOR_EMAIL=pcm-test@example.com",
+		"GIT_COMMITTER_NAME=pcm-test", "GIT_COMMITTER_EMAIL=pcm-test@example.com",
+	)
+}
+
+// git runs git in dir with the scenario env.
+func (w *world) git(dir string, args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = dir
+	cmd.Env = w.env()
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, out)
+	}
+	return string(out), nil
+}
+
+func (w *world) aGitRemote() error {
+	w.remote = filepath.Join(w.home, "remote.git")
+	_, err := w.git(w.home, "init", "--quiet", "--bare", "-b", "main", w.remote)
+	return err
+}
+
+func (w *world) remoteIsSet() error {
+	code, err := w.run("config", "set", "remote", w.remote)
+	if err != nil || code != 0 {
+		return fmt.Errorf("config set remote: code %d, err %v, output:\n%s", code, err, w.output)
+	}
+	return nil
+}
+
+func (w *world) remoteHasFile(path string) error {
+	out, err := w.git(w.home, "--git-dir", w.remote, "ls-tree", "-r", "--name-only", "main")
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(strings.Fields(out), path) {
+		return fmt.Errorf("remote does not have %s:\n%s", path, out)
+	}
+	return nil
+}
+
+func (w *world) otherClonePushes(path, content string) error {
+	dir, err := os.MkdirTemp(w.home, "clone-")
+	if err != nil {
+		return err
+	}
+	if _, err := w.git(w.home, "clone", "--quiet", w.remote, dir); err != nil {
+		return err
+	}
+	file := filepath.Join(dir, filepath.FromSlash(path))
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(file, []byte(content), 0o644); err != nil {
+		return err
+	}
+	for _, args := range [][]string{
+		{"add", "-A"},
+		{"commit", "--quiet", "-m", "change from other clone"},
+		{"push", "--quiet", "origin", "main"},
+	} {
+		if _, err := w.git(dir, args...); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (w *world) contextHasContent(id, content string) error {
+	body := fmt.Sprintf(`{"content":%q}`, content)
+	req, err := http.NewRequest(http.MethodPut, w.url("/api/v1/contexts/"+id), strings.NewReader(body))
+	if err != nil {
+		return err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("PUT %s: status %d", id, resp.StatusCode)
 	}
 	return nil
 }

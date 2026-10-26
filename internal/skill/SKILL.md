@@ -44,6 +44,7 @@ Do this when the user asks to remember or save a rule, a style or a note.
 | Show one context | `pcm get context <name> -s <section>` |
 | Delete a context | `pcm delete context <name> -s <section>` |
 | Delete a section | `pcm delete section <name> [--force]` |
+| Sync with git remote | `pcm sync` (status: `pcm sync status`) |
 
 Ask the user before you delete anything.
 

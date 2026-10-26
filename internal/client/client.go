@@ -39,6 +39,7 @@ var ErrNotReachable = errors.New("server not reachable")
 type APIError struct {
 	Status  int
 	Message string
+	Files   []string // sync conflict files
 }
 
 func (e *APIError) Error() string { return e.Message }
@@ -84,12 +85,13 @@ func (c *Client) send(ctx context.Context, method, path string, in any) (*http.R
 	if resp.StatusCode >= 400 {
 		defer resp.Body.Close()
 		var e struct {
-			Error string `json:"error"`
+			Error string   `json:"error"`
+			Files []string `json:"files"`
 		}
 		if json.NewDecoder(resp.Body).Decode(&e) != nil || e.Error == "" {
 			e.Error = http.StatusText(resp.StatusCode)
 		}
-		return nil, &APIError{Status: resp.StatusCode, Message: e.Error}
+		return nil, &APIError{Status: resp.StatusCode, Message: e.Error, Files: e.Files}
 	}
 	return resp, nil
 }

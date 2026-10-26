@@ -68,7 +68,7 @@ func New(root string) (*Store, error) {
 		return nil, fmt.Errorf("create repo: %w", err)
 	}
 	if _, err := os.Stat(filepath.Join(root, ".git")); errors.Is(err, os.ErrNotExist) {
-		cmd := exec.Command("git", "init", "--quiet")
+		cmd := exec.Command("git", "init", "--quiet", "-b", "main")
 		cmd.Dir = root
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("git init: %w: %s", err, out)
