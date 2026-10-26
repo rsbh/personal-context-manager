@@ -11,7 +11,7 @@ func newGetProjectCmd(a *app) *cobra.Command {
 		Use:     "project [name]",
 		Aliases: []string{"projects"},
 		Short:   "List projects, or show one project",
-		Args:    cobra.MaximumNArgs(1),
+		Args:    optionalNameArg,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var names []string
 			if len(args) == 1 {
@@ -46,7 +46,7 @@ func newCreateProjectCmd(a *app) *cobra.Command {
 	return &cobra.Command{
 		Use:   "project <name>",
 		Short: "Create a project",
-		Args:  cobra.ExactArgs(1),
+		Args:  nameArg("project"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := a.client.CreateProject(cmd.Context(), args[0]); err != nil {
 				return a.handleErr(cmd, err)
@@ -62,7 +62,7 @@ func newDeleteProjectCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project <name>",
 		Short: "Delete a project",
-		Args:  cobra.ExactArgs(1),
+		Args:  nameArg("project"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := a.client.DeleteProject(cmd.Context(), args[0], force); err != nil {
 				return a.deleteErr(cmd, err, "project")

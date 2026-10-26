@@ -12,7 +12,7 @@ func newHealthCmd(a *app) *cobra.Command {
 	return &cobra.Command{
 		Use:   "health",
 		Short: "Check that the server is reachable",
-		Args:  cobra.NoArgs,
+		Args:  noArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			fields, ok := healthFields(cmd.Context(), a.client)
 			printFields(cmd.OutOrStdout(), fields)

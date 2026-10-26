@@ -72,7 +72,7 @@ func newRootCmd(a *app) *cobra.Command {
 func Execute() int {
 	if err := newRootCmd(&app{}).Execute(); err != nil {
 		if !errors.Is(err, errSilent) {
-			fmt.Fprintln(os.Stderr, "error:", err)
+			printError(os.Stderr, err)
 		}
 		return 1
 	}

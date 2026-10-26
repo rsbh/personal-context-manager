@@ -34,19 +34,19 @@ func newServerCmd(a *app) *cobra.Command {
 		&cobra.Command{
 			Use:   "start",
 			Short: "Start the server in the background",
-			Args:  cobra.NoArgs,
+			Args:  noArgs,
 			RunE:  a.serverStart,
 		},
 		&cobra.Command{
 			Use:   "stop",
 			Short: "Stop the background server",
-			Args:  cobra.NoArgs,
+			Args:  noArgs,
 			RunE:  a.serverStop,
 		},
 		&cobra.Command{
 			Use:   "status",
 			Short: "Show server process and health",
-			Args:  cobra.NoArgs,
+			Args:  noArgs,
 			RunE:  a.serverStatus,
 		},
 	)
