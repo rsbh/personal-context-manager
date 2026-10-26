@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rishabh/personal-context-manager/internal/server"
+	"github.com/rsbh/personal-context-manager/internal/server"
 )
 
 const (

@@ -1,4 +1,4 @@
-module github.com/rishabh/personal-context-manager
+module github.com/rsbh/personal-context-manager
 
 go 1.25.0
 
