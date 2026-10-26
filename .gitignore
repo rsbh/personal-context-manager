@@ -34,3 +34,6 @@ go.work.sum
 
 # Local build output
 bin/
+
+# Claude Code worktrees
+.claude/worktrees/
