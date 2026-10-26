@@ -1,0 +1,68 @@
+# API and CLI
+
+## Concepts
+
+- **Scope**: `global` or `project/<name>`.
+- **Project**: name = basename of git repo root of cwd. No `.pcm` file in project.
+- **Section**: user defined (e.g. `style`, `review`). One folder per section.
+- **Context**: one md file. A section can have many contexts (e.g. `backend.md`, `ui.md`). Many contexts can apply to one project.
+- **Repo**: separate git repo. Default `~/.pcm/`, user can select other path with `pcm config set path <dir>`.
+- **First run**: no init command. If repo folder is missing, pcm creates it and runs `git init`. If `remote` is not set, CLI prints info:
+  ```
+  info: remote not set. Contexts are local only.
+    pcm config set remote <git-url>
+    pcm sync
+  ```
+- **Layout**: `<repo>/<scope>/<section>/<name>.md`
+- **SQLite**: search index only. md files are source of truth.
+- **Sync**: manual only. CLI `pcm sync` or UI sync button.
+- **Claude Code**: skill calls CLI. No MCP.
+
+## REST API (`/api/v1`)
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/health` | Health check |
+| GET | `/projects` | List projects |
+| POST | `/projects` | Create project |
+| DELETE | `/projects/{project}` | Delete project |
+| GET | `/sections` | List sections |
+| POST | `/sections` | Create section |
+| DELETE | `/sections/{section}` | Delete section |
+| GET | `/contexts?scope=&project=&section=` | List contexts with filters |
+| GET | `/contexts/{id}` | Read context (md + metadata) |
+| POST | `/contexts` | Create context |
+| PUT | `/contexts/{id}` | Update context |
+| DELETE | `/contexts/{id}` | Delete context |
+| GET | `/search?q=&scope=&section=` | Full-text search (SQLite FTS) |
+| GET | `/resolve?project=&section=&name=` | Merged global + project contexts |
+| GET | `/git/status` | Repo status |
+| POST | `/git/sync` | Pull, commit, push |
+| GET | `/git/log` | Recent commits |
+| GET | `/config` | Read config |
+| PUT | `/config` | Update config (remote URL, author) |
+| GET | `/*` | Embedded React app |
+
+## CLI (`pcm`)
+
+| Command | Purpose |
+|---|---|
+| `pcm add [text] -s <section> [-p <project> \| -g] [-n <name>]` | Save text (arg or stdin) |
+| `pcm list [-s <section>] [-p <project>] [-g]` | List contexts |
+| `pcm show <id>` | Print context |
+| `pcm edit <id>` | Open in `$EDITOR` |
+| `pcm rm <id>` | Delete context |
+| `pcm search <query>` | Search contexts |
+| `pcm context [-s <section>] [-n <name>]` | Print merged global + current project contexts (for skill) |
+| `pcm project add\|list\|rm <name>` | Manage projects |
+| `pcm section add\|list\|rm <name>` | Manage sections |
+| `pcm sync` | Git pull, commit, push |
+| `pcm status` | Git status |
+| `pcm serve [--port <n>] [--open]` | Start API + web UI |
+| `pcm config get\|set <key> [value]` | Read/write config. Keys: `path`, `remote` |
+
+Default project for `add`, `list`, `context`: current repo root. `-p` overrides. `-g` selects global.
+
+## Claude Code skill
+
+Skill runs `pcm context` and `pcm add`. Skill file ships in repo.
