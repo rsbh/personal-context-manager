@@ -1,9 +1,9 @@
 import { Badge, Group, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "../api";
+import { getHealthOptions } from "../client/@tanstack/react-query.gen";
 
 export function Header() {
-  const health = useQuery({ queryKey: ["health"], queryFn: api.health, refetchInterval: 10_000 });
+  const health = useQuery({ ...getHealthOptions(), refetchInterval: 10_000 });
   const ok = health.data?.status === "ok";
 
   return (

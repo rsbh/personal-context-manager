@@ -1,10 +1,14 @@
-.PHONY: build swagger web install restart test web-test e2e e2e-ui fmt vet
+.PHONY: build swagger client web install restart test web-test e2e e2e-ui fmt vet
 
 SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
 
 # Generate the swagger spec into docs/swagger/.
 swagger:
 	$(SWAG) init -g cmd/pcm-server/main.go -o docs/swagger
+
+# Generate the TS API client (web/src/client) from the swagger spec.
+client: swagger
+	cd web && npm run gen:api
 
 # Build the web UI into web/dist/app (embedded by pcm-server).
 web:

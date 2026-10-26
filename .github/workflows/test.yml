@@ -68,6 +68,10 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - name: API client up to date
+        run: |
+          npm run gen:api
+          git diff --exit-code -- src/client || { echo "Run make client and commit web/src/client"; exit 1; }
       - name: typecheck
         run: npm run typecheck
       - name: test

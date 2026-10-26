@@ -1,6 +1,6 @@
 import { Loader, NavLink, Stack, Text } from "@mantine/core";
 import { useQueries } from "@tanstack/react-query";
-import { api } from "../api";
+import { getApiV1ProjectsOptions, getApiV1SectionsOptions } from "../client/@tanstack/react-query.gen";
 
 interface SidebarGroupProps {
   label: string;
@@ -29,8 +29,8 @@ function SidebarGroup({ label, items, empty, loading }: SidebarGroupProps) {
 export function Sidebar() {
   const [sections, projects] = useQueries({
     queries: [
-      { queryKey: ["sections", "global"], queryFn: api.globalSections },
-      { queryKey: ["projects"], queryFn: api.projects },
+      getApiV1SectionsOptions({ query: { scope: "global" } }),
+      getApiV1ProjectsOptions(),
     ],
   });
 

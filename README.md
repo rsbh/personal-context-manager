@@ -89,6 +89,7 @@ Scope: `-p <project>` or `-g` (global). No flag: current git repo root name (`My
 
 | Target | Purpose |
 |---|---|
+| `make client` | Regenerate the swagger spec and the TS API client (`web/src/client`) |
 | `make web` | Build the UI (`web/` → `web/dist/app`) |
 | `make build` | Build the UI, then both binaries into `bin/` |
 | `make install` | Install both binaries and the Claude Code skill |

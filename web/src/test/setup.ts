@@ -1,6 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
+import { client } from "../client/client.gen";
+
+// Node's Request needs an absolute URL; the browser resolves relative ones.
+client.setConfig({ baseUrl: "http://localhost" });
 
 afterEach(() => {
   cleanup();
