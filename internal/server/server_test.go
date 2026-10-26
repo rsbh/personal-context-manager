@@ -199,3 +199,28 @@ func TestContexts(t *testing.T) {
 	expectStatus(t, do(t, h, http.MethodDelete, "/api/v1/contexts/global/style/backend", ""), http.StatusNoContent)
 	expectStatus(t, do(t, h, http.MethodDelete, "/api/v1/contexts/global/style/backend", ""), http.StatusNotFound)
 }
+
+func TestResolve(t *testing.T) {
+	h, _ := newTestServer(t)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/sections", `{"scope":"global","name":"style"}`), http.StatusCreated)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/projects", `{"name":"api"}`), http.StatusCreated)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/sections", `{"scope":"project","project":"api","name":"style"}`), http.StatusCreated)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/contexts", `{"scope":"global","section":"style","name":"go","content":"global"}`), http.StatusCreated)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/contexts", `{"scope":"global","section":"style","name":"py","content":"py"}`), http.StatusCreated)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/contexts", `{"scope":"project","project":"api","section":"style","name":"go","content":"api"}`), http.StatusCreated)
+
+	rec := do(t, h, http.MethodGet, "/api/v1/resolve?project=api&section=style", "")
+	expectStatus(t, rec, http.StatusOK)
+	got := decodeBody[[]store.Context](t, rec)
+	if len(got) != 2 || got[0].ID != "global/style/py" || got[1].ID != "projects/api/style/go" || got[1].Content != "api" {
+		t.Errorf("resolve = %+v", got)
+	}
+
+	rec = do(t, h, http.MethodGet, "/api/v1/resolve", "")
+	expectStatus(t, rec, http.StatusOK)
+	if got := decodeBody[[]store.Context](t, rec); len(got) != 2 {
+		t.Errorf("global resolve = %+v", got)
+	}
+
+	expectStatus(t, do(t, h, http.MethodGet, "/api/v1/resolve?project=Bad", ""), http.StatusBadRequest)
+}

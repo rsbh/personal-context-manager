@@ -212,3 +212,15 @@ func (s *server) deleteContext(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// Resolve
+
+func (s *server) resolve(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	contexts, err := s.store.Resolve(q.Get("project"), q.Get("section"))
+	if err != nil {
+		writeStoreError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, contexts)
+}
