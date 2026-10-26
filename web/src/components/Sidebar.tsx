@@ -123,7 +123,9 @@ export function Sidebar() {
               <ApsaraSidebar.Group label="Projects" role="group" aria-label="Projects">
                 {projects.isPending && <Spinner size={2} />}
                 {projects.data?.length === 0 && <Empty>No projects</Empty>}
-                {projects.data?.map((p) => <ProjectNode key={p} project={p} />)}
+                {projects.data?.map((p) => (
+                  <ProjectNode key={p} project={p} />
+                ))}
               </ApsaraSidebar.Group>
             </>
           )}

@@ -12,6 +12,9 @@ export default function globalSetup() {
     throw new Error("UI not built: run `npm run build` in web/ (or make e2e-ui)");
   }
   const binDir = mkdtempSync(join(tmpdir(), "pcm-e2e-ui-bin-"));
-  execFileSync("go", ["build", "-o", binDir + "/", "./cmd/..."], { cwd: repoRoot, stdio: "inherit" });
+  execFileSync("go", ["build", "-o", binDir + "/", "./cmd/..."], {
+    cwd: repoRoot,
+    stdio: "inherit",
+  });
   process.env.PCM_BIN_DIR = binDir;
 }

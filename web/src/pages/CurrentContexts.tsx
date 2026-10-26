@@ -57,11 +57,15 @@ export function CurrentContexts() {
       listProjectsOptions(),
       listSectionsOptions({ query: { scope: "global" } }),
       { ...listSectionsOptions({ query: { scope: "project", project } }), enabled: project !== "" },
-      resolveContextsOptions(Object.keys(resolveQuery).length ? { query: resolveQuery } : undefined),
+      resolveContextsOptions(
+        Object.keys(resolveQuery).length ? { query: resolveQuery } : undefined,
+      ),
     ],
   });
 
-  const sections = [...new Set([...(globalSections.data ?? []), ...(projectSections.data ?? [])])].sort();
+  const sections = [
+    ...new Set([...(globalSections.data ?? []), ...(projectSections.data ?? [])]),
+  ].sort();
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value);
@@ -77,7 +81,8 @@ export function CurrentContexts() {
             Current contexts
           </Headline>
           <Text variant="secondary">
-            Global first, then the project. A project context replaces a global one with the same section and name.
+            Global first, then the project. A project context replaces a global one with the same
+            section and name.
           </Text>
         </Flex>
         <Flex gap={4} wrap="wrap">

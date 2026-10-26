@@ -9,7 +9,10 @@ export interface APIErrorBody {
 
 // withStatus adds the HTTP status to an error body. The generated client throws only the body.
 export function withStatus(error: unknown, response: Response | undefined): APIErrorBody {
-  const body: APIErrorBody = typeof error === "object" && error !== null ? { ...(error as APIErrorBody) } : { error: String(error) };
+  const body: APIErrorBody =
+    typeof error === "object" && error !== null
+      ? { ...(error as APIErrorBody) }
+      : { error: String(error) };
   if (response) body.status = response.status;
   return body;
 }

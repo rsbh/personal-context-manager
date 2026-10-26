@@ -32,7 +32,10 @@ describe("Sidebar", () => {
     expect(await within(global).findByText("commits")).toBeInTheDocument();
     expect(within(global).getByText("go")).toBeInTheDocument();
     expect(within(global).getByText("empty")).toBeInTheDocument();
-    expect(anchor(within(global).getByText("go"))).toHaveAttribute("href", "/contexts/global/style/go");
+    expect(anchor(within(global).getByText("go"))).toHaveAttribute(
+      "href",
+      "/contexts/global/style/go",
+    );
     expect(await within(nav).findByText("api")).toBeInTheDocument();
   });
 
@@ -40,17 +43,30 @@ describe("Sidebar", () => {
     base({
       "/api/v1/sections?scope=project&project=api": ["review"],
       "/api/v1/contexts?scope=project&project=api": [
-        { id: "projects/api/review/pr", scope: "project", project: "api", section: "review", name: "pr" },
+        {
+          id: "projects/api/review/pr",
+          scope: "project",
+          project: "api",
+          section: "review",
+          name: "pr",
+        },
       ],
     });
     renderUI(<Sidebar />);
     const projects = screen.getByRole("group", { name: "Projects" });
     await userEvent.click(await within(projects).findByText("api"));
-    expect(anchor(await within(projects).findByText("pr"))).toHaveAttribute("href", "/contexts/projects/api/review/pr");
+    expect(anchor(await within(projects).findByText("pr"))).toHaveAttribute(
+      "href",
+      "/contexts/projects/api/review/pr",
+    );
   });
 
   it("shows empty states", async () => {
-    mockAPI({ "/api/v1/sections?scope=global": [], "/api/v1/contexts?scope=global": [], "/api/v1/projects": [] });
+    mockAPI({
+      "/api/v1/sections?scope=global": [],
+      "/api/v1/contexts?scope=global": [],
+      "/api/v1/projects": [],
+    });
     renderUI(<Sidebar />);
     expect(await screen.findByText("No sections")).toBeInTheDocument();
     expect(await screen.findByText("No projects")).toBeInTheDocument();
@@ -59,13 +75,23 @@ describe("Sidebar", () => {
   it("shows search results instead of the tree while searching", async () => {
     base({
       "/api/v1/search?q=black": [
-        { id: "global/style/py", scope: "global", section: "style", name: "py", snippet: "Use <mark>black</mark>.", score: 1 },
+        {
+          id: "global/style/py",
+          scope: "global",
+          section: "style",
+          name: "py",
+          snippet: "Use <mark>black</mark>.",
+          score: 1,
+        },
       ],
     });
     renderUI(<Sidebar />);
     await userEvent.type(screen.getByLabelText("Search contexts"), "black");
     const results = await screen.findByRole("region", { name: "Search results" });
-    expect(anchor(await within(results).findByText("py"))).toHaveAttribute("href", "/contexts/global/style/py");
+    expect(anchor(await within(results).findByText("py"))).toHaveAttribute(
+      "href",
+      "/contexts/global/style/py",
+    );
     expect(screen.queryByRole("group", { name: "Global" })).not.toBeInTheDocument();
   });
 

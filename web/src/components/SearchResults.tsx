@@ -38,7 +38,8 @@ export function SearchResults({ query }: SearchResultsProps) {
           <span className={classes.hit}>
             <span>{hit.name}</span>
             <Text size="mini" variant="tertiary" lineClamp={2}>
-              {hit.section} · {hit.scope === "global" ? "global" : hit.project} — {stripTags(hit.snippet)}
+              {hit.section} · {hit.scope === "global" ? "global" : hit.project} —{" "}
+              {stripTags(hit.snippet)}
             </Text>
           </span>
         </Sidebar.Item>

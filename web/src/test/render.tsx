@@ -29,7 +29,10 @@ export function mockAPI(routes: Record<string, unknown>) {
     }
     const body = routes[url];
     if (body instanceof Response) return body;
-    return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;

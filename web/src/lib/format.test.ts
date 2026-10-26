@@ -16,9 +16,9 @@ describe("age", () => {
 
 describe("rawFile", () => {
   it("renders frontmatter then content", () => {
-    expect(rawFile({ title: "Go", description: "Go style", tags: ["go", "fmt"] }, "Use gofmt.\n")).toBe(
-      "---\ntitle: Go\ndescription: Go style\ntags:\n  - go\n  - fmt\n---\nUse gofmt.\n",
-    );
+    expect(
+      rawFile({ title: "Go", description: "Go style", tags: ["go", "fmt"] }, "Use gofmt.\n"),
+    ).toBe("---\ntitle: Go\ndescription: Go style\ntags:\n  - go\n  - fmt\n---\nUse gofmt.\n");
   });
 
   it("has no header without frontmatter", () => {
