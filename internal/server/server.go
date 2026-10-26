@@ -8,12 +8,14 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
+	"github.com/rsbh/personal-context-manager/internal/search"
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
 
 type server struct {
-	store *store.Store
-	git   *gitsync.Repo
+	store  *store.Store
+	git    *gitsync.Repo
+	search *search.Index
 }
 
 // Option configures the router.
@@ -54,6 +56,9 @@ func NewRouter(st *store.Store, opts ...Option) http.Handler {
 		r.Delete("/contexts/*", s.deleteContext)
 
 		r.Get("/resolve", s.resolve)
+
+		r.Get("/search", s.searchContexts)
+		r.Post("/index/rebuild", s.rebuildIndex)
 
 		r.Get("/git/status", s.gitStatus)
 		r.Post("/git/sync", s.gitSync)

@@ -197,6 +197,15 @@ func (s *Store) DeleteSection(scope, project, name string, force bool) error {
 
 // List returns contexts without content.
 func (s *Store) List(f Filter) ([]Context, error) {
+	return s.list(f, false)
+}
+
+// All returns all contexts with content, for the search index.
+func (s *Store) All() ([]Context, error) {
+	return s.list(Filter{}, true)
+}
+
+func (s *Store) list(f Filter, withContent bool) ([]Context, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -221,7 +230,7 @@ func (s *Store) List(f Filter) ([]Context, error) {
 			(f.Section != "" && f.Section != c.Section) {
 			return nil
 		}
-		if err := s.load(&c, false); err != nil {
+		if err := s.load(&c, withContent); err != nil {
 			return err
 		}
 		out = append(out, c)

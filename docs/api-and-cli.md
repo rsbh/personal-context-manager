@@ -15,7 +15,7 @@
   hint: pcm config set remote <git-url> && pcm sync
   ```
 - **Layout**: `<repo>/<scope>/<section>/<name>.md`
-- **Search**: Bleve index in `~/.pcm/index/`, cache only. md files are source of truth. Server updates it on context create, update, delete. Rebuilt on server start, after sync, and on `pcm index rebuild`.
+- **Search**: Bleve index in `~/.pcm/index/`, cache only. md files are source of truth. Server updates it on context create and update. Rebuilt after any delete (context, section, project), after sync, on `pcm index rebuild`, and on server start if missing or schema changed (in background).
 - **Sync**: manual only. CLI `pcm sync` or UI sync button. Server runs the git CLI (uses user's SSH agent, `~/.ssh/config`, credential helpers). Branch `main`.
   1. `git add -A`, commit `pcm sync: N files changed` if changes.
   2. No remote: stop. Else set `origin` (add or set-url), fetch, rebase on `origin/main`.
