@@ -55,7 +55,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 |---|---|
 | `pcm get context(s) [-s <section>] [-p <project> \| -g]` | List contexts (NAME, SECTION, TITLE, DESCRIPTION, UPDATED) |
 | `pcm get context <name> -s <section> [-p <project> \| -g]` | Print md file (frontmatter + content) |
-| `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...] [-p <project> \| -g]` | Create context |
+| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [-p <project> \| -g]` | Create context |
 | `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
 | `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
 | `pcm search <query>` | Search contexts |

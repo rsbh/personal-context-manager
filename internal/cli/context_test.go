@@ -1,7 +1,10 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -40,7 +43,8 @@ func TestCreateContextMissingFlags(t *testing.T) {
 		want string
 	}{
 		{[]string{"create", "context", "go", "-g", "-m", "x"}, "missing section: use -s <section>"},
-		{[]string{"create", "context", "go", "-s", "style", "-g"}, "missing content: use -m <text>"},
+		{[]string{"create", "context", "go", "-s", "style", "-g"}, "missing content: use -m <text> or -f <file>"},
+		{[]string{"create", "context", "go", "-s", "style", "-g", "-m", "x", "-f", "a.md"}, "use -m or -f, not both"},
 		{[]string{"get", "context", "go", "-g"}, "missing section: use -s <section>"},
 		{[]string{"delete", "context", "go", "-g"}, "missing section: use -s <section>"},
 	}
@@ -52,6 +56,50 @@ func TestCreateContextMissingFlags(t *testing.T) {
 				t.Errorf("err = %v, want usageError %q", err, tt.want)
 			}
 		})
+	}
+}
+
+func TestCreateContextFromFile(t *testing.T) {
+	a := newTestApp(t)
+	mustRun(t, a, "create", "section", "style", "-g")
+	file := filepath.Join(t.TempDir(), "rules.md")
+	if err := os.WriteFile(file, []byte("Use gofmt.\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	mustRun(t, a, "create", "context", "go", "-s", "style", "-g", "-f", file)
+	if out := mustRun(t, a, "get", "context", "go", "-s", "style", "-g"); out != "Use gofmt.\n" {
+		t.Errorf("get out = %q", out)
+	}
+}
+
+func TestCreateContextFromStdin(t *testing.T) {
+	a := newTestApp(t)
+	mustRun(t, a, "create", "section", "style", "-g")
+
+	root := newRootCmd(a)
+	var out bytes.Buffer
+	root.SetOut(&out)
+	root.SetErr(&out)
+	root.SetIn(strings.NewReader("# Go\n- Use gofmt.\n"))
+	root.SetArgs([]string{"create", "context", "go", "-s", "style", "-g", "-f", "-"})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("create: %v, out %q", err, out.String())
+	}
+
+	if got := mustRun(t, a, "get", "context", "go", "-s", "style", "-g"); got != "# Go\n- Use gofmt.\n" {
+		t.Errorf("get out = %q", got)
+	}
+}
+
+func TestCreateContextMissingFile(t *testing.T) {
+	a := newTestApp(t)
+	mustRun(t, a, "create", "section", "style", "-g")
+	file := filepath.Join(t.TempDir(), "none.md")
+
+	_, _, err := runCLI(t, a, "create", "context", "go", "-s", "style", "-g", "-f", file)
+	if err == nil || !strings.Contains(err.Error(), "none.md") {
+		t.Errorf("err = %v, want error with none.md", err)
 	}
 }
 

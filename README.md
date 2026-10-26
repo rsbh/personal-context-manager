@@ -32,6 +32,7 @@ cd ~/code/my-repo
 pcm create section review           # section in current project (auto-created)
 pcm get sections
 pcm create context go -s review -m 'Check error handling.' --title 'Go review'
+pcm create context errors -s review -f rules.md   # content from file (- for stdin)
 pcm get contexts
 pcm get context go -s review
 pcm get projects
@@ -64,7 +65,7 @@ After a code change: `make install && make restart`.
 | `pcm get contexts [-s <section>] [-p <project> \| -g]` | List contexts |
 | `pcm get context <name> -s <section>` | Print context md |
 | `pcm get contexts -o md [-s <section>]` | Merged global + project contexts as markdown |
-| `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...]` | Create context |
+| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...]` | Create context |
 | `pcm delete context <name> -s <section>` | Delete context |
 | `pcm skill install\|uninstall\|show` | Claude Code skill in `~/.claude/skills/pcm/` |
 
