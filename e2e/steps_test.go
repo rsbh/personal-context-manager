@@ -7,7 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,6 +41,8 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the server is not running$`, w.serverNotRunning)
 	sc.Step(`^the server is running$`, w.serverRunning)
 	sc.Step(`^a pid file with a dead pid$`, w.deadPIDFile)
+	sc.Step(`^a project "([^"]*)"$`, w.aProject)
+	sc.Step(`^a project "([^"]*)" with a section "([^"]*)"$`, w.aProjectWithSection)
 	sc.Step(`^I run "([^"]*)"$`, w.iRun)
 	sc.Step(`^the exit code is (\d+)$`, w.exitCodeIs)
 	sc.Step(`^the output contains "(.*)"$`, w.outputContains)
@@ -117,6 +121,32 @@ func (w *world) deadPIDFile() error {
 	return os.WriteFile(w.pidFile(), []byte(strconv.Itoa(p.Process.Pid)), 0o644)
 }
 
+func (w *world) aProject(name string) error {
+	return w.post("/api/v1/projects", fmt.Sprintf(`{"name":%q}`, name))
+}
+
+func (w *world) aProjectWithSection(project, section string) error {
+	if err := w.aProject(project); err != nil {
+		return err
+	}
+	return w.post("/api/v1/sections", fmt.Sprintf(`{"scope":"project","project":%q,"name":%q}`, project, section))
+}
+
+// post calls the API directly, to set up state without the CLI.
+func (w *world) post(path, body string) error {
+	url := fmt.Sprintf("http://localhost:%d%s", w.port, path)
+	resp, err := http.Post(url, "application/json", strings.NewReader(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		msg, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("POST %s: status %d: %s", path, resp.StatusCode, msg)
+	}
+	return nil
+}
+
 // When
 
 func (w *world) iRun(command string) error {
@@ -139,6 +169,8 @@ func (w *world) exitCodeIs(want int) error {
 }
 
 func (w *world) outputContains(want string) error {
+	// Gherkin keeps \" as is in step text.
+	want = strings.ReplaceAll(want, `\"`, `"`)
 	if !strings.Contains(w.output, want) {
 		return fmt.Errorf("output does not contain %q:\n%s", want, w.output)
 	}

@@ -36,24 +36,33 @@ func (a *app) load() error {
 	return nil
 }
 
-func newRootCmd() *cobra.Command {
-	a := &app{}
+// newRootCmd builds pcm. Config loads on run, unless a already has a client (tests).
+func newRootCmd(a *app) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "pcm",
 		Short:         "Personal context manager",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(*cobra.Command, []string) error {
+			if a.client != nil {
+				return nil
+			}
 			return a.load()
 		},
 	}
-	root.AddCommand(newHealthCmd(a), newServerCmd(a))
+	root.AddCommand(
+		newHealthCmd(a),
+		newServerCmd(a),
+		newGetCmd(a),
+		newCreateCmd(a),
+		newDeleteCmd(a),
+	)
 	return root
 }
 
 // Execute runs pcm and returns the exit code.
 func Execute() int {
-	if err := newRootCmd().Execute(); err != nil {
+	if err := newRootCmd(&app{}).Execute(); err != nil {
 		if !errors.Is(err, errSilent) {
 			fmt.Fprintln(os.Stderr, "error:", err)
 		}
