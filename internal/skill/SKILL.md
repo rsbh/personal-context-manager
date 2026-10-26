@@ -39,7 +39,8 @@ Do this when the user asks to remember or save a rule, a style or a note.
 |---|---|
 | List projects | `pcm get projects` |
 | List sections | `pcm get sections [-p <project> \| -g]` |
-| List contexts | `pcm get contexts [-s <section>] [-p <project> \| -g]` |
+| List current contexts (global + project) | `pcm get contexts [-s <section>] [-p <project>]` |
+| List global contexts only | `pcm get contexts -g` |
 | Show one context | `pcm get context <name> -s <section>` |
 | Delete a context | `pcm delete context <name> -s <section>` |
 | Delete a section | `pcm delete section <name> [--force]` |
