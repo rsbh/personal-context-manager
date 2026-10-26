@@ -4,7 +4,10 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getContextOptions } from "../client/@tanstack/react-query.gen";
 import { age, rawFile } from "../lib/format";
+import { renderH1 } from "../lib/render";
 import classes from "./ContextView.module.css";
+
+const remarkPlugins = [remarkGfm];
 
 interface ContextViewProps {
   id: string;
@@ -35,7 +38,7 @@ export function ContextView({ id }: ContextViewProps) {
         <Text size="small" variant="tertiary" className={classes.path}>
           {id.split("/").join(" / ")}
         </Text>
-        <Headline size="t3" render={<h1 />}>
+        <Headline size="t3" render={renderH1}>
           {c.frontmatter?.title || c.name}
         </Headline>
         {c.frontmatter?.description && <Text variant="secondary">{c.frontmatter.description}</Text>}
@@ -56,7 +59,7 @@ export function ContextView({ id }: ContextViewProps) {
 
       <div className={classes.panel}>
         <div className={classes.markdown}>
-          <Markdown remarkPlugins={[remarkGfm]}>{c.content ?? ""}</Markdown>
+          <Markdown remarkPlugins={remarkPlugins}>{c.content ?? ""}</Markdown>
         </div>
       </div>
 

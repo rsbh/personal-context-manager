@@ -46,11 +46,11 @@ Then("I see {string}", async ({ page }, text: string) => {
   await expect(page.getByText(text).first()).toBeVisible();
 });
 
-// The sidebar is <nav aria-label="Contexts">; each group is role="group" with aria-label = its name.
+// The sidebar is <nav aria-label="Contexts">; each group is a listitem with aria-label = its name.
 Then("the sidebar shows {string} under {string}", async ({ page }, item: string, group: string) => {
   const nav = page.getByRole("navigation", { name: "Contexts" });
   await expect(
-    nav.getByRole("group", { name: group, exact: true }).getByText(item, { exact: true }),
+    nav.getByRole("listitem", { name: group, exact: true }).getByText(item, { exact: true }),
   ).toBeVisible();
 });
 

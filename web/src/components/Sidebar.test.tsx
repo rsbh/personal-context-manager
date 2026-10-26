@@ -28,7 +28,7 @@ describe("Sidebar", () => {
     base();
     renderUI(<Sidebar />);
     const nav = screen.getByRole("navigation", { name: "Contexts" });
-    const global = within(nav).getByRole("group", { name: "Global" });
+    const global = within(nav).getByRole("listitem", { name: "Global" });
     expect(await within(global).findByText("commits")).toBeInTheDocument();
     expect(within(global).getByText("go")).toBeInTheDocument();
     expect(within(global).getByText("empty")).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe("Sidebar", () => {
       ],
     });
     renderUI(<Sidebar />);
-    const projects = screen.getByRole("group", { name: "Projects" });
+    const projects = screen.getByRole("listitem", { name: "Projects" });
     await userEvent.click(await within(projects).findByText("api"));
     expect(anchor(await within(projects).findByText("pr"))).toHaveAttribute(
       "href",
@@ -92,7 +92,7 @@ describe("Sidebar", () => {
       "href",
       "/contexts/global/style/py",
     );
-    expect(screen.queryByRole("group", { name: "Global" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("listitem", { name: "Global" })).not.toBeInTheDocument();
   });
 
   it("shows no results", async () => {

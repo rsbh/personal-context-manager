@@ -16,6 +16,10 @@ function ContextPage() {
   return <ContextView key={id} id={id} />;
 }
 
+const contextPage = <ContextPage />;
+const currentContexts = <CurrentContexts />;
+const home = <Home />;
+
 export function App() {
   return (
     <div className={classes.shell}>
@@ -24,9 +28,9 @@ export function App() {
         <Sidebar />
         <main className={classes.main}>
           <Routes>
-            <Route path="/contexts/*" element={<ContextPage />} />
-            <Route path="/current" element={<CurrentContexts />} />
-            <Route path="*" element={<Home />} />
+            <Route path="/contexts/*" element={contextPage} />
+            <Route path="/current" element={currentContexts} />
+            <Route path="*" element={home} />
           </Routes>
         </main>
       </div>

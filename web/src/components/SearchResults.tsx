@@ -1,7 +1,9 @@
 import { Sidebar, Spinner, Text } from "@raystack/apsara";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { Link } from "react-router";
 import { searchContextsOptions } from "../client/@tanstack/react-query.gen";
+import type { SearchHit as SearchHitType } from "../client/types.gen";
 import { contextPath } from "../lib/format";
 import classes from "./SearchResults.module.css";
 
@@ -34,16 +36,28 @@ export function SearchResults({ query }: SearchResultsProps) {
         </Text>
       )}
       {search.data?.map((hit) => (
-        <Sidebar.Item key={hit.id} render={<Link to={contextPath(hit.id ?? "")} />}>
-          <span className={classes.hit}>
-            <span>{hit.name}</span>
-            <Text size="mini" variant="tertiary" lineClamp={2}>
-              {hit.section} · {hit.scope === "global" ? "global" : hit.project} —{" "}
-              {stripTags(hit.snippet)}
-            </Text>
-          </span>
-        </Sidebar.Item>
+        <SearchHit key={hit.id} hit={hit} />
       ))}
     </section>
+  );
+}
+
+interface SearchHitProps {
+  hit: SearchHitType;
+}
+
+function SearchHit({ hit }: SearchHitProps) {
+  const to = contextPath(hit.id ?? "");
+  const link = useMemo(() => <Link to={to} />, [to]);
+  return (
+    <Sidebar.Item render={link}>
+      <span className={classes.hit}>
+        <span>{hit.name}</span>
+        <Text size="mini" variant="tertiary" lineClamp={2}>
+          {hit.section} · {hit.scope === "global" ? "global" : hit.project} —{" "}
+          {stripTags(hit.snippet)}
+        </Text>
+      </span>
+    </Sidebar.Item>
   );
 }

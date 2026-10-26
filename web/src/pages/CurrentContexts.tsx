@@ -1,5 +1,6 @@
 import { Badge, Flex, Headline, Label, Select, Table, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { Link, useSearchParams } from "react-router";
 import {
   listProjectsOptions,
@@ -7,10 +8,14 @@ import {
   listSectionsOptions,
 } from "../client/@tanstack/react-query.gen";
 import { age, contextPath } from "../lib/format";
+import { renderH1 } from "../lib/render";
 import classes from "./CurrentContexts.module.css";
 
 // ALL is the select value for "no filter". Names cannot start with "_".
 const ALL = "_all";
+
+// NONE is a stable empty list, for props while data loads.
+const NONE: string[] = [];
 
 interface FilterSelectProps {
   id: string;
@@ -22,10 +27,11 @@ interface FilterSelectProps {
 }
 
 function FilterSelect({ id, label, allLabel, items, value, onChange }: FilterSelectProps) {
+  const onValueChange = useCallback((v: string) => onChange(v === ALL ? "" : v), [onChange]);
   return (
     <Flex direction="column" gap={2}>
       <Label htmlFor={id}>{label}</Label>
-      <Select value={value || ALL} onValueChange={(v) => onChange(v === ALL ? "" : v)}>
+      <Select value={value || ALL} onValueChange={onValueChange}>
         <Select.Trigger id={id} aria-label={label} className={classes.select}>
           <Select.Value />
         </Select.Trigger>
@@ -65,19 +71,24 @@ export function CurrentContexts() {
 
   const sections = [
     ...new Set([...(globalSections.data ?? []), ...(projectSections.data ?? [])]),
-  ].sort();
-  const set = (key: string, value: string) => {
-    const next = new URLSearchParams(params);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    setParams(next);
-  };
+  ].toSorted();
+  const set = useCallback(
+    (key: string, value: string) => {
+      const next = new URLSearchParams(params);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      setParams(next);
+    },
+    [params, setParams],
+  );
+  const setProject = useCallback((v: string) => set("project", v), [set]);
+  const setSection = useCallback((v: string) => set("section", v), [set]);
 
   return (
     <Flex direction="column" gap={7}>
       <Flex justify="between" align="end" wrap="wrap" gap={5}>
         <Flex direction="column" gap={2}>
-          <Headline size="t2" render={<h1 />}>
+          <Headline size="t2" render={renderH1}>
             Current contexts
           </Headline>
           <Text variant="secondary">
@@ -90,9 +101,9 @@ export function CurrentContexts() {
             id="filter-project"
             label="Project"
             allLabel="Global only"
-            items={projects.data ?? []}
+            items={projects.data ?? NONE}
             value={project}
-            onChange={(v) => set("project", v)}
+            onChange={setProject}
           />
           <FilterSelect
             id="filter-section"
@@ -100,7 +111,7 @@ export function CurrentContexts() {
             allLabel="All sections"
             items={sections}
             value={section}
-            onChange={(v) => set("section", v)}
+            onChange={setSection}
           />
         </Flex>
       </Flex>
