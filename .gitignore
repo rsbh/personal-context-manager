@@ -37,3 +37,12 @@ bin/
 
 # Claude Code worktrees
 .claude/worktrees/
+
+# UI build output (only .gitkeep is in git)
+web/dist/*
+!web/dist/.gitkeep
+web/node_modules/
+web/.features-gen/
+web/test-results/
+web/playwright-report/
+web/tsconfig.tsbuildinfo

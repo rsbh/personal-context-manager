@@ -13,6 +13,15 @@ import (
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
 
+func newTestStore(t *testing.T) *store.Store {
+	t.Helper()
+	st, err := store.New(t.TempDir())
+	if err != nil {
+		t.Fatalf("store.New: %v", err)
+	}
+	return st
+}
+
 func newTestServer(t *testing.T) (http.Handler, string) {
 	t.Helper()
 	root := t.TempDir()

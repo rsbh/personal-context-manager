@@ -40,6 +40,7 @@ func TestFeatures(t *testing.T) {
 		Options: &godog.Options{
 			Format:   "pretty",
 			Paths:    []string{"features"},
+			Tags:     "~@ui", // browser specs run with Node Playwright in web/ (make e2e-ui)
 			Strict:   true,
 			TestingT: t,
 		},

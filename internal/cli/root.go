@@ -78,6 +78,7 @@ func newRootCmd(a *app) *cobra.Command {
 		newSyncCmd(a),
 		newSearchCmd(a),
 		newIndexCmd(a),
+		newUICmd(a),
 	)
 	return root
 }

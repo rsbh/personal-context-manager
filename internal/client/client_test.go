@@ -47,3 +47,9 @@ func TestHealthNotReachable(t *testing.T) {
 		t.Error("want error for closed server")
 	}
 }
+
+func TestLocalURL(t *testing.T) {
+	if got := LocalURL(8080); got != "http://127.0.0.1:8080" {
+		t.Errorf("LocalURL = %q", got)
+	}
+}
