@@ -42,6 +42,8 @@ Do this when the user asks to remember or save a rule, a style or a note.
 | List current contexts (global + project) | `pcm get contexts [-s <section>] [-p <project>]` |
 | List global contexts only | `pcm get contexts -g` |
 | Show one context | `pcm get context <name> -s <section>` |
+| Find contexts by text (fuzzy) | `pcm search '<words>' [-s <section>] [-g \| --all]` |
+| Rebuild search index | `pcm index rebuild` |
 | Delete a context | `pcm delete context <name> -s <section>` |
 | Delete a section | `pcm delete section <name> [--force]` |
 | Sync with git remote | `pcm sync` (status: `pcm sync status`) |
@@ -49,6 +51,8 @@ Do this when the user asks to remember or save a rule, a style or a note.
 Ask the user before you delete anything.
 
 Scope flags: `-p <project>` or `-g`. With no flag, pcm uses the current git repo.
+
+Search: words match in any order, with typos. Use `+word` when the word must match, `-word` when it must not match, and `"words"` for an exact phrase. If search does not find a context that you know exists, run `pcm index rebuild` and search again.
 
 ## 5. Dump session
 

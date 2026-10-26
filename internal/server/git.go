@@ -65,6 +65,8 @@ func (s *server) gitSync(w http.ResponseWriter, r *http.Request) {
 		writeGitError(w, err)
 		return
 	}
+	// A pull can add, change or remove any file.
+	s.reindexAll()
 	writeJSON(w, http.StatusOK, res)
 }
 
