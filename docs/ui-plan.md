@@ -16,7 +16,8 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 | Serving | One port: UI at `/` (SPA fallback to `index.html`), API at `/api/v1`, `/health`. Unknown `/api/*`: JSON 404 |
 | Bind | `127.0.0.1` only |
 | `pcm ui` | Opens browser at `http://127.0.0.1:<config port>`. Server down: error + hint `pcm server start`. `PCM_NO_BROWSER=1`: print URL only |
-| Tests | Vitest + Testing Library (components). godog + playwright-go browser specs (`@ui` features, build tag `e2e_ui`, own CI job) |
+| Tests | Vitest + Testing Library (components). Browser specs: `@ui` features in `e2e/features/ui/`, run by Node Playwright + playwright-bdd (`web/e2e/`), own CI job. godog skips `@ui`. (playwright-go dropped: its driver CDN is gone) |
+| Code style | pcm project contexts `ui/component-props` (props as named `interface`) and `ui/css-modules` |
 
 ## Phases (one PR each, specs first)
 
