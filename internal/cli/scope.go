@@ -59,7 +59,7 @@ func resolveScope(f scopeFlags, cwd string) (scope, error) {
 	case f.project != "":
 		return scope{project: f.project}, nil
 	}
-	root, err := gitRoot(cwd)
+	root, err := repoRoot(cwd)
 	if err != nil {
 		return scope{}, errNotInRepo
 	}
@@ -70,8 +70,21 @@ func resolveScope(f scopeFlags, cwd string) (scope, error) {
 	return scope{project: name, detected: true}, nil
 }
 
-func gitRoot(dir string) (string, error) {
-	cmd := exec.Command("git", "rev-parse", "--show-toplevel")
+// repoRoot returns the main repo folder. In a worktree it is the folder that has
+// the shared .git dir, not the worktree. Bare repos and submodules use --show-toplevel.
+func repoRoot(dir string) (string, error) {
+	common, err := git(dir, "rev-parse", "--path-format=absolute", "--git-common-dir")
+	if err != nil {
+		return "", err
+	}
+	if filepath.Base(common) == ".git" {
+		return filepath.Dir(common), nil
+	}
+	return git(dir, "rev-parse", "--show-toplevel")
+}
+
+func git(dir string, args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
