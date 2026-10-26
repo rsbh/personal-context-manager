@@ -1,8 +1,14 @@
-.PHONY: build install restart test e2e fmt vet
+.PHONY: build swagger install restart test e2e fmt vet
 
-# Build pcm and pcm-server into bin/.
-build:
+SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
+
+# Build pcm and pcm-server into bin/, after the swagger spec.
+build: swagger
 	go build -o bin/ ./cmd/...
+
+# Generate the swagger spec into docs/swagger/.
+swagger:
+	$(SWAG) init -g cmd/pcm-server/main.go -o docs/swagger
 
 # Install pcm and pcm-server into $(go env GOPATH)/bin, then the Claude Code skill.
 install:

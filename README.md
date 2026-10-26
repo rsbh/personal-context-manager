@@ -72,7 +72,7 @@ After a code change: `make install && make restart`.
 | `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [--force]` | Create context. `--force` replaces existing |
 | `pcm delete context <name> -s <section>` | Delete context |
 | `pcm skill install\|uninstall\|show` | Claude Code skill in `~/.claude/skills/pcm/` |
-| `pcm config get [key]` / `pcm config set <key> <value>` | Config: `path`, `remote`, `port` |
+| `pcm config get [key]` / `pcm config set <key> <value>` | Config: `path`, `remote`, `port`, `swagger` (API docs UI at `/swagger/`, default `false`) |
 | `pcm sync` | Commit, pull (rebase), push the context repo |
 | `pcm sync status` / `pcm sync log [-n 10]` | Repo changes / recent commits |
 

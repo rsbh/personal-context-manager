@@ -15,6 +15,7 @@ Feature: Config
     And the output contains "path:"
     And the output contains "remote:"
     And the output contains "port:"
+    And the output contains "swagger: false"
 
   Scenario: Set port shows restart hint
     When I run "pcm config set port 9999"
@@ -25,9 +26,23 @@ Feature: Config
   Scenario: Unknown key
     When I run "pcm config set color red"
     Then the exit code is 1
-    And the output contains "error: unknown key \"color\": use path, remote or port"
+    And the output contains "error: unknown key \"color\": use path, remote, port or swagger"
 
   Scenario: Invalid port
     When I run "pcm config set port abc"
     Then the exit code is 1
     And the output contains "invalid port"
+
+  Scenario: Set swagger shows restart hint
+    When I run "pcm config set swagger true"
+    Then the exit code is 0
+    And the output contains "config/swagger set"
+    And the output contains "pcm server stop && pcm server start"
+    When I run "pcm config get swagger"
+    Then the exit code is 0
+    And the output contains "true"
+
+  Scenario: Invalid swagger value
+    When I run "pcm config set swagger yes"
+    Then the exit code is 1
+    And the output contains "invalid bool \"yes\": use true or false"

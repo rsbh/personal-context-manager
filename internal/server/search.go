@@ -29,6 +29,22 @@ func (s *server) requireSearch(w http.ResponseWriter) bool {
 	return true
 }
 
+// searchContexts godoc
+//
+//	@Summary	Full-text search of contexts
+//	@Tags		search
+//	@Produce	json
+//	@Param		q		query		string	true	"Search text"
+//	@Param		scope	query		string	false	"global or project"
+//	@Param		project	query		string	false	"Project name"
+//	@Param		global	query		bool	false	"With project: also match global contexts"
+//	@Param		section	query		string	false	"Section name"
+//	@Param		limit	query		int		false	"Max hits"	default(20)
+//	@Success	200		{array}		search.Hit
+//	@Failure	400		{object}	errorResponse
+//	@Failure	500		{object}	errorResponse
+//	@Failure	501		{object}	errorResponse
+//	@Router		/api/v1/search [get]
 func (s *server) searchContexts(w http.ResponseWriter, r *http.Request) {
 	if !s.requireSearch(w) {
 		return
@@ -67,6 +83,15 @@ func (s *server) searchContexts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// rebuildIndex godoc
+//
+//	@Summary	Rebuild the search index from all contexts
+//	@Tags		search
+//	@Produce	json
+//	@Success	200	{object}	rebuildResponse
+//	@Failure	500	{object}	errorResponse
+//	@Failure	501	{object}	errorResponse
+//	@Router		/api/v1/index/rebuild [post]
 func (s *server) rebuildIndex(w http.ResponseWriter, _ *http.Request) {
 	if !s.requireSearch(w) {
 		return

@@ -41,6 +41,15 @@ func writeGitError(w http.ResponseWriter, err error) {
 	writeError(w, http.StatusInternalServerError, err.Error())
 }
 
+// gitStatus godoc
+//
+//	@Summary	Git status of the context repo
+//	@Tags		git
+//	@Produce	json
+//	@Success	200	{object}	gitsync.Status
+//	@Failure	500	{object}	errorResponse
+//	@Failure	501	{object}	errorResponse
+//	@Router		/api/v1/git/status [get]
 func (s *server) gitStatus(w http.ResponseWriter, r *http.Request) {
 	if !s.requireGit(w) {
 		return
@@ -53,6 +62,16 @@ func (s *server) gitStatus(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, st)
 }
 
+// gitSync godoc
+//
+//	@Summary	Commit, pull and push the context repo
+//	@Tags		git
+//	@Produce	json
+//	@Success	200	{object}	gitsync.SyncResult
+//	@Failure	409	{object}	conflictResponse
+//	@Failure	500	{object}	errorResponse
+//	@Failure	501	{object}	errorResponse
+//	@Router		/api/v1/git/sync [post]
 func (s *server) gitSync(w http.ResponseWriter, r *http.Request) {
 	if !s.requireGit(w) {
 		return
@@ -70,6 +89,17 @@ func (s *server) gitSync(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, res)
 }
 
+// gitLog godoc
+//
+//	@Summary	Recent commits of the context repo
+//	@Tags		git
+//	@Produce	json
+//	@Param		n	query		int	false	"Number of commits"	default(10)
+//	@Success	200	{array}		gitsync.Commit
+//	@Failure	400	{object}	errorResponse
+//	@Failure	500	{object}	errorResponse
+//	@Failure	501	{object}	errorResponse
+//	@Router		/api/v1/git/log [get]
 func (s *server) gitLog(w http.ResponseWriter, r *http.Request) {
 	if !s.requireGit(w) {
 		return

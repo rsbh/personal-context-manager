@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
 	"github.com/rsbh/personal-context-manager/internal/search"
@@ -13,9 +14,10 @@ import (
 )
 
 type server struct {
-	store  *store.Store
-	git    *gitsync.Repo
-	search *search.Index
+	store   *store.Store
+	git     *gitsync.Repo
+	search  *search.Index
+	swagger bool
 }
 
 // Option configures the router.
@@ -24,6 +26,11 @@ type Option func(*server)
 // WithGit enables the /git endpoints.
 func WithGit(g *gitsync.Repo) Option {
 	return func(s *server) { s.git = g }
+}
+
+// WithSwagger serves the API docs UI at /swagger/.
+func WithSwagger() Option {
+	return func(s *server) { s.swagger = true }
 }
 
 // NewRouter returns the HTTP router with all routes registered.
@@ -38,6 +45,9 @@ func NewRouter(st *store.Store, opts ...Option) http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Get("/health", healthHandler)
+	if s.swagger {
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
+	}
 
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/projects", s.listProjects)
@@ -67,6 +77,13 @@ func NewRouter(st *store.Store, opts ...Option) http.Handler {
 	return r
 }
 
+// healthHandler godoc
+//
+//	@Summary	Health check
+//	@Tags		health
+//	@Produce	json
+//	@Success	200	{object}	map[string]string
+//	@Router		/health [get]
 func healthHandler(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
 }
