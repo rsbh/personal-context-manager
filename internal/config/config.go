@@ -28,7 +28,12 @@ func DefaultDir() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("home dir: %w", err)
 	}
-	return filepath.Join(home, ".pcm"), nil
+	return DirIn(home), nil
+}
+
+// DirIn returns <home>/.pcm.
+func DirIn(home string) string {
+	return filepath.Join(home, ".pcm")
 }
 
 // Load reads the config from dir and applies defaults. It creates dir if missing.

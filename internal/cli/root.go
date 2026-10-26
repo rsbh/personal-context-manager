@@ -22,6 +22,14 @@ type app struct {
 	cfg    config.Config
 	client *client.Client
 	cwd    string // empty: process working dir
+	home   string // empty: user home dir
+}
+
+func (a *app) homeDir() (string, error) {
+	if a.home != "" {
+		return a.home, nil
+	}
+	return os.UserHomeDir()
 }
 
 func (a *app) workDir() (string, error) {
@@ -32,10 +40,11 @@ func (a *app) workDir() (string, error) {
 }
 
 func (a *app) load() error {
-	dir, err := config.DefaultDir()
+	home, err := a.homeDir()
 	if err != nil {
 		return err
 	}
+	dir := config.DirIn(home)
 	cfg, err := config.Load(dir)
 	if err != nil {
 		return err
@@ -64,6 +73,7 @@ func newRootCmd(a *app) *cobra.Command {
 		newGetCmd(a),
 		newCreateCmd(a),
 		newDeleteCmd(a),
+		newSkillCmd(a),
 	)
 	return root
 }

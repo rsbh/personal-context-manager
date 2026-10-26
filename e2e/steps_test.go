@@ -59,6 +59,9 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the output is:$`, w.outputIs)
 	sc.Step(`^the output contains the server pid$`, w.outputContainsPID)
 	sc.Step(`^the pid file exists$`, w.pidFileExists)
+	sc.Step(`^the file "([^"]*)" has content "([^"]*)"$`, w.fileHasContent)
+	sc.Step(`^the file "([^"]*)" contains "([^"]*)"$`, w.fileContains)
+	sc.Step(`^the file "([^"]*)" does not exist$`, w.fileNotExists)
 	sc.Step(`^the pid file does not exist$`, w.pidFileNotExists)
 }
 
@@ -326,6 +329,40 @@ func splitArgs(line string) ([]string, error) {
 		args = append(args, cur.String())
 	}
 	return args, nil
+}
+
+// path expands a leading ~ to the scenario home.
+func (w *world) path(p string) string {
+	if rest, ok := strings.CutPrefix(p, "~/"); ok {
+		return filepath.Join(w.home, rest)
+	}
+	return p
+}
+
+func (w *world) fileHasContent(p, content string) error {
+	p = w.path(p)
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(p, []byte(content), 0o644)
+}
+
+func (w *world) fileContains(p, text string) error {
+	data, err := os.ReadFile(w.path(p))
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(string(data), text) {
+		return fmt.Errorf("file %s does not contain %q:\n%s", p, text, data)
+	}
+	return nil
+}
+
+func (w *world) fileNotExists(p string) error {
+	if _, err := os.Stat(w.path(p)); !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("file %s exists or stat failed: %v", p, err)
+	}
+	return nil
 }
 
 func freePort() (int, error) {
