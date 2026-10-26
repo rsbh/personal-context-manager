@@ -42,8 +42,8 @@ func parseFile(data []byte) (Frontmatter, string, error) {
 	return fm, string(body), nil
 }
 
-// renderFile joins frontmatter and body into md file content.
-func renderFile(fm Frontmatter, body string) ([]byte, error) {
+// Render joins frontmatter and body into md file content.
+func Render(fm Frontmatter, body string) ([]byte, error) {
 	if fm.isZero() {
 		return []byte(body), nil
 	}

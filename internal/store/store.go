@@ -368,7 +368,7 @@ func parseID(id string) (Context, error) {
 }
 
 func writeContext(path string, fm Frontmatter, content string) error {
-	data, err := renderFile(fm, content)
+	data, err := Render(fm, content)
 	if err != nil {
 		return err
 	}

@@ -53,11 +53,11 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 
 | Command | Purpose |
 |---|---|
-| `pcm add [text] -s <section> [-p <project> \| -g] [-n <name>]` | Save text (arg or stdin) |
-| `pcm list [-s <section>] [-p <project>] [-g]` | List contexts |
-| `pcm show <id>` | Print context |
-| `pcm edit <id>` | Open in `$EDITOR` |
-| `pcm rm <id>` | Delete context |
+| `pcm get context(s) [-s <section>] [-p <project> \| -g]` | List contexts (NAME, SECTION, TITLE, DESCRIPTION, UPDATED) |
+| `pcm get context <name> -s <section> [-p <project> \| -g]` | Print md file (frontmatter + content) |
+| `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...] [-p <project> \| -g]` | Create context |
+| `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
+| `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
 | `pcm search <query>` | Search contexts |
 | `pcm context [-s <section>] [-n <name>]` | Print merged global + current project contexts (for skill) |
 | `pcm get project(s) [name]` | List projects or show one |
