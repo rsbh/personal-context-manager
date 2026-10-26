@@ -134,3 +134,48 @@ Then("the table has {int} row(s) with {string}", async ({ page }, n: number, tex
 Then("the row with {string} contains {string}", async ({ page }, text: string, want: string) => {
   await expect(rowsWith(page, text).first()).toContainText(want);
 });
+
+// Edit steps.
+
+When("I click the {string} button", async ({ page }, name: string) => {
+  await page.getByRole("button", { name, exact: true }).click();
+});
+
+When("I click the {string} button in the dialog", async ({ page }, name: string) => {
+  await page.getByRole("alertdialog").getByRole("button", { name, exact: true }).click();
+});
+
+// The CodeMirror content element is a textbox with aria-label "Markdown".
+function editor(page: import("@playwright/test").Page) {
+  return page.getByRole("textbox", { name: "Markdown", exact: true });
+}
+
+When("I type {string} in the editor", async ({ page }, text: string) => {
+  await editor(page).fill(text);
+});
+
+Then("the editor contains {string}", async ({ page }, text: string) => {
+  await expect(editor(page)).toContainText(text);
+});
+
+When("I add the tag {string}", async ({ page }, tag: string) => {
+  const input = page.getByLabel("Tags", { exact: true });
+  await input.fill(tag);
+  await input.press("Enter");
+});
+
+Then("I do not see {string}", async ({ page }, text: string) => {
+  await expect(page.getByText(text, { exact: true })).toHaveCount(0);
+});
+
+Then("I see the dialog {string}", async ({ page }, name: string) => {
+  await expect(page.getByRole("alertdialog", { name })).toBeVisible();
+});
+
+Then("I see the toast {string}", async ({ page }, text: string) => {
+  await expect(page.getByRole("region", { name: /notifications/i })).toContainText(text);
+});
+
+Then("the {string} select shows {string}", async ({ page }, label: string, value: string) => {
+  await expect(page.getByRole("combobox", { name: label, exact: true })).toHaveText(value);
+});

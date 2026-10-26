@@ -101,4 +101,25 @@ describe("Sidebar", () => {
     await userEvent.type(screen.getByLabelText("Search contexts"), "zzz");
     expect(await screen.findByText("No results")).toBeInTheDocument();
   });
+
+  it("opens a new context form from a global section", async () => {
+    base();
+    renderUI(<Sidebar />);
+    await userEvent.click(await screen.findByRole("button", { name: "New context in style" }));
+    expect(screen.getByLabelText("Location")).toHaveTextContent("/new?scope=global&section=style");
+  });
+
+  it("opens a new context form from a project section", async () => {
+    base({
+      "/api/v1/sections?scope=project&project=api": ["review"],
+      "/api/v1/contexts?scope=project&project=api": [],
+    });
+    renderUI(<Sidebar />);
+    const projects = screen.getByRole("listitem", { name: "Projects" });
+    await userEvent.click(await within(projects).findByText("api"));
+    await userEvent.click(await screen.findByRole("button", { name: "New context in review" }));
+    expect(screen.getByLabelText("Location")).toHaveTextContent(
+      "/new?scope=project&project=api&section=review",
+    );
+  });
 });

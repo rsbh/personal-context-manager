@@ -1,0 +1,65 @@
+.markdown {
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown p,
+.markdown ul,
+.markdown ol {
+  margin: 0 0 var(--rs-space-4);
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  margin: var(--rs-space-6) 0 var(--rs-space-3);
+  font-size: var(--rs-font-size-t1);
+  line-height: var(--rs-line-height-t1);
+  font-weight: var(--rs-font-weight-medium);
+}
+
+.markdown strong {
+  font-weight: var(--rs-font-weight-medium);
+}
+
+.markdown code {
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-small);
+  padding: var(--rs-space-1) var(--rs-space-2);
+  border-radius: var(--rs-radius-1);
+  background: var(--rs-color-background-neutral-secondary);
+}
+
+.markdown pre {
+  padding: var(--rs-space-4);
+  border-radius: var(--rs-radius-3);
+  background: var(--rs-color-background-base-secondary);
+  overflow-x: auto;
+}
+
+.markdown pre code {
+  padding: 0;
+  background: none;
+}
+
+.markdown a {
+  color: var(--rs-color-foreground-accent-primary);
+}
+
+.markdown table {
+  border-collapse: collapse;
+}
+
+.markdown th,
+.markdown td {
+  padding: var(--rs-space-3);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+  text-align: left;
+}
