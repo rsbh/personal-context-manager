@@ -1,7 +1,7 @@
 ---
 name: pcm
 description: Load and save the user's personal coding context (code style, review rules, notes) with the pcm CLI. Use at the start of any coding task, before a code review, when the user asks to remember or save a rule or style, when the user asks to dump or save the session context to pcm, and when the user asks to list, show or delete pcm contexts, sections or projects.
-allowed-tools: Bash(pcm:*), Bash(gh pr view:*), Bash(git branch:*)
+allowed-tools: Bash(pcm:*), Bash(gh pr view:*), Bash(git branch:*), Write
 ---
 
 # pcm: personal context manager
@@ -55,18 +55,18 @@ Scope flags: `-p <project>` or `-g`. With no flag, pcm uses the current git repo
 Do this when the user asks to dump or save the current session context to pcm.
 
 1. Collect the rules, decisions and preferences from this session. Write them as short markdown bullets. Do not include a log of the work.
-2. Name: run `gh pr view --json title -q .title`. If there is no PR, run `git branch --show-current`. Change the result to kebab-case.
+2. Name: run `gh pr view --json title -q .title`. If there is no PR, run `git branch --show-current`. Change the result to kebab-case. If there is no branch (detached HEAD), suggest a short kebab-case name from the session topic and ask the user to approve or change it.
 3. Section: run `pcm get sections`. Pick the section that matches. If no section matches, select a short name and run `pcm create section <name>`.
 4. Show the user the scope (current project), section, name and content. Wait for approval. Make the changes that the user asks for.
 5. Run `pcm get contexts -s <section>`. If the name exists, ask the user: overwrite or create new.
    - Overwrite: add `--force` to the command in step 6.
    - Create new: add `-2` to the name. If that name exists, use `-3`, and continue.
-6. Send the content on stdin:
+6. Write the content to `<name>.md` in your scratchpad folder. If you have no scratchpad folder, use `/tmp`. Then run:
 
    ```sh
-   pcm create context <name> -s <section> -f - --description '<one line>' <<'EOF'
-   <content>
-   EOF
+   pcm create context <name> -s <section> -f <file> --description '<one line>'
    ```
+
+   Do not use a heredoc. Do not delete the file.
 
 7. Tell the user the scope, section and name.
