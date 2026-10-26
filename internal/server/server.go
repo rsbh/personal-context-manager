@@ -7,16 +7,29 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	"github.com/rsbh/personal-context-manager/internal/gitsync"
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
 
 type server struct {
 	store *store.Store
+	git   *gitsync.Repo
+}
+
+// Option configures the router.
+type Option func(*server)
+
+// WithGit enables the /git endpoints.
+func WithGit(g *gitsync.Repo) Option {
+	return func(s *server) { s.git = g }
 }
 
 // NewRouter returns the HTTP router with all routes registered.
-func NewRouter(st *store.Store) http.Handler {
+func NewRouter(st *store.Store, opts ...Option) http.Handler {
 	s := &server{store: st}
+	for _, o := range opts {
+		o(s)
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -41,6 +54,10 @@ func NewRouter(st *store.Store) http.Handler {
 		r.Delete("/contexts/*", s.deleteContext)
 
 		r.Get("/resolve", s.resolve)
+
+		r.Get("/git/status", s.gitStatus)
+		r.Post("/git/sync", s.gitSync)
+		r.Get("/git/log", s.gitLog)
 	})
 	return r
 }

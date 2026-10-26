@@ -275,3 +275,5 @@ func TestResolveFormats(t *testing.T) {
 		})
 	}
 }
+
+func httpRecorder() *httptest.ResponseRecorder { return httptest.NewRecorder() }

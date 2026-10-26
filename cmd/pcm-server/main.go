@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/rsbh/personal-context-manager/internal/config"
+	"github.com/rsbh/personal-context-manager/internal/gitsync"
 	"github.com/rsbh/personal-context-manager/internal/server"
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
@@ -34,10 +35,17 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Read remote on each git call, so pcm config set remote needs no restart.
+	remote := func() (string, error) {
+		c, err := config.Load(dir)
+		return c.Remote, err
+	}
+	git := gitsync.New(cfg.Path, remote)
+
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           server.NewRouter(st),
+		Handler:           server.NewRouter(st, server.WithGit(git)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
