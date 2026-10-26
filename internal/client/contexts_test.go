@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"testing"
 
@@ -63,6 +64,29 @@ func TestCreateContext(t *testing.T) {
 	}
 	want := `{"scope":"global","section":"style","name":"go","frontmatter":{"title":"Go","tags":["go"]},"content":"Use gofmt."}` + "\n"
 	f.expect(t, http.MethodPost, "/api/v1/contexts", "", want)
+}
+
+func TestUpdateContext(t *testing.T) {
+	f := &fakeAPI{status: http.StatusOK, resp: `{"id":"global/style/go","content":"New."}`}
+	got, err := f.start(t).UpdateContext(context.Background(), "global/style/go",
+		store.Frontmatter{Title: "Go"}, "New.")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"frontmatter":{"title":"Go"},"content":"New."}` + "\n"
+	f.expect(t, http.MethodPut, "/api/v1/contexts/global/style/go", "", want)
+	if got.Content != "New." {
+		t.Errorf("context = %+v", got)
+	}
+}
+
+func TestUpdateContextNotFound(t *testing.T) {
+	f := &fakeAPI{status: http.StatusNotFound, resp: `{"error":"not found"}`}
+	_, err := f.start(t).UpdateContext(context.Background(), "global/style/go", store.Frontmatter{}, "x")
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) || apiErr.Status != http.StatusNotFound {
+		t.Errorf("err = %v, want 404 APIError", err)
+	}
 }
 
 func TestDeleteContext(t *testing.T) {

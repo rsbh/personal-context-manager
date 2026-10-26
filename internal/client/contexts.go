@@ -27,6 +27,11 @@ type createContextRequest struct {
 	Content     string            `json:"content"`
 }
 
+type updateContextRequest struct {
+	Frontmatter store.Frontmatter `json:"frontmatter"`
+	Content     string            `json:"content"`
+}
+
 // ListContexts returns contexts without content. section is optional.
 func (c *Client) ListContexts(ctx context.Context, scope, project, section string) ([]store.Context, error) {
 	q := scopeQuery(scope, project)
@@ -55,6 +60,13 @@ func (c *Client) CreateContext(ctx context.Context, in store.Context) (store.Con
 	}
 	var out store.Context
 	err := c.do(ctx, http.MethodPost, "/api/v1/contexts", req, &out)
+	return out, err
+}
+
+// UpdateContext replaces the frontmatter and content of context id.
+func (c *Client) UpdateContext(ctx context.Context, id string, fm store.Frontmatter, content string) (store.Context, error) {
+	var out store.Context
+	err := c.do(ctx, http.MethodPut, "/api/v1/contexts/"+id, updateContextRequest{Frontmatter: fm, Content: content}, &out)
 	return out, err
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -120,6 +121,7 @@ func newCreateContextCmd(a *app) *cobra.Command {
 		flags   contextFlags
 		content string
 		file    string
+		force   bool
 		fm      store.Frontmatter
 	)
 	cmd := &cobra.Command{
@@ -153,6 +155,7 @@ func newCreateContextCmd(a *app) *cobra.Command {
 				}
 			}
 			scopeName, project := sc.api()
+			verb := "created"
 			_, err = a.client.CreateContext(cmd.Context(), store.Context{
 				Scope:       scopeName,
 				Project:     project,
@@ -161,16 +164,23 @@ func newCreateContextCmd(a *app) *cobra.Command {
 				Frontmatter: fm,
 				Content:     content,
 			})
+			var apiErr *client.APIError
+			if force && errors.As(err, &apiErr) && apiErr.Status == http.StatusConflict {
+				id := client.ContextID(scopeName, project, flags.section, args[0])
+				verb = "updated"
+				_, err = a.client.UpdateContext(cmd.Context(), id, fm, content)
+			}
 			if err != nil {
 				return a.handleErr(cmd, err)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "context/%s created in %s (section %q)\n", args[0], sc, flags.section)
+			fmt.Fprintf(cmd.OutOrStdout(), "context/%s %s in %s (section %q)\n", args[0], verb, sc, flags.section)
 			return nil
 		},
 	}
 	flags.register(cmd)
 	cmd.Flags().StringVarP(&content, "message", "m", "", "context content (markdown)")
 	cmd.Flags().StringVarP(&file, "file", "f", "", "read content from file, - for stdin")
+	cmd.Flags().BoolVar(&force, "force", false, "replace the context if it exists")
 	cmd.Flags().StringVar(&fm.Title, "title", "", "frontmatter title")
 	cmd.Flags().StringVar(&fm.Description, "description", "", "frontmatter description")
 	cmd.Flags().StringArrayVar(&fm.Tags, "tag", nil, "frontmatter tag (repeat for more)")
