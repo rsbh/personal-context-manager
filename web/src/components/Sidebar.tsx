@@ -1,39 +1,41 @@
-import { Loader, NavLink, Stack, Text, TextInput } from "@mantine/core";
-import { useDebouncedValue } from "@mantine/hooks";
+import { Search, Sidebar as ApsaraSidebar, Spinner, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import {
   listContextsOptions,
   listProjectsOptions,
   listSectionsOptions,
 } from "../client/@tanstack/react-query.gen";
 import type { StoreContext } from "../client/types.gen";
+import { useDebouncedValue } from "../lib/debounce";
 import { contextPath } from "../lib/format";
 import { SearchResults } from "./SearchResults";
+import classes from "./Sidebar.module.css";
 
-interface SidebarGroupProps {
-  label: string;
-  loading: boolean;
-  empty: string;
-  isEmpty: boolean;
+interface EmptyProps {
   children: React.ReactNode;
 }
 
-function SidebarGroup({ label, loading, empty, isEmpty, children }: SidebarGroupProps) {
+function Empty({ children }: EmptyProps) {
   return (
-    <Stack gap={2} role="group" aria-label={label}>
-      <Text size="xs" fw={600} tt="uppercase" c="dimmed" px="sm" py={6}>
-        {label}
-      </Text>
-      {loading && <Loader size="xs" mx="sm" />}
-      {!loading && isEmpty && (
-        <Text size="sm" c="dimmed" px="sm">
-          {empty}
-        </Text>
-      )}
+    <Text size="small" variant="tertiary" className={classes.empty}>
       {children}
-    </Stack>
+    </Text>
+  );
+}
+
+interface ContextItemProps {
+  context: StoreContext;
+}
+
+function ContextItem({ context }: ContextItemProps) {
+  const { pathname } = useLocation();
+  const to = contextPath(context.id ?? "");
+  return (
+    <ApsaraSidebar.Item active={pathname === to} render={<Link to={to} />}>
+      {context.name}
+    </ApsaraSidebar.Item>
   );
 }
 
@@ -44,11 +46,11 @@ interface SectionNodeProps {
 
 function SectionNode({ section, contexts }: SectionNodeProps) {
   return (
-    <NavLink label={section} defaultOpened childrenOffset="md">
+    <ApsaraSidebar.Group label={section} collapsible defaultOpen>
       {contexts.map((c) => (
-        <NavLink key={c.id} component={Link} to={contextPath(c.id ?? "")} label={c.name} />
+        <ContextItem key={c.id} context={c} />
       ))}
-    </NavLink>
+    </ApsaraSidebar.Group>
   );
 }
 
@@ -72,23 +74,19 @@ function ProjectNode({ project }: ProjectNodeProps) {
   });
 
   return (
-    <NavLink label={project} opened={opened} onChange={setOpened} childrenOffset="md">
-      {opened && (sections.isPending || contexts.isPending) && <Loader size="xs" mx="sm" />}
-      {sections.data?.length === 0 && (
-        <Text size="sm" c="dimmed" px="sm">
-          No sections
-        </Text>
-      )}
+    <ApsaraSidebar.Group label={project} collapsible open={opened} onOpenChange={setOpened}>
+      {opened && (sections.isPending || contexts.isPending) && <Spinner size={2} />}
+      {sections.data?.length === 0 && <Empty>No sections</Empty>}
       {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
         <SectionNode key={s} section={s} contexts={cs} />
       ))}
-    </NavLink>
+    </ApsaraSidebar.Group>
   );
 }
 
 export function Sidebar() {
   const [query, setQuery] = useState("");
-  const [debounced] = useDebouncedValue(query.trim(), 250);
+  const debounced = useDebouncedValue(query.trim(), 250);
   const [sections, contexts, projects] = useQueries({
     queries: [
       listSectionsOptions({ query: { scope: "global" } }),
@@ -98,32 +96,39 @@ export function Sidebar() {
   });
 
   return (
-    <Stack component="nav" aria-label="Contexts" gap="md" p="sm">
-      <TextInput
-        aria-label="Search contexts"
-        placeholder="Search contexts"
-        value={query}
-        onChange={(e) => setQuery(e.currentTarget.value)}
-      />
-      {debounced ? (
-        <SearchResults query={debounced} />
-      ) : (
-        <>
-          <SidebarGroup
-            label="Global"
-            loading={sections.isPending || contexts.isPending}
-            empty="No sections"
-            isEmpty={sections.data?.length === 0}
-          >
-            {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
-              <SectionNode key={s} section={s} contexts={cs} />
-            ))}
-          </SidebarGroup>
-          <SidebarGroup label="Projects" loading={projects.isPending} empty="No projects" isEmpty={projects.data?.length === 0}>
-            {projects.data?.map((p) => <ProjectNode key={p} project={p} />)}
-          </SidebarGroup>
-        </>
-      )}
-    </Stack>
+    <ApsaraSidebar collapsible="none" className={classes.sidebar}>
+      <ApsaraSidebar.Header>
+        <Search
+          aria-label="Search contexts"
+          placeholder="Search contexts"
+          value={query}
+          onChange={(e) => setQuery(e.currentTarget.value)}
+          showClearButton
+          onClear={() => setQuery("")}
+        />
+      </ApsaraSidebar.Header>
+      <ApsaraSidebar.Main>
+        <nav aria-label="Contexts">
+          {debounced ? (
+            <SearchResults query={debounced} />
+          ) : (
+            <>
+              <ApsaraSidebar.Group label="Global" role="group" aria-label="Global">
+                {(sections.isPending || contexts.isPending) && <Spinner size={2} />}
+                {sections.data?.length === 0 && <Empty>No sections</Empty>}
+                {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
+                  <SectionNode key={s} section={s} contexts={cs} />
+                ))}
+              </ApsaraSidebar.Group>
+              <ApsaraSidebar.Group label="Projects" role="group" aria-label="Projects">
+                {projects.isPending && <Spinner size={2} />}
+                {projects.data?.length === 0 && <Empty>No projects</Empty>}
+                {projects.data?.map((p) => <ProjectNode key={p} project={p} />)}
+              </ApsaraSidebar.Group>
+            </>
+          )}
+        </nav>
+      </ApsaraSidebar.Main>
+    </ApsaraSidebar>
   );
 }

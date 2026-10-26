@@ -1,4 +1,4 @@
-import { MantineProvider } from "@mantine/core";
+import { Theme } from "@raystack/apsara";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -9,11 +9,11 @@ import { vi } from "vitest";
 export function renderUI(ui: ReactNode, path = "/") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MantineProvider>
+    <Theme defaultValue={{ appearance: "light", accentColor: "indigo" }}>
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
       </QueryClientProvider>
-    </MantineProvider>,
+    </Theme>,
   );
 }
 

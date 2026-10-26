@@ -1,9 +1,10 @@
-import { Alert, Badge, Code, Group, Loader, Paper, Stack, Text, Title, Typography } from "@mantine/core";
+import { Badge, Callout, Flex, Headline, Spinner, Text } from "@raystack/apsara";
 import { useQuery } from "@tanstack/react-query";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getContextOptions } from "../client/@tanstack/react-query.gen";
 import { age, rawFile } from "../lib/format";
+import classes from "./ContextView.module.css";
 
 interface ContextViewProps {
   id: string;
@@ -12,52 +13,61 @@ interface ContextViewProps {
 export function ContextView({ id }: ContextViewProps) {
   const ctx = useQuery(getContextOptions({ path: { id } }));
 
-  if (ctx.isPending) return <Loader />;
+  if (ctx.isPending) return <Spinner size={3} />;
   if (ctx.isError || !ctx.data) {
     return (
-      <Alert color="red" title="Context not found">
-        <Code>{id}</Code>
-      </Alert>
+      <Callout type="alert" variant="outline">
+        <Flex direction="column" gap={2}>
+          <Text weight="medium">Context not found</Text>
+          <Text size="small" className={classes.path}>
+            {id}
+          </Text>
+        </Flex>
+      </Callout>
     );
   }
 
   const c = ctx.data;
-  const scope = c.scope === "global" ? "global" : "project";
+  const global = c.scope === "global";
   return (
-    <Stack gap="lg">
-      <Stack gap={6}>
-        <Text size="sm" c="dimmed" ff="monospace">
+    <Flex direction="column" gap={7}>
+      <Flex direction="column" gap={3}>
+        <Text size="small" variant="tertiary" className={classes.path}>
           {id.split("/").join(" / ")}
         </Text>
-        <Title order={1}>{c.frontmatter?.title || c.name}</Title>
-        {c.frontmatter?.description && <Text c="dimmed">{c.frontmatter.description}</Text>}
-        <Group gap="xs">
-          <Badge variant="light" color={scope === "global" ? "blue" : "orange"}>
-            {scope}
+        <Headline size="t3" render={<h1 />}>
+          {c.frontmatter?.title || c.name}
+        </Headline>
+        {c.frontmatter?.description && <Text variant="secondary">{c.frontmatter.description}</Text>}
+        <Flex align="center" gap={3} wrap="wrap">
+          <Badge variant={global ? "accent" : "warning"} size="small">
+            {global ? "global" : "project"}
           </Badge>
           {c.frontmatter?.tags?.map((t) => (
-            <Badge key={t} variant="outline" color="gray">
+            <Badge key={t} variant="neutral" size="small">
               {t}
             </Badge>
           ))}
-          <Text size="xs" c="dimmed">
+          <Text size="small" variant="tertiary">
             updated {age(c.updated_at)} ago
           </Text>
-        </Group>
-      </Stack>
+        </Flex>
+      </Flex>
 
-      <Paper withBorder p="lg" radius="md">
-        <Typography>
+      <div className={classes.panel}>
+        <div className={classes.markdown}>
           <Markdown remarkPlugins={[remarkGfm]}>{c.content ?? ""}</Markdown>
-        </Typography>
-      </Paper>
+        </div>
+      </div>
 
-      <Stack gap={6} component="section" aria-label="Raw file">
-        <Text size="xs" fw={600} tt="uppercase" c="dimmed">
-          File · {id}.md
-        </Text>
-        <Code block>{rawFile(c.frontmatter, c.content)}</Code>
-      </Stack>
-    </Stack>
+      <section aria-label="Raw file">
+        <Flex direction="column" gap={3}>
+          <Text size="small" weight="medium" variant="tertiary">
+            File · {id}.md
+          </Text>
+          <pre className={classes.raw}>{rawFile(c.frontmatter, c.content)}</pre>
+        </Flex>
+      </section>
+    </Flex>
   );
 }

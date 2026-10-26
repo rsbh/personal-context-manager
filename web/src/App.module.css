@@ -1,0 +1,26 @@
+.shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+}
+
+.body {
+  display: flex;
+  min-height: 0;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--rs-space-9) var(--rs-space-10);
+  background: var(--rs-color-background-base-secondary);
+}
+
+@media (max-width: 768px) {
+  .body {
+    flex-direction: column;
+  }
+  .main {
+    padding: var(--rs-space-6) var(--rs-space-5);
+  }
+}

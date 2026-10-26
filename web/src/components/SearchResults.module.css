@@ -1,0 +1,16 @@
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+}
+
+.label {
+  padding: var(--rs-space-2) var(--rs-space-3);
+}
+
+.hit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+  min-width: 0;
+}

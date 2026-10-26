@@ -12,9 +12,9 @@
     "gen:api": "openapi-ts"
   },
   "dependencies": {
-    "@mantine/core": "^9.7.4",
-    "@mantine/hooks": "^9.7.4",
+    "@raystack/apsara": "^1.7.0",
     "@tanstack/react-query": "^5.105.0",
+    "lucide-react": "^1.61.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-markdown": "^10.1.0",
@@ -33,9 +33,6 @@
     "@vitejs/plugin-react": "^6.1.2",
     "jsdom": "^29.1.1",
     "playwright-bdd": "^9.2.1",
-    "postcss": "^8.5.31",
-    "postcss-preset-mantine": "^1.18.0",
-    "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.9.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"

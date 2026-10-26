@@ -1,0 +1,14 @@
+.tableBox {
+  overflow-x: auto;
+  border-radius: var(--rs-radius-4);
+  border: 0.5px solid var(--rs-color-border-base-primary);
+  background: var(--rs-color-background-base-primary);
+}
+
+.table {
+  min-width: 760px;
+}
+
+.select {
+  min-width: 220px;
+}

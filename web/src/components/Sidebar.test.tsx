@@ -4,6 +4,11 @@ import { describe, expect, it } from "vitest";
 import { mockAPI, renderUI } from "../test/render";
 import { Sidebar } from "./Sidebar";
 
+// Apsara sidebar items are <a href> with role="listitem" (list semantics), so find them by text.
+function anchor(el: HTMLElement): HTMLAnchorElement | null {
+  return el.closest("a");
+}
+
 const globalContexts = [
   { id: "global/git/commits", scope: "global", section: "git", name: "commits" },
   { id: "global/style/go", scope: "global", section: "style", name: "go" },
@@ -27,7 +32,7 @@ describe("Sidebar", () => {
     expect(await within(global).findByText("commits")).toBeInTheDocument();
     expect(within(global).getByText("go")).toBeInTheDocument();
     expect(within(global).getByText("empty")).toBeInTheDocument();
-    expect(within(global).getByRole("link", { name: "go" })).toHaveAttribute("href", "/contexts/global/style/go");
+    expect(anchor(within(global).getByText("go"))).toHaveAttribute("href", "/contexts/global/style/go");
     expect(await within(nav).findByText("api")).toBeInTheDocument();
   });
 
@@ -41,8 +46,7 @@ describe("Sidebar", () => {
     renderUI(<Sidebar />);
     const projects = screen.getByRole("group", { name: "Projects" });
     await userEvent.click(await within(projects).findByText("api"));
-    const link = await within(projects).findByRole("link", { name: "pr" });
-    expect(link).toHaveAttribute("href", "/contexts/projects/api/review/pr");
+    expect(anchor(await within(projects).findByText("pr"))).toHaveAttribute("href", "/contexts/projects/api/review/pr");
   });
 
   it("shows empty states", async () => {
@@ -61,7 +65,7 @@ describe("Sidebar", () => {
     renderUI(<Sidebar />);
     await userEvent.type(screen.getByLabelText("Search contexts"), "black");
     const results = await screen.findByRole("region", { name: "Search results" });
-    expect(await within(results).findByRole("link", { name: /py/ })).toHaveAttribute("href", "/contexts/global/style/py");
+    expect(anchor(await within(results).findByText("py"))).toHaveAttribute("href", "/contexts/global/style/py");
     expect(screen.queryByRole("group", { name: "Global" })).not.toBeInTheDocument();
   });
 
