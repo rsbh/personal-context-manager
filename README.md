@@ -12,10 +12,14 @@ Design: [docs/api-and-cli.md](docs/api-and-cli.md). Requirements: [docs/requirem
 Needs Go (version in `go.mod`) and git. macOS or Linux.
 
 ```sh
-make install          # pcm + pcm-server into $(go env GOPATH)/bin
+make install          # pcm + pcm-server into $(go env GOPATH)/bin, skill into ~/.claude/skills/pcm
 ```
 
 `$(go env GOPATH)/bin` must be in your `PATH`.
+
+## Claude Code
+
+`make install` also installs the pcm skill. In Claude Code, the skill loads your contexts at the start of a coding task and before a review, and saves a rule when you ask Claude to remember it. Source: `internal/skill/SKILL.md`.
 
 ## Quick start
 
@@ -62,6 +66,7 @@ After a code change: `make install && make restart`.
 | `pcm get contexts -o md [-s <section>]` | Merged global + project contexts as markdown |
 | `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...]` | Create context |
 | `pcm delete context <name> -s <section>` | Delete context |
+| `pcm skill install\|uninstall\|show` | Claude Code skill in `~/.claude/skills/pcm/` |
 
 Scope: `-p <project>` or `-g` (global). No flag: current git repo root name (`My.Repo` → `my-repo`).
 
@@ -70,7 +75,7 @@ Scope: `-p <project>` or `-g` (global). No flag: current git repo root name (`My
 | Target | Purpose |
 |---|---|
 | `make build` | Build both binaries into `bin/` |
-| `make install` | Install both binaries |
+| `make install` | Install both binaries and the Claude Code skill |
 | `make restart` | Restart server with installed binary |
 | `make test` | Unit tests |
 | `make e2e` | BDD specs (godog) with real binaries |
