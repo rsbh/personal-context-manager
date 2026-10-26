@@ -1,4 +1,4 @@
-.PHONY: build swagger client web install restart test web-test e2e e2e-ui fmt vet
+.PHONY: build swagger client web install restart test web-test e2e e2e-ui fmt lint vet
 
 SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
 
@@ -46,6 +46,10 @@ e2e-ui: web
 
 fmt:
 	gofmt -w .
+
+# Go lint: golangci-lint (pinned as a go.mod tool). Config: .golangci.yml.
+lint:
+	go tool golangci-lint run ./...
 
 vet:
 	go vet ./...

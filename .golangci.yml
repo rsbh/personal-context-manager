@@ -1,0 +1,22 @@
+version: "2"
+
+run:
+  # Lint the godog e2e specs too.
+  build-tags: [e2e]
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gosec
+    - misspell
+    - revive
+
+formatters:
+  enable:
+    - gofmt
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
