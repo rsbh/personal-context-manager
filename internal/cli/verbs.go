@@ -18,19 +18,19 @@ import (
 
 func newGetCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "get", Short: "Show resources"}
-	cmd.AddCommand(newGetProjectCmd(a), newGetSectionCmd(a))
+	cmd.AddCommand(newGetProjectCmd(a), newGetSectionCmd(a), newGetContextCmd(a))
 	return cmd
 }
 
 func newCreateCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "create", Short: "Create a resource"}
-	cmd.AddCommand(newCreateProjectCmd(a), newCreateSectionCmd(a))
+	cmd.AddCommand(newCreateProjectCmd(a), newCreateSectionCmd(a), newCreateContextCmd(a))
 	return cmd
 }
 
 func newDeleteCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "delete", Short: "Delete a resource"}
-	cmd.AddCommand(newDeleteProjectCmd(a), newDeleteSectionCmd(a))
+	cmd.AddCommand(newDeleteProjectCmd(a), newDeleteSectionCmd(a), newDeleteContextCmd(a))
 	return cmd
 }
 

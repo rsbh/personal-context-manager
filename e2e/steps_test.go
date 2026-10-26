@@ -187,7 +187,10 @@ func (w *world) post(path, body string) error {
 // When
 
 func (w *world) iRun(command string) error {
-	args := strings.Fields(command)
+	args, err := splitArgs(command)
+	if err != nil {
+		return err
+	}
 	if len(args) == 0 || args[0] != "pcm" {
 		return fmt.Errorf("command must start with pcm: %q", command)
 	}
@@ -242,6 +245,42 @@ func (w *world) pidFileNotExists() error {
 		return fmt.Errorf("pid file exists or stat failed: %v", err)
 	}
 	return nil
+}
+
+// splitArgs splits a command line like a shell: 'a b' and "a b" are one argument.
+func splitArgs(line string) ([]string, error) {
+	var (
+		args  []string
+		cur   strings.Builder
+		quote rune
+		inArg bool
+	)
+	for _, r := range line {
+		switch {
+		case quote != 0 && r == quote:
+			quote = 0
+		case quote != 0:
+			cur.WriteRune(r)
+		case r == '\'' || r == '"':
+			quote, inArg = r, true
+		case r == ' ' || r == '\t':
+			if inArg {
+				args = append(args, cur.String())
+				cur.Reset()
+				inArg = false
+			}
+		default:
+			cur.WriteRune(r)
+			inArg = true
+		}
+	}
+	if quote != 0 {
+		return nil, fmt.Errorf("unclosed quote in %q", line)
+	}
+	if inArg {
+		args = append(args, cur.String())
+	}
+	return args, nil
 }
 
 func freePort() (int, error) {
