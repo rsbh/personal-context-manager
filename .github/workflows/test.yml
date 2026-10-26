@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,3 +24,15 @@ jobs:
         run: go vet ./...
       - name: test
         run: go test ./...
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: vet
+        run: go vet -tags e2e ./e2e/...
+      - name: test
+        run: go test -v -tags e2e ./e2e/...
