@@ -1,13 +1,9 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/spf13/cobra"
-
-	"github.com/rsbh/personal-context-manager/internal/client"
 )
 
 func newGetProjectCmd(a *app) *cobra.Command {
@@ -68,17 +64,8 @@ func newDeleteProjectCmd(a *app) *cobra.Command {
 		Short: "Delete a project",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := a.client.DeleteProject(cmd.Context(), args[0], force)
-			var apiErr *client.APIError
-			if errors.As(err, &apiErr) && apiErr.Status == http.StatusConflict {
-				printFields(cmd.ErrOrStderr(), []field{
-					{"error", apiErr.Message},
-					{"hint", "use --force to delete the project and its contents"},
-				})
-				return errSilent
-			}
-			if err != nil {
-				return a.handleErr(cmd, err)
+			if err := a.client.DeleteProject(cmd.Context(), args[0], force); err != nil {
+				return a.deleteErr(cmd, err, "project")
 			}
 			fmt.Fprintf(cmd.OutOrStdout(), "project %q deleted\n", args[0])
 			return nil

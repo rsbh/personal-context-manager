@@ -22,6 +22,7 @@ import (
 // world is the state of one scenario. Each scenario has its own HOME and port.
 type world struct {
 	home   string
+	cwd    string // pcm runs here. Default: home, which is not a git repo.
 	port   int
 	output string
 	code   int
@@ -43,9 +44,14 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a pid file with a dead pid$`, w.deadPIDFile)
 	sc.Step(`^a project "([^"]*)"$`, w.aProject)
 	sc.Step(`^a project "([^"]*)" with a section "([^"]*)"$`, w.aProjectWithSection)
+	sc.Step(`^a global section "([^"]*)"$`, w.aGlobalSection)
+	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)"$`, w.aGlobalSectionWithContext)
+	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
+	sc.Step(`^I am not in a git repo$`, w.notInGitRepo)
 	sc.Step(`^I run "([^"]*)"$`, w.iRun)
 	sc.Step(`^the exit code is (\d+)$`, w.exitCodeIs)
 	sc.Step(`^the output contains "(.*)"$`, w.outputContains)
+	sc.Step(`^the output does not contain "(.*)"$`, w.outputNotContains)
 	sc.Step(`^the output contains the server pid$`, w.outputContainsPID)
 	sc.Step(`^the pid file exists$`, w.pidFileExists)
 	sc.Step(`^the pid file does not exist$`, w.pidFileNotExists)
@@ -59,7 +65,7 @@ func (w *world) setup() error {
 	if err != nil {
 		return err
 	}
-	w.home = home
+	w.home, w.cwd = home, home
 	if w.port, err = freePort(); err != nil {
 		return err
 	}
@@ -79,6 +85,7 @@ func (w *world) teardown() {
 func (w *world) run(args ...string) (int, error) {
 	cmd := exec.Command(filepath.Join(binDir, "pcm"), args...)
 	cmd.Env = append(os.Environ(), "HOME="+w.home)
+	cmd.Dir = w.cwd
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	err := cmd.Run()
@@ -132,6 +139,36 @@ func (w *world) aProjectWithSection(project, section string) error {
 	return w.post("/api/v1/sections", fmt.Sprintf(`{"scope":"project","project":%q,"name":%q}`, project, section))
 }
 
+func (w *world) aGlobalSection(name string) error {
+	return w.post("/api/v1/sections", fmt.Sprintf(`{"scope":"global","name":%q}`, name))
+}
+
+func (w *world) aGlobalSectionWithContext(section, name string) error {
+	if err := w.aGlobalSection(section); err != nil {
+		return err
+	}
+	return w.post("/api/v1/contexts", fmt.Sprintf(`{"scope":"global","section":%q,"name":%q,"content":"x"}`, section, name))
+}
+
+func (w *world) inGitRepo(name string) error {
+	dir := filepath.Join(w.home, "src", name)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	init := exec.Command("git", "init", "--quiet")
+	init.Dir = dir
+	if out, err := init.CombinedOutput(); err != nil {
+		return fmt.Errorf("git init: %w: %s", err, out)
+	}
+	w.cwd = dir
+	return nil
+}
+
+func (w *world) notInGitRepo() error {
+	w.cwd = w.home
+	return nil
+}
+
 // post calls the API directly, to set up state without the CLI.
 func (w *world) post(path, body string) error {
 	url := fmt.Sprintf("http://localhost:%d%s", w.port, path)
@@ -173,6 +210,14 @@ func (w *world) outputContains(want string) error {
 	want = strings.ReplaceAll(want, `\"`, `"`)
 	if !strings.Contains(w.output, want) {
 		return fmt.Errorf("output does not contain %q:\n%s", want, w.output)
+	}
+	return nil
+}
+
+func (w *world) outputNotContains(text string) error {
+	text = strings.ReplaceAll(text, `\"`, `"`)
+	if strings.Contains(w.output, text) {
+		return fmt.Errorf("output contains %q:\n%s", text, w.output)
 	}
 	return nil
 }

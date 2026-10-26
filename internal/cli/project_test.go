@@ -96,7 +96,7 @@ func TestDeleteProject(t *testing.T) {
 func TestDeleteProjectNotEmpty(t *testing.T) {
 	a := newTestApp(t)
 	mustRun(t, a, "create", "project", "api")
-	createSection(t, a, "api", "style")
+	mustRun(t, a, "create", "section", "style", "-p", "api")
 
 	_, errOut, err := runCLI(t, a, "delete", "project", "api")
 	if !errors.Is(err, errSilent) {
@@ -122,16 +122,15 @@ func TestProjectNotReachable(t *testing.T) {
 	}
 }
 
-// createSection uses the API directly. The CLI has no section commands yet.
-func createSection(t *testing.T, a *app, project, name string) {
+// createContext uses the API directly. The CLI has no context commands yet.
+func createContext(t *testing.T, a *app, body string) {
 	t.Helper()
-	body := `{"scope":"project","project":"` + project + `","name":"` + name + `"}`
-	resp, err := http.Post(a.client.BaseURL()+"/api/v1/sections", "application/json", strings.NewReader(body))
+	resp, err := http.Post(a.client.BaseURL()+"/api/v1/contexts", "application/json", strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusCreated {
-		t.Fatalf("create section: status %d", resp.StatusCode)
+		t.Fatalf("create context: status %d", resp.StatusCode)
 	}
 }
