@@ -28,6 +28,7 @@ type world struct {
 	port   int
 	output string
 	code   int
+	stdin  string      // stdin for the next pcm run
 	resp   *httpResult // last API call from an "I GET" step
 }
 
@@ -69,6 +70,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the error is "(.*)"$`, w.errorIs)
 	sc.Step(`^I am not in a git repo$`, w.notInGitRepo)
 	sc.Step(`^I run "([^"]*)"$`, w.iRun)
+	sc.Step(`^I run "([^"]*)" with stdin:$`, w.iRunWithStdin)
 	sc.Step(`^the exit code is (\d+)$`, w.exitCodeIs)
 	sc.Step(`^the output contains "(.*)"$`, w.outputContains)
 	sc.Step(`^the output does not contain "(.*)"$`, w.outputNotContains)
@@ -113,6 +115,7 @@ func (w *world) run(args ...string) (int, error) {
 	cmd := exec.Command(filepath.Join(binDir, "pcm"), args...)
 	cmd.Env = append(os.Environ(), "HOME="+w.home)
 	cmd.Dir = w.cwd
+	cmd.Stdin = strings.NewReader(w.stdin)
 	var out bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &out
 	err := cmd.Run()
@@ -257,6 +260,12 @@ func (w *world) iRun(command string) error {
 	code, err := w.run(args[1:]...)
 	w.code = code
 	return err
+}
+
+func (w *world) iRunWithStdin(command string, doc *godog.DocString) error {
+	w.stdin = doc.Content
+	defer func() { w.stdin = "" }()
+	return w.iRun(command)
 }
 
 // Then

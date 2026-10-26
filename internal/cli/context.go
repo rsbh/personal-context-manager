@@ -3,6 +3,8 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -117,6 +119,7 @@ func newCreateContextCmd(a *app) *cobra.Command {
 	var (
 		flags   contextFlags
 		content string
+		file    string
 		fm      store.Frontmatter
 	)
 	cmd := &cobra.Command{
@@ -127,8 +130,18 @@ func newCreateContextCmd(a *app) *cobra.Command {
 			if err := requireSection(cmd, flags.section); err != nil {
 				return err
 			}
-			if !cmd.Flags().Changed("message") {
-				return newUsageError(cmd, "missing content: use -m <text>")
+			hasMsg, hasFile := cmd.Flags().Changed("message"), cmd.Flags().Changed("file")
+			switch {
+			case hasMsg && hasFile:
+				return newUsageError(cmd, "use -m or -f, not both")
+			case !hasMsg && !hasFile:
+				return newUsageError(cmd, "missing content: use -m <text> or -f <file>")
+			case hasFile:
+				data, err := readContent(cmd, file)
+				if err != nil {
+					return err
+				}
+				content = string(data)
 			}
 			sc, err := a.scope(cmd, flags.scopeFlags)
 			if err != nil {
@@ -157,10 +170,19 @@ func newCreateContextCmd(a *app) *cobra.Command {
 	}
 	flags.register(cmd)
 	cmd.Flags().StringVarP(&content, "message", "m", "", "context content (markdown)")
+	cmd.Flags().StringVarP(&file, "file", "f", "", "read content from file, - for stdin")
 	cmd.Flags().StringVar(&fm.Title, "title", "", "frontmatter title")
 	cmd.Flags().StringVar(&fm.Description, "description", "", "frontmatter description")
 	cmd.Flags().StringArrayVar(&fm.Tags, "tag", nil, "frontmatter tag (repeat for more)")
 	return cmd
+}
+
+// readContent reads path, or stdin when path is "-".
+func readContent(cmd *cobra.Command, path string) ([]byte, error) {
+	if path == "-" {
+		return io.ReadAll(cmd.InOrStdin())
+	}
+	return os.ReadFile(path)
 }
 
 func newDeleteContextCmd(a *app) *cobra.Command {

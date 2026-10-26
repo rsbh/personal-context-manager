@@ -37,7 +37,43 @@ Feature: Contexts
   Scenario: Missing content
     When I run "pcm create context go -s style -g"
     Then the exit code is 1
-    And the output contains "error: missing content: use -m <text>"
+    And the output contains "error: missing content: use -m <text> or -f <file>"
+
+  Scenario: Create context from file
+    Given the server is running
+    And a global section "style"
+    And the file "~/rules.md" has content "Use gofmt."
+    When I run "pcm create context go -s style -g -f rules.md"
+    Then the exit code is 0
+    And the output contains "context/go created in global (section \"style\")"
+    When I run "pcm get context go -s style -g"
+    Then the output contains "Use gofmt."
+
+  Scenario: Create context from stdin
+    Given the server is running
+    And a global section "style"
+    When I run "pcm create context go -s style -g -f -" with stdin:
+      """
+      # Go
+      - Use gofmt.
+      - Wrap errors.
+      """
+    Then the exit code is 0
+    When I run "pcm get context go -s style -g"
+    Then the output contains "- Use gofmt."
+    And the output contains "- Wrap errors."
+
+  Scenario: Create context from missing file
+    Given the server is running
+    And a global section "style"
+    When I run "pcm create context go -s style -g -f none.md"
+    Then the exit code is 1
+    And the output contains "none.md"
+
+  Scenario: Message and file together
+    When I run "pcm create context go -s style -g -m x -f rules.md"
+    Then the exit code is 1
+    And the output contains "error: use -m or -f, not both"
 
   Scenario: List contexts
     Given the server is running
