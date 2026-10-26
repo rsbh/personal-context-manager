@@ -9,8 +9,21 @@ describe("CurrentContexts", () => {
       "/api/v1/projects": ["api", "web"],
       "/api/v1/sections?scope=global": ["style"],
       "/api/v1/resolve?project=api": [
-        { id: "global/style/py", scope: "global", section: "style", name: "py", frontmatter: { title: "Python" } },
-        { id: "projects/api/style/go", scope: "project", project: "api", section: "style", name: "go", frontmatter: {} },
+        {
+          id: "global/style/py",
+          scope: "global",
+          section: "style",
+          name: "py",
+          frontmatter: { title: "Python" },
+        },
+        {
+          id: "projects/api/style/go",
+          scope: "project",
+          project: "api",
+          section: "style",
+          name: "go",
+          frontmatter: {},
+        },
       ],
     });
     renderUI(<CurrentContexts />, "/current?project=api");
@@ -19,7 +32,10 @@ describe("CurrentContexts", () => {
     const rows = await within(table).findAllByRole("row");
     expect(rows).toHaveLength(3); // header + 2
     expect(within(rows[1]).getByText("global")).toBeInTheDocument();
-    expect(within(rows[1]).getByRole("link", { name: "py" })).toHaveAttribute("href", "/contexts/global/style/py");
+    expect(within(rows[1]).getByRole("link", { name: "py" })).toHaveAttribute(
+      "href",
+      "/contexts/global/style/py",
+    );
     expect(within(rows[2]).getByText("project")).toBeInTheDocument();
   });
 

@@ -64,6 +64,10 @@ jobs:
         run: |
           npm run gen:api
           git diff --exit-code -- src/client || { echo "Run make client and commit web/src/client"; exit 1; }
+      - name: lint
+        run: npm run lint
+      - name: format
+        run: npm run fmt:check
       - name: typecheck
         run: npm run typecheck
       - name: test
@@ -73,6 +77,10 @@ jobs:
 
   e2e-ui:
     runs-on: ubuntu-latest
+    # Browsers and system deps come with the image; tag must match @playwright/test.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -86,9 +94,6 @@ jobs:
       - name: build UI
         working-directory: web
         run: npm ci && npm run build
-      - name: install chromium
-        working-directory: web
-        run: npx playwright install --with-deps chromium
       - name: test
         working-directory: web
         run: npm run e2e

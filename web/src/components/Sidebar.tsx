@@ -1,6 +1,6 @@
 import { Search, Sidebar as ApsaraSidebar, Spinner, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router";
 import {
   listContextsOptions,
@@ -32,8 +32,9 @@ interface ContextItemProps {
 function ContextItem({ context }: ContextItemProps) {
   const { pathname } = useLocation();
   const to = contextPath(context.id ?? "");
+  const link = useMemo(() => <Link to={to} />, [to]);
   return (
-    <ApsaraSidebar.Item active={pathname === to} render={<Link to={to} />}>
+    <ApsaraSidebar.Item active={pathname === to} render={link}>
       {context.name}
     </ApsaraSidebar.Item>
   );
@@ -94,6 +95,11 @@ export function Sidebar() {
       listProjectsOptions(),
     ],
   });
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.currentTarget.value),
+    [],
+  );
+  const onClear = useCallback(() => setQuery(""), []);
 
   return (
     <ApsaraSidebar collapsible="none" className={classes.sidebar}>
@@ -102,9 +108,9 @@ export function Sidebar() {
           aria-label="Search contexts"
           placeholder="Search contexts"
           value={query}
-          onChange={(e) => setQuery(e.currentTarget.value)}
+          onChange={onChange}
           showClearButton
-          onClear={() => setQuery("")}
+          onClear={onClear}
         />
       </ApsaraSidebar.Header>
       <ApsaraSidebar.Main>
@@ -113,17 +119,19 @@ export function Sidebar() {
             <SearchResults query={debounced} />
           ) : (
             <>
-              <ApsaraSidebar.Group label="Global" role="group" aria-label="Global">
+              <ApsaraSidebar.Group label="Global">
                 {(sections.isPending || contexts.isPending) && <Spinner size={2} />}
                 {sections.data?.length === 0 && <Empty>No sections</Empty>}
                 {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
                   <SectionNode key={s} section={s} contexts={cs} />
                 ))}
               </ApsaraSidebar.Group>
-              <ApsaraSidebar.Group label="Projects" role="group" aria-label="Projects">
+              <ApsaraSidebar.Group label="Projects">
                 {projects.isPending && <Spinner size={2} />}
                 {projects.data?.length === 0 && <Empty>No projects</Empty>}
-                {projects.data?.map((p) => <ProjectNode key={p} project={p} />)}
+                {projects.data?.map((p) => (
+                  <ProjectNode key={p} project={p} />
+                ))}
               </ApsaraSidebar.Group>
             </>
           )}
