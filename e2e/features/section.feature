@@ -29,6 +29,13 @@ Feature: Sections
     When I run "pcm get projects"
     Then the output contains "my-repo"
 
+  Scenario: Current project from git worktree uses main repo name
+    Given the server is running
+    And I am in a worktree "wt" of git repo "api"
+    When I run "pcm create section style"
+    Then the exit code is 0
+    And the output contains "section/style created in project \"api\""
+
   Scenario: Get sections of current project
     Given the server is running
     And I am in a git repo named "api"

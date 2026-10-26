@@ -41,8 +41,26 @@ func gitRepo(t *testing.T, name string) string {
 	return dir
 }
 
+// gitWorktree adds worktree wt to repo (one empty commit) and returns its dir.
+func gitWorktree(t *testing.T, repo, wt string) string {
+	t.Helper()
+	dir := filepath.Join(t.TempDir(), wt)
+	for _, args := range [][]string{
+		{"-c", "user.name=t", "-c", "user.email=t@t", "commit", "--quiet", "--allow-empty", "-m", "init"},
+		{"worktree", "add", "--quiet", dir},
+	} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repo
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %s: %v: %s", args[0], err, out)
+		}
+	}
+	return dir
+}
+
 func TestResolveScope(t *testing.T) {
 	repo := gitRepo(t, "My.Repo")
+	wt := gitWorktree(t, repo, "wt")
 	plain := t.TempDir()
 
 	tests := []struct {
@@ -56,6 +74,7 @@ func TestResolveScope(t *testing.T) {
 		{"project flag", scopeFlags{project: "api"}, plain, scope{project: "api"}, nil},
 		{"detect from root", scopeFlags{}, repo, scope{project: "my-repo", detected: true}, nil},
 		{"detect from sub dir", scopeFlags{}, filepath.Join(repo, "sub"), scope{project: "my-repo", detected: true}, nil},
+		{"detect from worktree", scopeFlags{}, wt, scope{project: "my-repo", detected: true}, nil},
 		{"not in git repo", scopeFlags{}, plain, scope{}, errNotInRepo},
 		{"both flags", scopeFlags{project: "api", global: true}, plain, scope{}, errBothScopes},
 	}

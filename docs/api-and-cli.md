@@ -3,7 +3,7 @@
 ## Concepts
 
 - **Scope**: `global` or `project/<name>`.
-- **Project**: name = basename of git repo root of cwd. No `.pcm` file in project.
+- **Project**: name = basename of git repo root of cwd (main repo in a worktree). No `.pcm` file in project.
 - **Section**: user defined (e.g. `style`, `review`). One folder per section.
 - **Context**: one md file. A section can have many contexts (e.g. `backend.md`, `ui.md`). Many contexts can apply to one project.
 - **Binaries**: `pcm-server` (API server, runs in background) and `pcm` (CLI client, calls API).
@@ -83,7 +83,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm config set <key> <value>` | Write key to `config.yaml`. `path` / `port`: hint to restart server |
 
 Scope flags (like kubectl `-n`): `-p <project>` or `-g` (global). Both: error.
-No flag: current project = git repo root folder name (`git rev-parse --show-toplevel`), normalized (`My.Repo` → `my-repo`).
+No flag: current project = main repo folder name: parent of `git rev-parse --path-format=absolute --git-common-dir` when it ends in `.git` (same for worktrees), else `git rev-parse --show-toplevel`. Normalized (`My.Repo` → `my-repo`). Needs git 2.31+.
 - Not in git repo: error, hint `use -p <project> or -g`.
 - `create` auto-creates the current project. `get` / `delete` do not.
 - `-p <project>` never auto-creates (typo safety).
