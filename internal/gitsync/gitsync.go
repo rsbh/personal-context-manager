@@ -21,6 +21,7 @@ type ConflictError struct {
 
 func (e *ConflictError) Error() string { return "sync conflict, rebase aborted" }
 
+// Status is the git state of the repo.
 type Status struct {
 	Branch  string   `json:"branch"`
 	Remote  string   `json:"remote"`
@@ -29,6 +30,7 @@ type Status struct {
 	Behind  int      `json:"behind"`
 }
 
+// SyncResult is the result of a Sync.
 type SyncResult struct {
 	Committed int    `json:"committed"` // files
 	Pulled    int    `json:"pulled"`    // commits
@@ -36,18 +38,21 @@ type SyncResult struct {
 	Remote    string `json:"remote"`
 }
 
+// Commit is one entry of the git log.
 type Commit struct {
 	Hash    string `json:"hash"`
 	Date    string `json:"date"`
 	Message string `json:"message"`
 }
 
+// Repo runs git operations on the context repo. Calls are serialized.
 type Repo struct {
 	root   string
 	remote func() (string, error) // read on each call, so a config change needs no restart
 	mu     sync.Mutex
 }
 
+// New returns a Repo for the git repo at root. remote returns the configured remote URL.
 func New(root string, remote func() (string, error)) *Repo {
 	return &Repo{root: root, remote: remote}
 }

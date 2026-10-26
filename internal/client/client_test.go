@@ -26,7 +26,7 @@ func TestHealth(t *testing.T) {
 					t.Errorf("path = %s, want /health", r.URL.Path)
 				}
 				w.WriteHeader(tt.status)
-				w.Write([]byte(tt.body))
+				_, _ = w.Write([]byte(tt.body))
 			}))
 			defer srv.Close()
 

@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+// Scopes of a context.
 const (
 	ScopeGlobal  = "global"
 	ScopeProject = "project"
@@ -29,6 +30,7 @@ const (
 	keepFile = ".gitkeep"
 )
 
+// Errors returned by the store. Wrapped: check with errors.Is.
 var (
 	ErrNotFound = errors.New("not found")
 	ErrExists   = errors.New("already exists")
@@ -57,6 +59,7 @@ type Filter struct {
 	Section string
 }
 
+// Store reads and writes contexts as markdown files in a git repo. It is safe for concurrent use.
 type Store struct {
 	root string
 	mu   sync.RWMutex
@@ -64,7 +67,7 @@ type Store struct {
 
 // New opens the repo at root. It creates the folder and runs git init if missing.
 func New(root string) (*Store, error) {
-	if err := os.MkdirAll(root, 0o755); err != nil {
+	if err := os.MkdirAll(root, 0o750); err != nil {
 		return nil, fmt.Errorf("create repo: %w", err)
 	}
 	if _, err := os.Stat(filepath.Join(root, ".git")); errors.Is(err, os.ErrNotExist) {
@@ -75,7 +78,7 @@ func New(root string) (*Store, error) {
 		}
 	}
 	for _, d := range []string{globalDir, projectsDir} {
-		if err := os.MkdirAll(filepath.Join(root, d), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Join(root, d), 0o750); err != nil {
 			return nil, fmt.Errorf("create %s: %w", d, err)
 		}
 	}
@@ -124,6 +127,7 @@ func (s *Store) sectionDir(scope, project, section string) (string, error) {
 
 // Projects
 
+// ListProjects returns the project names.
 func (s *Store) ListProjects() ([]string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -143,6 +147,7 @@ func (s *Store) GetProject(name string) error {
 	return nil
 }
 
+// CreateProject creates the project folder.
 func (s *Store) CreateProject(name string) error {
 	if err := validName("project", name); err != nil {
 		return err
@@ -152,6 +157,7 @@ func (s *Store) CreateProject(name string) error {
 	return createDir(filepath.Join(s.root, projectsDir, name), "project "+name)
 }
 
+// DeleteProject removes the project folder. Without force, it must be empty.
 func (s *Store) DeleteProject(name string, force bool) error {
 	if err := validName("project", name); err != nil {
 		return err
@@ -163,6 +169,7 @@ func (s *Store) DeleteProject(name string, force bool) error {
 
 // Sections
 
+// ListSections returns the section names in a scope.
 func (s *Store) ListSections(scope, project string) ([]string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -173,6 +180,7 @@ func (s *Store) ListSections(scope, project string) ([]string, error) {
 	return listDirs(dir)
 }
 
+// CreateSection creates the section folder in a scope.
 func (s *Store) CreateSection(scope, project, name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -183,6 +191,7 @@ func (s *Store) CreateSection(scope, project, name string) error {
 	return createDir(dir, "section "+name)
 }
 
+// DeleteSection removes the section folder. Without force, it must be empty.
 func (s *Store) DeleteSection(scope, project, name string, force bool) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -243,6 +252,7 @@ func (s *Store) list(f Filter, withContent bool) ([]Context, error) {
 	return out, nil
 }
 
+// Get returns context id with content.
 func (s *Store) Get(id string) (Context, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -281,6 +291,7 @@ func (s *Store) Create(c Context) (Context, error) {
 	return c, s.load(&c, true)
 }
 
+// Update replaces the frontmatter and content of an existing context.
 func (s *Store) Update(id string, fm Frontmatter, content string) (Context, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -298,6 +309,7 @@ func (s *Store) Update(id string, fm Frontmatter, content string) (Context, erro
 	return c, s.load(&c, true)
 }
 
+// Delete removes context id.
 func (s *Store) Delete(id string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -381,7 +393,7 @@ func writeContext(path string, fm Frontmatter, content string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	return os.WriteFile(path, data, 0o600)
 }
 
 func isDir(p string) bool {
@@ -407,10 +419,10 @@ func createDir(dir, label string) error {
 	if isDir(dir) {
 		return fmt.Errorf("%s: %w", label, ErrExists)
 	}
-	if err := os.Mkdir(dir, 0o755); err != nil {
+	if err := os.Mkdir(dir, 0o750); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, keepFile), nil, 0o644)
+	return os.WriteFile(filepath.Join(dir, keepFile), nil, 0o600)
 }
 
 func removeDir(dir, label string, force bool) error {

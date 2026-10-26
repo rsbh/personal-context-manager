@@ -12,6 +12,16 @@ linters:
     - gosec
     - misspell
     - revive
+  settings:
+    gosec:
+      excludes:
+        - G104 # unhandled errors: errcheck covers it
+  exclusions:
+    presets:
+      - common-false-positives
+      - std-error-handling
+    paths:
+      - web/node_modules
 
 formatters:
   enable:

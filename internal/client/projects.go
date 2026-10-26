@@ -10,22 +10,26 @@ type project struct {
 	Name string `json:"name"`
 }
 
+// ListProjects returns the project names.
 func (c *Client) ListProjects(ctx context.Context) ([]string, error) {
 	var out []string
 	err := c.do(ctx, http.MethodGet, "/api/v1/projects", nil, &out)
 	return out, err
 }
 
+// GetProject returns the project name if the project exists.
 func (c *Client) GetProject(ctx context.Context, name string) (string, error) {
 	var out project
 	err := c.do(ctx, http.MethodGet, "/api/v1/projects/"+url.PathEscape(name), nil, &out)
 	return out.Name, err
 }
 
+// CreateProject creates a project.
 func (c *Client) CreateProject(ctx context.Context, name string) error {
 	return c.do(ctx, http.MethodPost, "/api/v1/projects", project{Name: name}, nil)
 }
 
+// DeleteProject deletes a project. Without force, the project must be empty.
 func (c *Client) DeleteProject(ctx context.Context, name string, force bool) error {
 	path := "/api/v1/projects/" + url.PathEscape(name)
 	if force {

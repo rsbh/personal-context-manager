@@ -20,6 +20,7 @@ type SearchParams struct {
 	Limit   int
 }
 
+// Search runs a full-text search over contexts.
 func (c *Client) Search(ctx context.Context, p SearchParams) ([]search.Hit, error) {
 	q := url.Values{"q": {p.Q}}
 	if p.Scope != "" {

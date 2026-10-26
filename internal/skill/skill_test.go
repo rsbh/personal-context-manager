@@ -33,10 +33,10 @@ func TestInstallAndUninstall(t *testing.T) {
 	file := filepath.Join(Dir(home), "SKILL.md")
 
 	// Overwrites an old file.
-	if err := os.MkdirAll(Dir(home), 0o755); err != nil {
+	if err := os.MkdirAll(Dir(home), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(file, []byte("old"), 0o644); err != nil {
+	if err := os.WriteFile(file, []byte("old"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	got, err := Install(home)

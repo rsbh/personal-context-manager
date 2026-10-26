@@ -1,3 +1,4 @@
+// Command pcm is the personal context manager CLI.
 package main
 
 import (

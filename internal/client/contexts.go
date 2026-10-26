@@ -43,12 +43,14 @@ func (c *Client) ListContexts(ctx context.Context, scope, project, section strin
 	return out, err
 }
 
+// GetContext returns context id with content.
 func (c *Client) GetContext(ctx context.Context, id string) (store.Context, error) {
 	var out store.Context
 	err := c.do(ctx, http.MethodGet, "/api/v1/contexts/"+id, nil, &out)
 	return out, err
 }
 
+// CreateContext creates a context and returns it.
 func (c *Client) CreateContext(ctx context.Context, in store.Context) (store.Context, error) {
 	req := createContextRequest{
 		Scope:       in.Scope,
@@ -70,6 +72,7 @@ func (c *Client) UpdateContext(ctx context.Context, id string, fm store.Frontmat
 	return out, err
 }
 
+// DeleteContext deletes context id.
 func (c *Client) DeleteContext(ctx context.Context, id string) error {
 	return c.do(ctx, http.MethodDelete, "/api/v1/contexts/"+id, nil, nil)
 }

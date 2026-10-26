@@ -63,7 +63,7 @@ func TestCreateContextFromFile(t *testing.T) {
 	a := newTestApp(t)
 	mustRun(t, a, "create", "section", "style", "-g")
 	file := filepath.Join(t.TempDir(), "rules.md")
-	if err := os.WriteFile(file, []byte("Use gofmt.\n"), 0o644); err != nil {
+	if err := os.WriteFile(file, []byte("Use gofmt.\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

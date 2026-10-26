@@ -18,6 +18,7 @@ const (
 	defaultSyncTimeout = 5 * time.Minute // git fetch and push can be slow
 )
 
+// Client calls the pcm server API.
 type Client struct {
 	baseURL     string
 	http        *http.Client
@@ -34,6 +35,7 @@ func WithTimeout(d time.Duration) Option { return func(c *Client) { c.timeout = 
 // WithSyncTimeout sets the timeout for git sync calls.
 func WithSyncTimeout(d time.Duration) Option { return func(c *Client) { c.syncTimeout = d } }
 
+// New returns a Client for the server at baseURL.
 func New(baseURL string, opts ...Option) *Client {
 	c := &Client{
 		baseURL:     baseURL,
@@ -52,6 +54,7 @@ func LocalURL(port int) string {
 	return fmt.Sprintf("http://127.0.0.1:%d", port)
 }
 
+// BaseURL returns the server URL.
 func (c *Client) BaseURL() string {
 	return c.baseURL
 }
@@ -136,7 +139,7 @@ func (c *Client) sendTimeout(ctx context.Context, d time.Duration, method, path 
 		return nil, fmt.Errorf("%w after %s", ErrTimeout, d)
 	case err != nil:
 		cancel()
-		return nil, fmt.Errorf("%w: %v", ErrNotReachable, err)
+		return nil, fmt.Errorf("%w: %w", ErrNotReachable, err)
 	}
 	resp.Body = cancelBody{resp.Body, cancel}
 	if resp.StatusCode >= 400 {
