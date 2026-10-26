@@ -1,3 +1,4 @@
+// Package config loads and saves the pcm config file.
 package config
 
 import (
@@ -25,6 +26,7 @@ type Config struct {
 	Swagger bool `yaml:"swagger,omitempty"`
 }
 
+// Errors for invalid config keys and values.
 var (
 	ErrUnknownKey  = errors.New("unknown key")
 	ErrInvalidPort = errors.New("invalid port")
@@ -78,14 +80,14 @@ func Set(dir, key, value string) error {
 	default:
 		return unknownKey(key)
 	}
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, fileName), data, 0o644)
+	return os.WriteFile(filepath.Join(dir, fileName), data, 0o600)
 }
 
 // readFile reads config.yaml without defaults. A missing file gives an empty Config.
@@ -120,7 +122,7 @@ func DirIn(home string) string {
 
 // Load reads the config from dir and applies defaults. It creates dir if missing.
 func Load(dir string) (Config, error) {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return Config{}, fmt.Errorf("create config dir: %w", err)
 	}
 

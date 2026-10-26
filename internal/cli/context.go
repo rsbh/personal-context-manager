@@ -109,7 +109,9 @@ func (a *app) getContext(cmd *cobra.Command, flags contextFlags, name string) er
 		return err
 	}
 	out := cmd.OutOrStdout()
-	out.Write(data)
+	if _, err := out.Write(data); err != nil {
+		return err
+	}
 	if len(data) > 0 && data[len(data)-1] != '\n' {
 		fmt.Fprintln(out)
 	}

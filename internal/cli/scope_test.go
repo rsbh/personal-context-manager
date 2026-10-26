@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +31,7 @@ func TestNormalizeName(t *testing.T) {
 func gitRepo(t *testing.T, name string) string {
 	t.Helper()
 	dir := filepath.Join(t.TempDir(), name)
-	if err := os.MkdirAll(filepath.Join(dir, "sub"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(dir, "sub"), 0o750); err != nil {
 		t.Fatal(err)
 	}
 	cmd := exec.Command("git", "init", "--quiet")
@@ -81,7 +82,7 @@ func TestResolveScope(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := resolveScope(tt.flags, tt.cwd)
-			if err != tt.wantErr {
+			if !errors.Is(err, tt.wantErr) {
 				t.Fatalf("err = %v, want %v", err, tt.wantErr)
 			}
 			if got != tt.want {
@@ -102,10 +103,10 @@ func TestScopeString(t *testing.T) {
 
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }

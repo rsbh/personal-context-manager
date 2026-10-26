@@ -45,5 +45,5 @@ func (s *server) notFound(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write(index)
+	_, _ = w.Write(index) // the client is gone if this fails
 }

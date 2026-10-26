@@ -12,16 +12,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: gofmt
-        run: |
-          files=$(gofmt -l .)
-          if [ -n "$files" ]; then
-            echo "Files need gofmt:"
-            echo "$files"
-            exit 1
-          fi
-      - name: vet
-        run: go vet ./...
+      # golangci-lint runs govet and gofmt too (.golangci.yml), with the e2e build tag.
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0 # keep in sync with the go.mod tool
       - name: test
         run: go test ./...
 
@@ -50,8 +44,6 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: vet
-        run: go vet -tags e2e ./e2e/...
       - name: test
         run: go test -v -tags e2e ./e2e/...
 

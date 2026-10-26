@@ -155,7 +155,7 @@ func TestSearchAfterForceDelete(t *testing.T) {
 
 func TestIndexRebuild(t *testing.T) {
 	h, root := newSearchServer(t)
-	if err := os.WriteFile(filepath.Join(root, "global", "style", "rs.md"), []byte("Use rustfmt."), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "global", "style", "rs.md"), []byte("Use rustfmt."), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if got := hitIDs(t, h, "q=rustfmt"); len(got) != 0 {

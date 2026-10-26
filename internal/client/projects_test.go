@@ -23,7 +23,7 @@ func (f *fakeAPI) start(t *testing.T) *Client {
 		b, _ := io.ReadAll(r.Body)
 		f.method, f.path, f.query, f.body = r.Method, r.URL.Path, r.URL.RawQuery, string(b)
 		w.WriteHeader(f.status)
-		io.WriteString(w, f.resp)
+		_, _ = io.WriteString(w, f.resp)
 	}))
 	t.Cleanup(srv.Close)
 	return New(srv.URL)

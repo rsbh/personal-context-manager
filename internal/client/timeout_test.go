@@ -16,7 +16,7 @@ func slowServer(t *testing.T, d time.Duration) string {
 		case <-time.After(d):
 		case <-r.Context().Done():
 		}
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}))
 	t.Cleanup(srv.Close)
 	return srv.URL

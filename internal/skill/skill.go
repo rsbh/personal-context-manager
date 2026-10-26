@@ -24,11 +24,11 @@ func Dir(home string) string {
 // Install writes SKILL.md into Dir(home). It overwrites an old file.
 func Install(home string) (string, error) {
 	dir := Dir(home)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return "", err
 	}
 	file := filepath.Join(dir, "SKILL.md")
-	return file, os.WriteFile(file, content, 0o644)
+	return file, os.WriteFile(file, content, 0o600)
 }
 
 // Uninstall removes Dir(home). It returns false if the skill was not installed.

@@ -34,6 +34,7 @@ const (
 	highlighter   = "pcm"
 )
 
+// Errors for invalid search input.
 var (
 	ErrInvalidLimit = errors.New("invalid limit")
 	ErrEmptyQuery   = errors.New("missing query")
@@ -316,6 +317,7 @@ func cut(s string, n int) string {
 	return string([]rune(s)[:n])
 }
 
+// Close closes the index.
 func (i *Index) Close() error {
 	i.mu.Lock()
 	defer i.mu.Unlock()

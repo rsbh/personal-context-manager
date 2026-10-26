@@ -35,10 +35,10 @@ func run(t *testing.T, dir string, args ...string) string {
 func write(t *testing.T, root, path, content string) {
 	t.Helper()
 	file := filepath.Join(root, filepath.FromSlash(path))
-	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(file, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }

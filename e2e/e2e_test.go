@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 		fmt.Fprintln(os.Stderr, "create bin dir:", err)
 		os.Exit(1)
 	}
-	build := exec.Command("go", "build", "-o", dir+string(os.PathSeparator), "../cmd/...")
+	build := exec.Command("go", "build", "-o", dir+string(os.PathSeparator), "../cmd/...") //nolint:gosec // builds this repo's own binaries
 	build.Stdout, build.Stderr = os.Stdout, os.Stderr
 	if err := build.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "build binaries:", err)

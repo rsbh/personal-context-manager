@@ -168,7 +168,7 @@ func TestSearchMissingQuery(t *testing.T) {
 
 func TestIndexRebuild(t *testing.T) {
 	a, root := newSearchApp(t)
-	if err := os.WriteFile(filepath.Join(root, "global", "style", "rs.md"), []byte("Use rustfmt."), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "global", "style", "rs.md"), []byte("Use rustfmt."), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if out := mustRun(t, a, "index", "rebuild"); out != "index rebuilt: 4 contexts\n" {

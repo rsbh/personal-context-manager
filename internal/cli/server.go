@@ -71,7 +71,7 @@ func (a *app) serverStart(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	logf, err := os.OpenFile(a.logFile(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+	logf, err := os.OpenFile(a.logFile(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 	if err != nil {
 		return fmt.Errorf("open log: %w", err)
 	}
@@ -85,7 +85,7 @@ func (a *app) serverStart(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("start %s: %w", bin, err)
 	}
 	pid := proc.Process.Pid
-	if err := os.WriteFile(a.pidFile(), []byte(strconv.Itoa(pid)), 0o644); err != nil {
+	if err := os.WriteFile(a.pidFile(), []byte(strconv.Itoa(pid)), 0o600); err != nil {
 		return fmt.Errorf("write pid file: %w", err)
 	}
 	_ = proc.Process.Release()

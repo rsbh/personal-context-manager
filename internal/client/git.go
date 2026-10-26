@@ -8,6 +8,7 @@ import (
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
 )
 
+// GitStatus returns the git status of the context repo.
 func (c *Client) GitStatus(ctx context.Context) (gitsync.Status, error) {
 	var out gitsync.Status
 	err := c.do(ctx, http.MethodGet, "/api/v1/git/status", nil, &out)
@@ -21,6 +22,7 @@ func (c *Client) Sync(ctx context.Context) (gitsync.SyncResult, error) {
 	return out, err
 }
 
+// GitLog returns the last n commits.
 func (c *Client) GitLog(ctx context.Context, n int) ([]gitsync.Commit, error) {
 	var out []gitsync.Commit
 	err := c.do(ctx, http.MethodGet, "/api/v1/git/log?n="+strconv.Itoa(n), nil, &out)

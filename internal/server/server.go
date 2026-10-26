@@ -1,3 +1,4 @@
+// Package server is the pcm HTTP API and UI server.
 package server
 
 import (

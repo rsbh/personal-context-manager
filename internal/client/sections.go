@@ -21,6 +21,7 @@ func scopeQuery(scope, project string) url.Values {
 	return q
 }
 
+// ListSections returns the section names in a scope.
 func (c *Client) ListSections(ctx context.Context, scope, project string) ([]string, error) {
 	var out []string
 	path := "/api/v1/sections?" + scopeQuery(scope, project).Encode()
@@ -28,10 +29,12 @@ func (c *Client) ListSections(ctx context.Context, scope, project string) ([]str
 	return out, err
 }
 
+// CreateSection creates a section in a scope.
 func (c *Client) CreateSection(ctx context.Context, scope, project, name string) error {
 	return c.do(ctx, http.MethodPost, "/api/v1/sections", section{Scope: scope, Project: project, Name: name}, nil)
 }
 
+// DeleteSection deletes a section. Without force, the section must be empty.
 func (c *Client) DeleteSection(ctx context.Context, scope, project, name string, force bool) error {
 	q := scopeQuery(scope, project)
 	if force {

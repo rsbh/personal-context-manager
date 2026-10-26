@@ -110,11 +110,11 @@ func (w *world) setup() error {
 	if w.port, err = freePort(); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(w.pcmDir(), 0o755); err != nil {
+	if err := os.MkdirAll(w.pcmDir(), 0o750); err != nil {
 		return err
 	}
 	cfg := fmt.Sprintf("port: %d\n", w.port)
-	return os.WriteFile(filepath.Join(w.pcmDir(), "config.yaml"), []byte(cfg), 0o644)
+	return os.WriteFile(filepath.Join(w.pcmDir(), "config.yaml"), []byte(cfg), 0o600)
 }
 
 func (w *world) teardown() {
@@ -124,7 +124,7 @@ func (w *world) teardown() {
 
 // run executes pcm with HOME set to the scenario home.
 func (w *world) run(args ...string) (int, error) {
-	cmd := exec.Command(filepath.Join(binDir, "pcm"), args...)
+	cmd := exec.Command(filepath.Join(binDir, "pcm"), args...) //nolint:gosec // runs the pcm binary built by TestMain
 	cmd.Env = w.env()
 	cmd.Dir = w.cwd
 	cmd.Stdin = strings.NewReader(w.stdin)
@@ -148,7 +148,7 @@ func (w *world) run(args ...string) (int, error) {
 
 func (w *world) serverNotRunning() error {
 	if code, err := w.run("health"); err != nil || code == 0 {
-		return fmt.Errorf("server is running: code %d, err %v", code, err)
+		return fmt.Errorf("server is running: code %d, err %w", code, err)
 	}
 	return nil
 }
@@ -156,7 +156,7 @@ func (w *world) serverNotRunning() error {
 func (w *world) serverRunning() error {
 	code, err := w.run("server", "start")
 	if err != nil || code != 0 {
-		return fmt.Errorf("server start: code %d, err %v, output:\n%s", code, err, w.output)
+		return fmt.Errorf("server start: code %d, err %w, output:\n%s", code, err, w.output)
 	}
 	return nil
 }
@@ -167,7 +167,7 @@ func (w *world) deadPIDFile() error {
 	if err := p.Run(); err != nil {
 		return err
 	}
-	return os.WriteFile(w.pidFile(), []byte(strconv.Itoa(p.Process.Pid)), 0o644)
+	return os.WriteFile(w.pidFile(), []byte(strconv.Itoa(p.Process.Pid)), 0o600)
 }
 
 func (w *world) aProject(name string) error {
@@ -227,7 +227,7 @@ func (w *world) projectContext(project, section, name, content string) error {
 
 func (w *world) inGitRepo(name string) error {
 	dir := filepath.Join(w.home, "src", name)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return err
 	}
 	init := exec.Command("git", "init", "--quiet")
@@ -276,7 +276,7 @@ func (w *world) ensure(path, body string) error {
 
 func (w *world) postExpect(path, body string, ok ...int) error {
 	url := fmt.Sprintf("http://127.0.0.1:%d%s", w.port, path)
-	resp, err := http.Post(url, "application/json", strings.NewReader(body))
+	resp, err := http.Post(url, "application/json", strings.NewReader(body)) //nolint:gosec // local test server
 	if err != nil {
 		return err
 	}
@@ -411,7 +411,7 @@ func (w *world) pidFileExists() error {
 
 func (w *world) pidFileNotExists() error {
 	if _, err := os.Stat(w.pidFile()); !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("pid file exists or stat failed: %v", err)
+		return fmt.Errorf("pid file exists or stat failed: %w", err)
 	}
 	return nil
 }
@@ -462,10 +462,10 @@ func (w *world) path(p string) string {
 
 func (w *world) fileHasContent(p, content string) error {
 	p = w.path(p)
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
 		return err
 	}
-	return os.WriteFile(p, []byte(content), 0o644)
+	return os.WriteFile(p, []byte(content), 0o600)
 }
 
 func (w *world) fileContains(p, text string) error {
@@ -481,7 +481,7 @@ func (w *world) fileContains(p, text string) error {
 
 func (w *world) fileNotExists(p string) error {
 	if _, err := os.Stat(w.path(p)); !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("file %s exists or stat failed: %v", p, err)
+		return fmt.Errorf("file %s exists or stat failed: %w", p, err)
 	}
 	return nil
 }
@@ -665,13 +665,13 @@ func (w *world) aSlowGitRemote() error {
 		return err
 	}
 	hook := filepath.Join(w.remote, "hooks", "pre-receive")
-	return os.WriteFile(hook, []byte("#!/bin/sh\nsleep 3\n"), 0o755)
+	return os.WriteFile(hook, []byte("#!/bin/sh\nsleep 3\n"), 0o700) //nolint:gosec // git hooks must be executable
 }
 
 func (w *world) remoteIsSet() error {
 	code, err := w.run("config", "set", "remote", w.remote)
 	if err != nil || code != 0 {
-		return fmt.Errorf("config set remote: code %d, err %v, output:\n%s", code, err, w.output)
+		return fmt.Errorf("config set remote: code %d, err %w, output:\n%s", code, err, w.output)
 	}
 	return nil
 }
@@ -696,10 +696,10 @@ func (w *world) otherClonePushes(path, content string) error {
 		return err
 	}
 	file := filepath.Join(dir, filepath.FromSlash(path))
-	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(file), 0o750); err != nil {
 		return err
 	}
-	if err := os.WriteFile(file, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(file, []byte(content), 0o600); err != nil {
 		return err
 	}
 	for _, args := range [][]string{

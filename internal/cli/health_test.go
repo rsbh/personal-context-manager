@@ -23,7 +23,7 @@ func runHealth(t *testing.T, url string) (string, error) {
 
 func TestHealthOK(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte(`{"status":"ok"}`))
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	}))
 	defer srv.Close()
 
