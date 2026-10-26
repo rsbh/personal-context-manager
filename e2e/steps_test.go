@@ -59,6 +59,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)"$`, w.aGlobalSectionWithContext)
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.globalContext)
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)" and description "([^"]*)"$`, w.globalContextWithDescription)
+	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and title "([^"]*)" and content "([^"]*)"$`, w.globalContextWithTitle)
 	sc.Step(`^a project "([^"]*)" section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.projectContext)
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
 	sc.Step(`^I am in a worktree "([^"]*)" of git repo "([^"]*)"$`, w.inWorktree)
@@ -71,9 +72,11 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the context "([^"]*)" has content "([^"]*)"$`, w.contextHasContent)
 	sc.Step(`^I GET "([^"]*)"$`, w.iGet)
 	sc.Step(`^I GET "([^"]*)" with header "([^:]+): ([^"]*)"$`, w.iGetWithHeader)
+	sc.Step(`^I POST "([^"]*)"$`, w.iPost)
 	sc.Step(`^the status is (\d+)$`, w.statusIs)
 	sc.Step(`^the header "([^"]*)" is "([^"]*)"$`, w.headerIs)
 	sc.Step(`^the body contains "(.*)"$`, w.bodyContains)
+	sc.Step(`^the body does not contain "(.*)"$`, w.bodyNotContains)
 	sc.Step(`^the body is "(.*)"$`, w.bodyIs)
 	sc.Step(`^the error is "(.*)"$`, w.errorIs)
 	sc.Step(`^I am not in a git repo$`, w.notInGitRepo)
@@ -199,6 +202,15 @@ func (w *world) globalContextWithDescription(section, name, content, description
 	return w.post("/api/v1/contexts", fmt.Sprintf(
 		`{"scope":"global","section":%q,"name":%q,"content":%q,"frontmatter":{"description":%q}}`,
 		section, name, content, description))
+}
+
+func (w *world) globalContextWithTitle(section, name, title, content string) error {
+	if err := w.ensure("/api/v1/sections", fmt.Sprintf(`{"scope":"global","name":%q}`, section)); err != nil {
+		return err
+	}
+	return w.post("/api/v1/contexts", fmt.Sprintf(
+		`{"scope":"global","section":%q,"name":%q,"content":%q,"frontmatter":{"title":%q}}`,
+		section, name, content, title))
 }
 
 func (w *world) projectContext(project, section, name, content string) error {
@@ -508,6 +520,21 @@ func (w *world) iGet(path string) error {
 	return w.iGetWithHeader(path, "", "")
 }
 
+// iPost sends an empty POST and keeps the response for the Then steps.
+func (w *world) iPost(path string) error {
+	resp, err := http.Post(w.url(path), "application/json", nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	w.resp = &httpResult{status: resp.StatusCode, header: resp.Header, body: string(body)}
+	return nil
+}
+
 func (w *world) iGetWithHeader(path, key, value string) error {
 	req, err := http.NewRequest(http.MethodGet, w.url(path), nil)
 	if err != nil {
@@ -551,6 +578,13 @@ func unescape(s string) string {
 func (w *world) bodyContains(text string) error {
 	if text = unescape(text); !strings.Contains(w.resp.body, text) {
 		return fmt.Errorf("body does not contain %q:\n%s", text, w.resp.body)
+	}
+	return nil
+}
+
+func (w *world) bodyNotContains(text string) error {
+	if text = unescape(text); strings.Contains(w.resp.body, text) {
+		return fmt.Errorf("body contains %q:\n%s", text, w.resp.body)
 	}
 	return nil
 }

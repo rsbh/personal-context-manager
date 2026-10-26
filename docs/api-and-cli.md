@@ -7,7 +7,7 @@
 - **Section**: user defined (e.g. `style`, `review`). One folder per section.
 - **Context**: one md file. A section can have many contexts (e.g. `backend.md`, `ui.md`). Many contexts can apply to one project.
 - **Binaries**: `pcm-server` (API server, runs in background) and `pcm` (CLI client, calls API).
-- **Home**: `~/.pcm/` holds `config.yaml`, `server.pid`, `server.log`, `index.db` and `repo/`. Only `repo/` is synced.
+- **Home**: `~/.pcm/` holds `config.yaml`, `server.pid`, `server.log`, `index/` (Bleve search index) and `repo/`. Only `repo/` is synced.
 - **Repo**: separate git repo. Default `~/.pcm/repo`, user can select other path with `pcm config set path <dir>`.
 - **First run**: no init command. If repo folder is missing, pcm creates it and runs `git init -b main`. If `remote` is not set, `pcm sync` and `pcm sync status` print:
   ```
@@ -15,7 +15,7 @@
   hint: pcm config set remote <git-url> && pcm sync
   ```
 - **Layout**: `<repo>/<scope>/<section>/<name>.md`
-- **SQLite**: search index only. md files are source of truth.
+- **Search**: Bleve index in `~/.pcm/index/`, cache only. md files are source of truth. Server updates it on context create, update, delete. Rebuilt on server start, after sync, and on `pcm index rebuild`.
 - **Sync**: manual only. CLI `pcm sync` or UI sync button. Server runs the git CLI (uses user's SSH agent, `~/.ssh/config`, credential helpers). Branch `main`.
   1. `git add -A`, commit `pcm sync: N files changed` if changes.
   2. No remote: stop. Else set `origin` (add or set-url), fetch, rebase on `origin/main`.
@@ -43,7 +43,8 @@
 | POST | `/contexts` | Create context |
 | PUT | `/contexts/{id}` | Update context |
 | DELETE | `/contexts/{id}` | Delete context |
-| GET | `/search?q=&scope=&section=` | Full-text search (SQLite FTS) |
+| GET | `/search?q=&scope=&project=&section=&limit=` | Full-text search (Bleve). Fuzzy, ranked, all scopes by default, `limit` default 20. Hit: id, scope, project, section, name, title, description, snippet, score |
+| POST | `/index/rebuild` | Rebuild search index from md files |
 | GET | `/resolve?project=&section=` | Merged global + project contexts with content. Project overrides global on same section/name. No project: global only |
 | GET | `/git/status` | branch, remote, changes (porcelain), ahead, behind (from last fetch) |
 | POST | `/git/sync` | Commit, pull --rebase, push. 409 `{"error","files"}` on conflict |
@@ -64,7 +65,8 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [--force] [-p <project> \| -g]` | Create context. `--force` replaces existing (PUT) |
 | `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
 | `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
-| `pcm search <query>` | Search contexts |
+| `pcm search <query> [-s <section>] [-p <project>] [--scope <scope>] [--limit 20]` | Search contexts. Table: SCOPE, NAME, SECTION, TITLE, SNIPPET, SCORE |
+| `pcm index rebuild` | Rebuild search index from md files |
 | `pcm get contexts -o md [-s <section>] [-p <project> \| -g]` | Merged global + project contexts as markdown (for skill). Not in git repo: global only |
 | `pcm get project(s) [name]` | List projects or show one |
 | `pcm create project <name>` | Create project |
