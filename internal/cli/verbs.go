@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"text/tabwriter"
 
@@ -17,19 +18,19 @@ import (
 
 func newGetCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "get", Short: "Show resources"}
-	cmd.AddCommand(newGetProjectCmd(a))
+	cmd.AddCommand(newGetProjectCmd(a), newGetSectionCmd(a))
 	return cmd
 }
 
 func newCreateCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "create", Short: "Create a resource"}
-	cmd.AddCommand(newCreateProjectCmd(a))
+	cmd.AddCommand(newCreateProjectCmd(a), newCreateSectionCmd(a))
 	return cmd
 }
 
 func newDeleteCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{Use: "delete", Short: "Delete a resource"}
-	cmd.AddCommand(newDeleteProjectCmd(a))
+	cmd.AddCommand(newDeleteProjectCmd(a), newDeleteSectionCmd(a))
 	return cmd
 }
 
@@ -42,6 +43,19 @@ func (a *app) handleErr(cmd *cobra.Command, err error) error {
 		return errSilent
 	}
 	return err
+}
+
+// deleteErr prints a --force hint when the resource is not empty (409).
+func (a *app) deleteErr(cmd *cobra.Command, err error, resource string) error {
+	var apiErr *client.APIError
+	if errors.As(err, &apiErr) && apiErr.Status == http.StatusConflict {
+		printFields(cmd.ErrOrStderr(), []field{
+			{"error", apiErr.Message},
+			{"hint", "use --force to delete the " + resource + " and its contents"},
+		})
+		return errSilent
+	}
+	return a.handleErr(cmd, err)
 }
 
 // printTable prints a header and rows, aligned like kubectl get.

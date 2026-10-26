@@ -21,6 +21,14 @@ type app struct {
 	dir    string
 	cfg    config.Config
 	client *client.Client
+	cwd    string // empty: process working dir
+}
+
+func (a *app) workDir() (string, error) {
+	if a.cwd != "" {
+		return a.cwd, nil
+	}
+	return os.Getwd()
 }
 
 func (a *app) load() error {

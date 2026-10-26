@@ -63,7 +63,9 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm get project(s) [name]` | List projects or show one |
 | `pcm create project <name>` | Create project |
 | `pcm delete project <name> [--force]` | Delete project (`--force` if not empty) |
-| `pcm section add\|list\|rm <name>` | Manage sections |
+| `pcm get section(s) [-p <project> \| -g]` | List sections in a scope |
+| `pcm create section <name> [-p <project> \| -g]` | Create section |
+| `pcm delete section <name> [-p <project> \| -g] [--force]` | Delete section (`--force` if not empty) |
 | `pcm sync` | Git pull, commit, push |
 | `pcm status` | Git status |
 | `pcm health` | Check server is reachable (text output, exit 1 if not) |
@@ -72,7 +74,11 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm server status` | Show server health and pid |
 | `pcm config get\|set <key> [value]` | Read/write config. Keys: `path`, `remote` |
 
-Default project for `add`, `list`, `context`: current repo root. `-p` overrides. `-g` selects global.
+Scope flags (like kubectl `-n`): `-p <project>` or `-g` (global). Both: error.
+No flag: current project = git repo root folder name (`git rev-parse --show-toplevel`), normalized (`My.Repo` → `my-repo`).
+- Not in git repo: error, hint `use -p <project> or -g`.
+- `create` auto-creates the current project. `get` / `delete` do not.
+- `-p <project>` never auto-creates (typo safety).
 
 ## Claude Code skill
 
