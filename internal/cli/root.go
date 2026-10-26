@@ -76,6 +76,8 @@ func newRootCmd(a *app) *cobra.Command {
 		newSkillCmd(a),
 		newConfigCmd(a),
 		newSyncCmd(a),
+		newSearchCmd(a),
+		newIndexCmd(a),
 	)
 	return root
 }

@@ -122,6 +122,7 @@ func (s *server) deleteProject(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
+	s.reindexAll()
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -199,6 +200,7 @@ func (s *server) deleteSection(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
+	s.reindexAll()
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -292,6 +294,7 @@ func (s *server) createContext(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
+	s.indexContext(c)
 	writeJSON(w, http.StatusCreated, c)
 }
 
@@ -327,6 +330,7 @@ func (s *server) updateContext(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
+	s.indexContext(c)
 	writeJSON(w, http.StatusOK, c)
 }
 
@@ -350,6 +354,7 @@ func (s *server) deleteContext(w http.ResponseWriter, r *http.Request) {
 		writeStoreError(w, err)
 		return
 	}
+	s.reindexAll()
 	w.WriteHeader(http.StatusNoContent)
 }
 

@@ -38,6 +38,27 @@ definitions:
       remote:
         type: string
     type: object
+  search.Hit:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      project:
+        type: string
+      scope:
+        type: string
+      score:
+        type: number
+      section:
+        type: string
+      snippet:
+        type: string
+      title:
+        type: string
+    type: object
   server.conflictResponse:
     properties:
       error:
@@ -85,6 +106,11 @@ definitions:
     properties:
       name:
         type: string
+    type: object
+  server.rebuildResponse:
+    properties:
+      indexed:
+        type: integer
     type: object
   server.updateContextRequest:
     properties:
@@ -357,6 +383,26 @@ paths:
       summary: Commit, pull and push the context repo
       tags:
       - git
+  /api/v1/index/rebuild:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.rebuildResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Rebuild the search index from all contexts
+      tags:
+      - search
   /api/v1/projects:
     get:
       produces:
@@ -495,6 +541,59 @@ paths:
       summary: Resolve contexts for a project
       tags:
       - resolve
+  /api/v1/search:
+    get:
+      parameters:
+      - description: Search text
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: global or project
+        in: query
+        name: scope
+        type: string
+      - description: Project name
+        in: query
+        name: project
+        type: string
+      - description: 'With project: also match global contexts'
+        in: query
+        name: global
+        type: boolean
+      - description: Section name
+        in: query
+        name: section
+        type: string
+      - default: 20
+        description: Max hits
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/search.Hit'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Full-text search of contexts
+      tags:
+      - search
   /api/v1/sections:
     get:
       parameters:

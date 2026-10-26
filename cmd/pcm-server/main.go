@@ -13,12 +13,14 @@ import (
 	"log"
 	"net/http"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	_ "github.com/rsbh/personal-context-manager/docs/swagger"
 	"github.com/rsbh/personal-context-manager/internal/config"
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
+	"github.com/rsbh/personal-context-manager/internal/search"
 	"github.com/rsbh/personal-context-manager/internal/server"
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
@@ -49,7 +51,25 @@ func main() {
 	}
 	git := gitsync.New(cfg.Path, remote)
 
-	opts := []server.Option{server.WithGit(git)}
+	idx, needRebuild, err := search.Open(filepath.Join(dir, "index"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer idx.Close()
+	if needRebuild {
+		// In the background, so the server starts at once. Search sees
+		// the old (empty) index until the rebuild ends.
+		go func() {
+			n, err := server.RebuildIndex(st, idx)
+			if err != nil {
+				log.Printf("index rebuild: %v", err)
+				return
+			}
+			log.Printf("index rebuilt: %d contexts", n)
+		}()
+	}
+
+	opts := []server.Option{server.WithGit(git), server.WithSearch(idx)}
 	if cfg.Swagger {
 		opts = append(opts, server.WithSwagger())
 	}

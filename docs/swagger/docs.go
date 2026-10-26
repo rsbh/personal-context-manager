@@ -363,6 +363,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/index/rebuild": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "search"
+                ],
+                "summary": "Rebuild the search index from all contexts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/server.rebuildResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.errorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
+                        "schema": {
+                            "$ref": "#/definitions/server.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects": {
             "get": {
                 "produces": [
@@ -567,6 +598,86 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/search": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "search"
+                ],
+                "summary": "Full-text search of contexts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search text",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "global or project",
+                        "name": "scope",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project name",
+                        "name": "project",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "With project: also match global contexts",
+                        "name": "global",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Section name",
+                        "name": "section",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Max hits",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/search.Hit"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/server.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.errorResponse"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
                         "schema": {
                             "$ref": "#/definitions/server.errorResponse"
                         }
@@ -813,6 +924,38 @@ const docTemplate = `{
                 }
             }
         },
+        "search.Hit": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "project": {
+                    "type": "string"
+                },
+                "scope": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                },
+                "section": {
+                    "type": "string"
+                },
+                "snippet": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "server.conflictResponse": {
             "type": "object",
             "properties": {
@@ -885,6 +1028,14 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "server.rebuildResponse": {
+            "type": "object",
+            "properties": {
+                "indexed": {
+                    "type": "integer"
                 }
             }
         },
