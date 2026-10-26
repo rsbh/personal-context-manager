@@ -21,18 +21,21 @@ type Config struct {
 	Path   string `yaml:"path,omitempty"`
 	Remote string `yaml:"remote,omitempty"`
 	Port   int    `yaml:"port,omitempty"`
+	// Swagger serves the API docs UI at /swagger/.
+	Swagger bool `yaml:"swagger,omitempty"`
 }
 
 var (
 	ErrUnknownKey  = errors.New("unknown key")
 	ErrInvalidPort = errors.New("invalid port")
+	ErrInvalidBool = errors.New("invalid bool")
 )
 
 // Keys are the config keys, in output order.
-var Keys = []string{"path", "remote", "port"}
+var Keys = []string{"path", "remote", "port", "swagger"}
 
 func unknownKey(key string) error {
-	return fmt.Errorf("%w %q: use path, remote or port", ErrUnknownKey, key)
+	return fmt.Errorf("%w %q: use path, remote, port or swagger", ErrUnknownKey, key)
 }
 
 // Get returns the value of key as text.
@@ -44,6 +47,8 @@ func (c Config) Get(key string) (string, error) {
 		return c.Remote, nil
 	case "port":
 		return strconv.Itoa(c.Port), nil
+	case "swagger":
+		return strconv.FormatBool(c.Swagger), nil
 	}
 	return "", unknownKey(key)
 }
@@ -65,6 +70,11 @@ func Set(dir, key, value string) error {
 			return fmt.Errorf("%w %q: use 1-65535", ErrInvalidPort, value)
 		}
 		cfg.Port = port
+	case "swagger":
+		if value != "true" && value != "false" {
+			return fmt.Errorf("%w %q: use true or false", ErrInvalidBool, value)
+		}
+		cfg.Swagger = value == "true"
 	default:
 		return unknownKey(key)
 	}

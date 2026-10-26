@@ -1,3 +1,9 @@
+// Package main runs the pcm HTTP server.
+//
+//	@title			pcm API
+//	@version		1.0
+//	@description	Personal context manager: store and resolve coding contexts.
+//	@BasePath		/
 package main
 
 import (
@@ -10,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/rsbh/personal-context-manager/docs/swagger"
 	"github.com/rsbh/personal-context-manager/internal/config"
 	"github.com/rsbh/personal-context-manager/internal/gitsync"
 	"github.com/rsbh/personal-context-manager/internal/server"
@@ -42,10 +49,15 @@ func main() {
 	}
 	git := gitsync.New(cfg.Path, remote)
 
+	opts := []server.Option{server.WithGit(git)}
+	if cfg.Swagger {
+		opts = append(opts, server.WithSwagger())
+	}
+
 	addr := fmt.Sprintf(":%d", cfg.Port)
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           server.NewRouter(st, server.WithGit(git)),
+		Handler:           server.NewRouter(st, opts...),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

@@ -1,0 +1,615 @@
+basePath: /
+definitions:
+  gitsync.Commit:
+    properties:
+      date:
+        type: string
+      hash:
+        type: string
+      message:
+        type: string
+    type: object
+  gitsync.Status:
+    properties:
+      ahead:
+        type: integer
+      behind:
+        type: integer
+      branch:
+        type: string
+      changes:
+        description: git status --porcelain lines
+        items:
+          type: string
+        type: array
+      remote:
+        type: string
+    type: object
+  gitsync.SyncResult:
+    properties:
+      committed:
+        description: files
+        type: integer
+      pulled:
+        description: commits
+        type: integer
+      pushed:
+        type: boolean
+      remote:
+        type: string
+    type: object
+  server.conflictResponse:
+    properties:
+      error:
+        type: string
+      files:
+        items:
+          type: string
+        type: array
+    type: object
+  server.createContextRequest:
+    properties:
+      content:
+        type: string
+      frontmatter:
+        $ref: '#/definitions/store.Frontmatter'
+      name:
+        type: string
+      project:
+        type: string
+      scope:
+        type: string
+      section:
+        type: string
+    type: object
+  server.createProjectRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  server.createSectionRequest:
+    properties:
+      name:
+        type: string
+      project:
+        type: string
+      scope:
+        type: string
+    type: object
+  server.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  server.project:
+    properties:
+      name:
+        type: string
+    type: object
+  server.updateContextRequest:
+    properties:
+      content:
+        type: string
+      frontmatter:
+        $ref: '#/definitions/store.Frontmatter'
+    type: object
+  store.Context:
+    properties:
+      content:
+        type: string
+      frontmatter:
+        $ref: '#/definitions/store.Frontmatter'
+      id:
+        type: string
+      name:
+        type: string
+      project:
+        type: string
+      scope:
+        type: string
+      section:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  store.Frontmatter:
+    properties:
+      description:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: 'Personal context manager: store and resolve coding contexts.'
+  title: pcm API
+  version: "1.0"
+paths:
+  /api/v1/contexts:
+    get:
+      parameters:
+      - description: global or project
+        in: query
+        name: scope
+        type: string
+      - description: Project name
+        in: query
+        name: project
+        type: string
+      - description: Section name
+        in: query
+        name: section
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Context'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: List contexts
+      tags:
+      - contexts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Context
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.createContextRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/store.Context'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Create a context
+      tags:
+      - contexts
+  /api/v1/contexts/{id}:
+    delete:
+      description: The id can contain "/" (raw or %2F), for example global/style/go.
+      parameters:
+      - description: Context id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Delete a context
+      tags:
+      - contexts
+    get:
+      description: The id can contain "/" (raw or %2F), for example global/style/go.
+      parameters:
+      - description: Context id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Context'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Get a context
+      tags:
+      - contexts
+    put:
+      consumes:
+      - application/json
+      description: The id can contain "/" (raw or %2F), for example global/style/go.
+      parameters:
+      - description: Context id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: New frontmatter and content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.updateContextRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/store.Context'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Update a context
+      tags:
+      - contexts
+  /api/v1/git/log:
+    get:
+      parameters:
+      - default: 10
+        description: Number of commits
+        in: query
+        name: "n"
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/gitsync.Commit'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Recent commits of the context repo
+      tags:
+      - git
+  /api/v1/git/status:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gitsync.Status'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Git status of the context repo
+      tags:
+      - git
+  /api/v1/git/sync:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gitsync.SyncResult'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.conflictResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Commit, pull and push the context repo
+      tags:
+      - git
+  /api/v1/projects:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: List projects
+      tags:
+      - projects
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Project
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.createProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Create a project
+      tags:
+      - projects
+  /api/v1/projects/{project}:
+    delete:
+      parameters:
+      - description: Project name
+        in: path
+        name: project
+        required: true
+        type: string
+      - description: Delete when not empty
+        in: query
+        name: force
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Delete a project
+      tags:
+      - projects
+    get:
+      parameters:
+      - description: Project name
+        in: path
+        name: project
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.project'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Get a project
+      tags:
+      - projects
+  /api/v1/resolve:
+    get:
+      parameters:
+      - description: Project name
+        in: query
+        name: project
+        type: string
+      - description: Section name
+        in: query
+        name: section
+        type: string
+      - description: Response format
+        enum:
+        - json
+        - md
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      - text/markdown
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/store.Context'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Resolve contexts for a project
+      tags:
+      - resolve
+  /api/v1/sections:
+    get:
+      parameters:
+      - description: global or project
+        in: query
+        name: scope
+        type: string
+      - description: Project name, for scope project
+        in: query
+        name: project
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: List sections
+      tags:
+      - sections
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Section
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/server.createSectionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/server.createSectionRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Create a section
+      tags:
+      - sections
+  /api/v1/sections/{section}:
+    delete:
+      parameters:
+      - description: Section name
+        in: path
+        name: section
+        required: true
+        type: string
+      - description: global or project
+        in: query
+        name: scope
+        type: string
+      - description: Project name, for scope project
+        in: query
+        name: project
+        type: string
+      - description: Delete when not empty
+        in: query
+        name: force
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/server.errorResponse'
+      summary: Delete a section
+      tags:
+      - sections
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+swagger: "2.0"

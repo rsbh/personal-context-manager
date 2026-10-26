@@ -13,7 +13,7 @@ func TestLoadDefaults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Path != filepath.Join(dir, "repo") || cfg.Port != 8080 || cfg.Remote != "" {
+	if cfg.Path != filepath.Join(dir, "repo") || cfg.Port != 8080 || cfg.Remote != "" || cfg.Swagger {
 		t.Errorf("cfg = %+v", cfg)
 	}
 }
@@ -67,11 +67,38 @@ func TestSetErrors(t *testing.T) {
 			t.Errorf("port %q err = %v", v, err)
 		}
 	}
+	for _, v := range []string{"yes", "1", "TRUE", ""} {
+		if err := Set(dir, "swagger", v); !errors.Is(err, ErrInvalidBool) {
+			t.Errorf("swagger %q err = %v", v, err)
+		}
+	}
+}
+
+func TestSetSwagger(t *testing.T) {
+	dir := t.TempDir()
+	if err := Set(dir, "swagger", "true"); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Swagger {
+		t.Errorf("cfg = %+v", cfg)
+	}
+	if err := Set(dir, "swagger", "false"); err != nil {
+		t.Fatal(err)
+	}
+	// false is the default, so it is not written.
+	data, _ := os.ReadFile(filepath.Join(dir, "config.yaml"))
+	if string(data) != "{}\n" {
+		t.Errorf("file = %q", data)
+	}
 }
 
 func TestGet(t *testing.T) {
-	cfg := Config{Path: "/p", Remote: "r", Port: 1}
-	for key, want := range map[string]string{"path": "/p", "remote": "r", "port": "1"} {
+	cfg := Config{Path: "/p", Remote: "r", Port: 1, Swagger: true}
+	for key, want := range map[string]string{"path": "/p", "remote": "r", "port": "1", "swagger": "true"} {
 		if got, err := cfg.Get(key); err != nil || got != want {
 			t.Errorf("Get(%q) = %q, %v", key, got, err)
 		}

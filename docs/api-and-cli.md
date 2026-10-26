@@ -79,8 +79,8 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm server start` | Start `pcm-server` in background (pid/log in `~/.pcm/`) |
 | `pcm server stop` | Stop background server |
 | `pcm server status` | Show server health and pid |
-| `pcm config get [key]` | Print all keys or one. Keys: `path`, `remote`, `port` |
-| `pcm config set <key> <value>` | Write key to `config.yaml`. `path` / `port`: hint to restart server |
+| `pcm config get [key]` | Print all keys or one. Keys: `path`, `remote`, `port`, `swagger` |
+| `pcm config set <key> <value>` | Write key to `config.yaml`. `path` / `port` / `swagger`: hint to restart server. `swagger`: `true` or `false` (default), serves API docs UI at `/swagger/` |
 
 Scope flags (like kubectl `-n`): `-p <project>` or `-g` (global). Both: error.
 No flag: current project = main repo folder name: parent of `git rev-parse --path-format=absolute --git-common-dir` when it ends in `.git` (same for worktrees), else `git rev-parse --show-toplevel`. Normalized (`My.Repo` → `my-repo`). Needs git 2.31+.

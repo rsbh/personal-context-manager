@@ -18,7 +18,7 @@ func newConfigCmd(a *app) *cobra.Command {
 	cmd.AddCommand(
 		&cobra.Command{
 			Use:   "get [key]",
-			Short: "Print all keys, or one key: path, remote or port",
+			Short: "Print all keys, or one key: path, remote, port or swagger",
 			Args:  optionalNameArg,
 			RunE: func(cmd *cobra.Command, args []string) error {
 				home, err := a.homeDir()
@@ -52,7 +52,7 @@ func newConfigCmd(a *app) *cobra.Command {
 		},
 		&cobra.Command{
 			Use:   "set <key> <value>",
-			Short: "Set a key: path, remote or port",
+			Short: "Set a key: path, remote, port or swagger",
 			Args: func(cmd *cobra.Command, args []string) error {
 				if len(args) != 2 {
 					return newUsageError(cmd, "missing key or value")
@@ -70,8 +70,8 @@ func newConfigCmd(a *app) *cobra.Command {
 				}
 				out := cmd.OutOrStdout()
 				fmt.Fprintf(out, "config/%s set\n", key)
-				// The server reads path and port only when it starts.
-				if key == "path" || key == "port" {
+				// The server reads path, port and swagger only when it starts.
+				if key == "path" || key == "port" || key == "swagger" {
 					printFields(out, []field{{"hint", restartHint}})
 				}
 				return nil
