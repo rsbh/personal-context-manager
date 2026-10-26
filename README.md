@@ -66,7 +66,7 @@ After a code change: `make install && make restart`.
 | `pcm get contexts -g` | Global contexts only |
 | `pcm get context <name> -s <section>` | Print context md |
 | `pcm get contexts -o md [-s <section>]` | Merged global + project contexts as markdown |
-| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...]` | Create context |
+| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [--force]` | Create context. `--force` replaces existing |
 | `pcm delete context <name> -s <section>` | Delete context |
 | `pcm skill install\|uninstall\|show` | Claude Code skill in `~/.claude/skills/pcm/` |
 

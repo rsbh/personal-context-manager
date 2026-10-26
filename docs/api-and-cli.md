@@ -56,7 +56,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm get context(s) [-s <section>] [-p <project>]` | Current contexts: `project:` line, then table SCOPE, NAME, SECTION, TITLE, DESCRIPTION, UPDATED. Global first, then project (`-p` or git repo). Project overrides global on same section/name. Not in git repo: global only |
 | `pcm get context(s) -g [-s <section>]` | Global contexts only (no SCOPE column) |
 | `pcm get context <name> -s <section> [-p <project> \| -g]` | Print md file (frontmatter + content) |
-| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [-p <project> \| -g]` | Create context |
+| `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [--force] [-p <project> \| -g]` | Create context. `--force` replaces existing (PUT) |
 | `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
 | `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
 | `pcm search <query>` | Search contexts |

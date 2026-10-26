@@ -29,6 +29,31 @@ Feature: Contexts
     Then the exit code is 1
     And the output contains "already exists"
 
+  Scenario: Force overwrites existing context
+    Given the server is running
+    And a global section "style" with a context "go" and content "Old rule." and description "Old desc"
+    When I run "pcm create context go -s style -g -m 'New rule.' --title Go --force"
+    Then the exit code is 0
+    And the output contains "context/go updated in global (section \"style\")"
+    When I run "pcm get context go -s style -g"
+    Then the output contains "title: Go"
+    And the output contains "New rule."
+    And the output does not contain "Old rule."
+    And the output does not contain "Old desc"
+
+  Scenario: Force creates missing context
+    Given the server is running
+    And a global section "style"
+    When I run "pcm create context go -s style -g -m x --force"
+    Then the exit code is 0
+    And the output contains "context/go created in global (section \"style\")"
+
+  Scenario: Force in missing section
+    Given the server is running
+    When I run "pcm create context go -s none -g -m x --force"
+    Then the exit code is 1
+    And the output contains "not found"
+
   Scenario: Missing section flag
     When I run "pcm create context go -g -m x"
     Then the exit code is 1

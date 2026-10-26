@@ -103,6 +103,37 @@ func TestCreateContextMissingFile(t *testing.T) {
 	}
 }
 
+func TestCreateContextForceUpdates(t *testing.T) {
+	a := newTestApp(t)
+	mustRun(t, a, "create", "section", "style", "-g")
+	mustRun(t, a, "create", "context", "go", "-s", "style", "-g", "-m", "Old.", "--description", "Old desc")
+
+	out := mustRun(t, a, "create", "context", "go", "-s", "style", "-g", "-m", "New.", "--title", "Go", "--force")
+	if out != "context/go updated in global (section \"style\")\n" {
+		t.Errorf("create out = %q", out)
+	}
+	if out := mustRun(t, a, "get", "context", "go", "-s", "style", "-g"); out != "---\ntitle: Go\n---\nNew.\n" {
+		t.Errorf("get out = %q", out)
+	}
+}
+
+func TestCreateContextForceCreates(t *testing.T) {
+	a := newTestApp(t)
+	mustRun(t, a, "create", "section", "style", "-g")
+	out := mustRun(t, a, "create", "context", "go", "-s", "style", "-g", "-m", "x", "--force")
+	if out != "context/go created in global (section \"style\")\n" {
+		t.Errorf("out = %q", out)
+	}
+}
+
+func TestCreateContextForceMissingSection(t *testing.T) {
+	a := newTestApp(t)
+	_, _, err := runCLI(t, a, "create", "context", "go", "-s", "none", "-g", "-m", "x", "--force")
+	if err == nil || !strings.Contains(err.Error(), "not found") {
+		t.Errorf("err = %v, want not found", err)
+	}
+}
+
 func TestGetContexts(t *testing.T) {
 	a := newTestApp(t)
 	if out := mustRun(t, a, "get", "contexts", "-g"); out != "No contexts found.\n" {
