@@ -1,5 +1,5 @@
 import { Text } from "@raystack/apsara";
-import { Route, Routes, useParams } from "react-router";
+import { Outlet, useParams, type RouteObject } from "react-router";
 import classes from "./App.module.css";
 import { ContextView } from "./components/ContextView";
 import { Header } from "./components/Header";
@@ -16,24 +16,29 @@ function ContextPage() {
   return <ContextView key={id} id={id} />;
 }
 
-const contextPage = <ContextPage />;
-const currentContexts = <CurrentContexts />;
-const home = <Home />;
-
-export function App() {
+// Layout is the app shell: header, sidebar and the routed page.
+function Layout() {
   return (
     <div className={classes.shell}>
       <Header />
       <div className={classes.body}>
         <Sidebar />
         <main className={classes.main}>
-          <Routes>
-            <Route path="/contexts/*" element={contextPage} />
-            <Route path="/current" element={currentContexts} />
-            <Route path="*" element={home} />
-          </Routes>
+          <Outlet />
         </main>
       </div>
     </div>
   );
 }
+
+// routes are the app routes for createBrowserRouter.
+export const routes: RouteObject[] = [
+  {
+    element: <Layout />,
+    children: [
+      { path: "/contexts/*", element: <ContextPage /> },
+      { path: "/current", element: <CurrentContexts /> },
+      { path: "*", element: <Home /> },
+    ],
+  },
+];
