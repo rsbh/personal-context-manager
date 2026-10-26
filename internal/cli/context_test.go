@@ -88,7 +88,7 @@ func TestGetContexts(t *testing.T) {
 func TestGetContextsDetectedMissingProject(t *testing.T) {
 	a := newTestApp(t)
 	a.cwd = gitRepo(t, "api")
-	if out := mustRun(t, a, "get", "contexts"); out != "No contexts found.\n" {
+	if out := mustRun(t, a, "get", "contexts"); out != "project: api (from git repo)\n\nNo contexts found.\n" {
 		t.Errorf("out = %q", out)
 	}
 }

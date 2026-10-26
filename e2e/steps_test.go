@@ -74,6 +74,9 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^the output does not contain "(.*)"$`, w.outputNotContains)
 	sc.Step(`^the output is:$`, w.outputIs)
 	sc.Step(`^the output contains the server pid$`, w.outputContainsPID)
+	sc.Step(`^the line with "([^"]*)" comes before the line with "([^"]*)"$`, w.lineBefore)
+	sc.Step(`^the line with "([^"]*)" contains "([^"]*)"$`, w.lineContains)
+	sc.Step(`^the output contains one line with "([^"]*)"$`, w.oneLineWith)
 	sc.Step(`^the pid file exists$`, w.pidFileExists)
 	sc.Step(`^the file "([^"]*)" has content "([^"]*)"$`, w.fileHasContent)
 	sc.Step(`^the file "([^"]*)" contains "([^"]*)"$`, w.fileContains)
@@ -285,6 +288,58 @@ func (w *world) outputNotContains(text string) error {
 	text = strings.ReplaceAll(text, `\"`, `"`)
 	if strings.Contains(w.output, text) {
 		return fmt.Errorf("output contains %q:\n%s", text, w.output)
+	}
+	return nil
+}
+
+// linesWith returns the index of each output line that has word as a field.
+func (w *world) linesWith(word string) []int {
+	var out []int
+	for i, line := range strings.Split(w.output, "\n") {
+		if slices.Contains(strings.Fields(line), word) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
+func (w *world) lineWith(word string) (int, string, error) {
+	idx := w.linesWith(word)
+	if len(idx) == 0 {
+		return 0, "", fmt.Errorf("no line with %q:\n%s", word, w.output)
+	}
+	return idx[0], strings.Split(w.output, "\n")[idx[0]], nil
+}
+
+func (w *world) lineBefore(first, second string) error {
+	i, _, err := w.lineWith(first)
+	if err != nil {
+		return err
+	}
+	j, _, err := w.lineWith(second)
+	if err != nil {
+		return err
+	}
+	if i >= j {
+		return fmt.Errorf("line with %q is not before line with %q:\n%s", first, second, w.output)
+	}
+	return nil
+}
+
+func (w *world) lineContains(word, text string) error {
+	_, line, err := w.lineWith(word)
+	if err != nil {
+		return err
+	}
+	if !strings.Contains(line, text) {
+		return fmt.Errorf("line %q does not contain %q", line, text)
+	}
+	return nil
+}
+
+func (w *world) oneLineWith(word string) error {
+	if n := len(w.linesWith(word)); n != 1 {
+		return fmt.Errorf("%d lines with %q, want 1:\n%s", n, word, w.output)
 	}
 	return nil
 }

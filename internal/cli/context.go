@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -56,7 +57,12 @@ func newGetContextCmd(a *app) *cobra.Command {
 	return cmd
 }
 
+// listContexts lists one scope with -g. Else it lists the current contexts:
+// global first, then the project (-p or detected), merged like -o md.
 func (a *app) listContexts(cmd *cobra.Command, flags contextFlags) error {
+	if !flags.global {
+		return a.listCurrentContexts(cmd, flags)
+	}
 	sc, err := a.scope(cmd, flags.scopeFlags)
 	if err != nil {
 		return err
@@ -199,4 +205,42 @@ func age(t, now time.Time) string {
 	default:
 		return fmt.Sprintf("%dd", int(d.Hours()/24))
 	}
+}
+
+func (a *app) listCurrentContexts(cmd *cobra.Command, flags contextFlags) error {
+	cwd, err := a.workDir()
+	if err != nil {
+		return err
+	}
+	sc, err := resolveScope(flags.scopeFlags, cwd)
+	var label string
+	switch {
+	case errors.Is(err, errNotInRepo):
+		sc, label = scope{global: true}, "none (not in a git repo)"
+	case err != nil:
+		return err
+	case sc.detected:
+		label = sc.project + " (from git repo)"
+	default:
+		label = sc.project
+	}
+
+	contexts, err := a.client.Resolve(cmd.Context(), sc.project, flags.section)
+	if err != nil {
+		return a.handleErr(cmd, err)
+	}
+
+	out := cmd.OutOrStdout()
+	fmt.Fprintf(out, "project: %s\n\n", label)
+	if len(contexts) == 0 {
+		fmt.Fprintln(out, "No contexts found.")
+		return nil
+	}
+	now := time.Now()
+	rows := make([][]string, len(contexts))
+	for i, c := range contexts {
+		rows[i] = []string{c.Scope, c.Name, c.Section, c.Frontmatter.Title, c.Frontmatter.Description, age(c.UpdatedAt, now)}
+	}
+	printTable(out, []string{"SCOPE", "NAME", "SECTION", "TITLE", "DESCRIPTION", "UPDATED"}, rows)
+	return nil
 }
