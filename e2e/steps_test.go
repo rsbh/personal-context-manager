@@ -61,6 +61,7 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)" and description "([^"]*)"$`, w.globalContextWithDescription)
 	sc.Step(`^a project "([^"]*)" section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.projectContext)
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
+	sc.Step(`^I am in a worktree "([^"]*)" of git repo "([^"]*)"$`, w.inWorktree)
 	sc.Step(`^the global section "([^"]*)" has no contexts$`, w.globalSectionEmpty)
 	sc.Step(`^a git remote$`, w.aGitRemote)
 	sc.Step(`^a slow git remote$`, w.aSlowGitRemote)
@@ -222,6 +223,26 @@ func (w *world) inGitRepo(name string) error {
 		return fmt.Errorf("git init: %w: %s", err, out)
 	}
 	w.cwd = dir
+	return nil
+}
+
+// inWorktree makes git repo name with one commit, adds worktree wt next to it and goes there.
+func (w *world) inWorktree(wt, name string) error {
+	if err := w.inGitRepo(name); err != nil {
+		return err
+	}
+	repo := w.cwd
+	for _, args := range [][]string{
+		{"-c", "user.name=t", "-c", "user.email=t@t", "commit", "--quiet", "--allow-empty", "-m", "init"},
+		{"worktree", "add", "--quiet", filepath.Join(w.home, "src", wt)},
+	} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = repo
+		if out, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("git %s: %w: %s", args[0], err, out)
+		}
+	}
+	w.cwd = filepath.Join(w.home, "src", wt)
 	return nil
 }
 
