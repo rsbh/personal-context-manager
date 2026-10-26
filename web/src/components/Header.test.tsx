@@ -17,3 +17,11 @@ describe("Header", () => {
     expect(await screen.findByText("server down")).toBeInTheDocument();
   });
 });
+
+describe("Header nav", () => {
+  it("links to current contexts", async () => {
+    mockAPI({ "/health": { status: "ok" } });
+    renderUI(<Header />);
+    expect(screen.getByRole("link", { name: "Current contexts" })).toHaveAttribute("href", "/current");
+  });
+});
