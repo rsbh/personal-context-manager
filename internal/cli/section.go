@@ -16,7 +16,7 @@ func newGetSectionCmd(a *app) *cobra.Command {
 		Use:     "section",
 		Aliases: []string{"sections"},
 		Short:   "List sections in a scope",
-		Args:    cobra.NoArgs,
+		Args:    noArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			sc, err := a.scope(cmd, flags)
 			if err != nil {
@@ -55,7 +55,7 @@ func newCreateSectionCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "section <name>",
 		Short: "Create a section in a scope",
-		Args:  cobra.ExactArgs(1),
+		Args:  nameArg("section"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sc, err := a.scope(cmd, flags)
 			if err != nil {
@@ -86,7 +86,7 @@ func newDeleteSectionCmd(a *app) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "section <name>",
 		Short: "Delete a section from a scope",
-		Args:  cobra.ExactArgs(1),
+		Args:  nameArg("section"),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sc, err := a.scope(cmd, flags)
 			if err != nil {
