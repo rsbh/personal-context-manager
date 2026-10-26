@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -78,4 +79,22 @@ func (c *Client) Resolve(ctx context.Context, project, section string) ([]store.
 	var out []store.Context
 	err := c.do(ctx, http.MethodGet, path, nil, &out)
 	return out, err
+}
+
+// ResolveMarkdown returns merged global + project contexts as markdown, rendered by the server.
+func (c *Client) ResolveMarkdown(ctx context.Context, project, section string) (string, error) {
+	q := url.Values{"format": {"md"}}
+	if project != "" {
+		q.Set("project", project)
+	}
+	if section != "" {
+		q.Set("section", section)
+	}
+	resp, err := c.send(ctx, http.MethodGet, "/api/v1/resolve?"+q.Encode(), nil)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	return string(b), err
 }

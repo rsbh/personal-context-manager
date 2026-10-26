@@ -2,11 +2,15 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/rsbh/personal-context-manager/internal/markdown"
 	"github.com/rsbh/personal-context-manager/internal/store"
 )
 
@@ -215,12 +219,42 @@ func (s *server) deleteContext(w http.ResponseWriter, r *http.Request) {
 
 // Resolve
 
+// resolve returns JSON by default, markdown with ?format=md or Accept: text/markdown.
+// The format param wins over Accept.
 func (s *server) resolve(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
+	format := q.Get("format")
+	switch format {
+	case "":
+		format = "json"
+		if acceptsMarkdown(r) {
+			format = "md"
+		}
+	case "json", "md":
+	default:
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid format %q: use json or md", format))
+		return
+	}
+
 	contexts, err := s.store.Resolve(q.Get("project"), q.Get("section"))
 	if err != nil {
 		writeStoreError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, contexts)
+	if format == "json" {
+		writeJSON(w, http.StatusOK, contexts)
+		return
+	}
+	w.Header().Set("Content-Type", markdown.ContentType)
+	w.WriteHeader(http.StatusOK)
+	markdown.Write(w, contexts)
+}
+
+func acceptsMarkdown(r *http.Request) bool {
+	for _, part := range strings.Split(r.Header.Get("Accept"), ",") {
+		if mt, _, err := mime.ParseMediaType(strings.TrimSpace(part)); err == nil && mt == "text/markdown" {
+			return true
+		}
+	}
+	return false
 }

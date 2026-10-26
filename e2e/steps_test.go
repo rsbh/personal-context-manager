@@ -5,6 +5,7 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +28,13 @@ type world struct {
 	port   int
 	output string
 	code   int
+	resp   *httpResult // last API call from an "I GET" step
+}
+
+type httpResult struct {
+	status int
+	header http.Header
+	body   string
 }
 
 func initializeScenario(sc *godog.ScenarioContext) {
@@ -51,6 +59,14 @@ func initializeScenario(sc *godog.ScenarioContext) {
 	sc.Step(`^a global section "([^"]*)" with a context "([^"]*)" and content "([^"]*)" and description "([^"]*)"$`, w.globalContextWithDescription)
 	sc.Step(`^a project "([^"]*)" section "([^"]*)" with a context "([^"]*)" and content "([^"]*)"$`, w.projectContext)
 	sc.Step(`^I am in a git repo named "([^"]*)"$`, w.inGitRepo)
+	sc.Step(`^the global section "([^"]*)" has no contexts$`, w.globalSectionEmpty)
+	sc.Step(`^I GET "([^"]*)"$`, w.iGet)
+	sc.Step(`^I GET "([^"]*)" with header "([^:]+): ([^"]*)"$`, w.iGetWithHeader)
+	sc.Step(`^the status is (\d+)$`, w.statusIs)
+	sc.Step(`^the header "([^"]*)" is "([^"]*)"$`, w.headerIs)
+	sc.Step(`^the body contains "(.*)"$`, w.bodyContains)
+	sc.Step(`^the body is "(.*)"$`, w.bodyIs)
+	sc.Step(`^the error is "(.*)"$`, w.errorIs)
 	sc.Step(`^I am not in a git repo$`, w.notInGitRepo)
 	sc.Step(`^I run "([^"]*)"$`, w.iRun)
 	sc.Step(`^the exit code is (\d+)$`, w.exitCodeIs)
@@ -361,6 +377,109 @@ func (w *world) fileContains(p, text string) error {
 func (w *world) fileNotExists(p string) error {
 	if _, err := os.Stat(w.path(p)); !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("file %s exists or stat failed: %v", p, err)
+	}
+	return nil
+}
+
+func (w *world) globalSectionEmpty(section string) error {
+	if err := w.iGet("/api/v1/contexts?scope=global&section=" + section); err != nil {
+		return err
+	}
+	var contexts []struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal([]byte(w.resp.body), &contexts); err != nil {
+		return err
+	}
+	for _, c := range contexts {
+		req, err := http.NewRequest(http.MethodDelete, w.url("/api/v1/contexts/"+c.ID), nil)
+		if err != nil {
+			return err
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusNoContent {
+			return fmt.Errorf("delete %s: status %d", c.ID, resp.StatusCode)
+		}
+	}
+	return nil
+}
+
+func (w *world) url(path string) string {
+	return fmt.Sprintf("http://localhost:%d%s", w.port, path)
+}
+
+func (w *world) iGet(path string) error {
+	return w.iGetWithHeader(path, "", "")
+}
+
+func (w *world) iGetWithHeader(path, key, value string) error {
+	req, err := http.NewRequest(http.MethodGet, w.url(path), nil)
+	if err != nil {
+		return err
+	}
+	if key != "" {
+		req.Header.Set(key, strings.TrimSpace(value))
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	w.resp = &httpResult{status: resp.StatusCode, header: resp.Header, body: string(body)}
+	return nil
+}
+
+func (w *world) statusIs(want int) error {
+	if w.resp.status != want {
+		return fmt.Errorf("status = %d, want %d, body:\n%s", w.resp.status, want, w.resp.body)
+	}
+	return nil
+}
+
+func (w *world) headerIs(key, want string) error {
+	if got := w.resp.header.Get(key); got != want {
+		return fmt.Errorf("header %s = %q, want %q", key, got, want)
+	}
+	return nil
+}
+
+// unescape converts \" and \n in step text, which Gherkin keeps as is.
+func unescape(s string) string {
+	return strings.NewReplacer(`\"`, `"`, `\n`, "\n").Replace(s)
+}
+
+func (w *world) bodyContains(text string) error {
+	if text = unescape(text); !strings.Contains(w.resp.body, text) {
+		return fmt.Errorf("body does not contain %q:\n%s", text, w.resp.body)
+	}
+	return nil
+}
+
+func (w *world) bodyIs(want string) error {
+	if want = unescape(want); w.resp.body != want {
+		return fmt.Errorf("body = %q, want %q", w.resp.body, want)
+	}
+	return nil
+}
+
+// errorIs reads the "error" field of a JSON error body.
+func (w *world) errorIs(want string) error {
+	var e struct {
+		Error string `json:"error"`
+	}
+	if err := json.Unmarshal([]byte(w.resp.body), &e); err != nil {
+		return fmt.Errorf("body is not a JSON error: %w: %s", err, w.resp.body)
+	}
+	if want = unescape(want); e.Error != want {
+		return fmt.Errorf("error = %q, want %q", e.Error, want)
 	}
 	return nil
 }

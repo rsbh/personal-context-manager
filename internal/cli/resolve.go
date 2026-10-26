@@ -3,12 +3,8 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"io"
-	"strings"
 
 	"github.com/spf13/cobra"
-
-	"github.com/rsbh/personal-context-manager/internal/store"
 )
 
 const (
@@ -45,27 +41,10 @@ func (a *app) resolveContexts(cmd *cobra.Command, flags contextFlags) error {
 		return err
 	}
 
-	contexts, err := a.client.Resolve(cmd.Context(), sc.project, flags.section)
+	md, err := a.client.ResolveMarkdown(cmd.Context(), sc.project, flags.section)
 	if err != nil {
 		return a.handleErr(cmd, err)
 	}
-	if len(contexts) == 0 {
-		fmt.Fprintln(cmd.OutOrStdout(), "No contexts found.")
-		return nil
-	}
-	printMarkdown(cmd.OutOrStdout(), contexts)
+	fmt.Fprint(cmd.OutOrStdout(), md)
 	return nil
-}
-
-// printMarkdown prints one heading per context, the description as a quote, then the content.
-func printMarkdown(w io.Writer, contexts []store.Context) {
-	fmt.Fprintln(w, "# Context")
-	for _, c := range contexts {
-		sc := scope{global: c.Scope == store.ScopeGlobal, project: c.Project}
-		fmt.Fprintf(w, "\n## %s/%s (%s)\n", c.Section, c.Name, sc)
-		if d := c.Frontmatter.Description; d != "" {
-			fmt.Fprintf(w, "> %s\n", d)
-		}
-		fmt.Fprintf(w, "\n%s\n", strings.TrimRight(c.Content, "\n"))
-	}
 }

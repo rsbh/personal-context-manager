@@ -90,3 +90,23 @@ func TestResolve(t *testing.T) {
 	}
 	f.expect(t, http.MethodGet, "/api/v1/resolve", "", "")
 }
+
+func TestResolveMarkdown(t *testing.T) {
+	f := &fakeAPI{status: http.StatusOK, resp: "# Context\n"}
+	got, err := f.start(t).ResolveMarkdown(context.Background(), "api", "style")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.expect(t, http.MethodGet, "/api/v1/resolve", "format=md&project=api&section=style", "")
+	if got != "# Context\n" {
+		t.Errorf("md = %q", got)
+	}
+}
+
+func TestResolveMarkdownError(t *testing.T) {
+	f := &fakeAPI{status: http.StatusBadRequest, resp: `{"error":"invalid project"}`}
+	_, err := f.start(t).ResolveMarkdown(context.Background(), "Bad", "")
+	if err == nil || err.Error() != "invalid project" {
+		t.Errorf("err = %v", err)
+	}
+}

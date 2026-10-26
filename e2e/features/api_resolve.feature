@@ -31,7 +31,7 @@ Feature: Resolve API formats
     When I GET "/api/v1/resolve?format=xml"
     Then the status is 400
     And the header "Content-Type" is "application/json"
-    And the body contains "invalid format \"xml\": use json or md"
+    And the error is "invalid format \"xml\": use json or md"
 
   Scenario: Empty markdown
     Given the global section "style" has no contexts

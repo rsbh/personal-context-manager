@@ -224,3 +224,54 @@ func TestResolve(t *testing.T) {
 
 	expectStatus(t, do(t, h, http.MethodGet, "/api/v1/resolve?project=Bad", ""), http.StatusBadRequest)
 }
+
+func TestResolveFormats(t *testing.T) {
+	h, _ := newTestServer(t)
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/sections", `{"scope":"global","name":"style"}`), http.StatusCreated)
+
+	get := func(path, accept string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		if accept != "" {
+			req.Header.Set("Accept", accept)
+		}
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		return rec
+	}
+	const md = "text/markdown; charset=utf-8"
+
+	// Empty markdown.
+	rec := get("/api/v1/resolve?format=md", "")
+	expectStatus(t, rec, http.StatusOK)
+	if rec.Body.String() != "No contexts found.\n" {
+		t.Errorf("empty body = %q", rec.Body.String())
+	}
+
+	expectStatus(t, do(t, h, http.MethodPost, "/api/v1/contexts", `{"scope":"global","section":"style","name":"go","content":"Use gofmt."}`), http.StatusCreated)
+
+	tests := []struct {
+		name, path, accept string
+		wantStatus         int
+		wantType           string
+		wantBody           string
+	}{
+		{"default json", "/api/v1/resolve", "", http.StatusOK, "application/json", `"id":"global/style/go"`},
+		{"format md", "/api/v1/resolve?format=md", "", http.StatusOK, md, "# Context\n\n## style/go (global)\n\nUse gofmt.\n"},
+		{"accept md", "/api/v1/resolve", "text/markdown", http.StatusOK, md, "## style/go (global)"},
+		{"accept list md", "/api/v1/resolve", "text/plain, text/markdown;q=0.9", http.StatusOK, md, "## style/go"},
+		{"format json wins", "/api/v1/resolve?format=json", "text/markdown", http.StatusOK, "application/json", `"id"`},
+		{"invalid format", "/api/v1/resolve?format=xml", "", http.StatusBadRequest, "application/json", `invalid format \"xml\": use json or md`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := get(tt.path, tt.accept)
+			expectStatus(t, rec, tt.wantStatus)
+			if got := rec.Header().Get("Content-Type"); got != tt.wantType {
+				t.Errorf("Content-Type = %q, want %q", got, tt.wantType)
+			}
+			if !strings.Contains(rec.Body.String(), tt.wantBody) {
+				t.Errorf("body = %q, want contains %q", rec.Body.String(), tt.wantBody)
+			}
+		})
+	}
+}

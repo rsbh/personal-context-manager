@@ -45,36 +45,11 @@ func (e *APIError) Error() string { return e.Message }
 
 // do sends a JSON request to path and decodes the response into out (if not nil).
 func (c *Client) do(ctx context.Context, method, path string, in, out any) error {
-	var body io.Reader
-	if in != nil {
-		var buf bytes.Buffer
-		if err := json.NewEncoder(&buf).Encode(in); err != nil {
-			return err
-		}
-		body = &buf
-	}
-	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
+	resp, err := c.send(ctx, method, path, in)
 	if err != nil {
 		return err
 	}
-	if in != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := c.http.Do(req)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrNotReachable, err)
-	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		var e struct {
-			Error string `json:"error"`
-		}
-		if json.NewDecoder(resp.Body).Decode(&e) != nil || e.Error == "" {
-			e.Error = http.StatusText(resp.StatusCode)
-		}
-		return &APIError{Status: resp.StatusCode, Message: e.Error}
-	}
 	if out == nil {
 		return nil
 	}
@@ -82,6 +57,41 @@ func (c *Client) do(ctx context.Context, method, path string, in, out any) error
 		return fmt.Errorf("decode response: %w", err)
 	}
 	return nil
+}
+
+// send sends a request. It returns an *APIError for status >= 400.
+// The caller closes the body of a good response.
+func (c *Client) send(ctx context.Context, method, path string, in any) (*http.Response, error) {
+	var body io.Reader
+	if in != nil {
+		var buf bytes.Buffer
+		if err := json.NewEncoder(&buf).Encode(in); err != nil {
+			return nil, err
+		}
+		body = &buf
+	}
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
+	if err != nil {
+		return nil, err
+	}
+	if in != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrNotReachable, err)
+	}
+	if resp.StatusCode >= 400 {
+		defer resp.Body.Close()
+		var e struct {
+			Error string `json:"error"`
+		}
+		if json.NewDecoder(resp.Body).Decode(&e) != nil || e.Error == "" {
+			e.Error = http.StatusText(resp.StatusCode)
+		}
+		return nil, &APIError{Status: resp.StatusCode, Message: e.Error}
+	}
+	return resp, nil
 }
 
 // Health returns nil if the server answers GET /health with status ok.
