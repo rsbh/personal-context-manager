@@ -49,7 +49,7 @@ func New(baseURL string, opts ...Option) *Client {
 
 // LocalURL returns the server URL for a local port.
 func LocalURL(port int) string {
-	return fmt.Sprintf("http://localhost:%d", port)
+	return fmt.Sprintf("http://127.0.0.1:%d", port)
 }
 
 func (c *Client) BaseURL() string {

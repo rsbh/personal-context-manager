@@ -54,3 +54,49 @@ jobs:
         run: go vet -tags e2e ./e2e/...
       - name: test
         run: go test -v -tags e2e ./e2e/...
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: API client up to date
+        run: |
+          npm run gen:api
+          git diff --exit-code -- src/client || { echo "Run make client and commit web/src/client"; exit 1; }
+      - name: typecheck
+        run: npm run typecheck
+      - name: test
+        run: npm test
+      - name: build
+        run: npm run build
+
+  e2e-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: build UI
+        working-directory: web
+        run: npm ci && npm run build
+      - name: install chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: test
+        working-directory: web
+        run: npm run e2e

@@ -9,7 +9,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os/signal"
@@ -23,6 +22,7 @@ import (
 	"github.com/rsbh/personal-context-manager/internal/search"
 	"github.com/rsbh/personal-context-manager/internal/server"
 	"github.com/rsbh/personal-context-manager/internal/store"
+	"github.com/rsbh/personal-context-manager/web"
 )
 
 const shutdownTimeout = 10 * time.Second
@@ -69,12 +69,12 @@ func main() {
 		}()
 	}
 
-	opts := []server.Option{server.WithGit(git), server.WithSearch(idx)}
+	opts := []server.Option{server.WithGit(git), server.WithSearch(idx), server.WithUI(web.FS())}
 	if cfg.Swagger {
 		opts = append(opts, server.WithSwagger())
 	}
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
+	addr := server.ListenAddr(cfg.Port)
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           server.NewRouter(st, opts...),

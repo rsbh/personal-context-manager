@@ -274,7 +274,7 @@ func (w *world) ensure(path, body string) error {
 }
 
 func (w *world) postExpect(path, body string, ok ...int) error {
-	url := fmt.Sprintf("http://localhost:%d%s", w.port, path)
+	url := fmt.Sprintf("http://127.0.0.1:%d%s", w.port, path)
 	resp, err := http.Post(url, "application/json", strings.NewReader(body))
 	if err != nil {
 		return err
@@ -513,7 +513,7 @@ func (w *world) globalSectionEmpty(section string) error {
 }
 
 func (w *world) url(path string) string {
-	return fmt.Sprintf("http://localhost:%d%s", w.port, path)
+	return fmt.Sprintf("http://127.0.0.1:%d%s", w.port, path)
 }
 
 func (w *world) iGet(path string) error {
@@ -614,6 +614,7 @@ func (w *world) errorIs(want string) error {
 func (w *world) env() []string {
 	return append(os.Environ(),
 		"HOME="+w.home,
+		"PCM_NO_BROWSER=1",
 		"GIT_CONFIG_NOSYSTEM=1",
 		"GIT_AUTHOR_NAME=pcm-test", "GIT_AUTHOR_EMAIL=pcm-test@example.com",
 		"GIT_COMMITTER_NAME=pcm-test", "GIT_COMMITTER_EMAIL=pcm-test@example.com",

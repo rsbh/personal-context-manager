@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"io/fs"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -18,6 +19,7 @@ type server struct {
 	git     *gitsync.Repo
 	search  *search.Index
 	swagger bool
+	ui      fs.FS // nil: API only
 }
 
 // Option configures the router.
@@ -43,6 +45,7 @@ func NewRouter(st *store.Store, opts ...Option) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.NotFound(s.notFound) // before routes, so sub-routers get it too
 
 	r.Get("/health", healthHandler)
 	if s.swagger {
