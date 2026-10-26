@@ -111,6 +111,11 @@ func TestSearchFilters(t *testing.T) {
 	if got := hitIDs(t, h, "q=gofmt&limit=1"); len(got) != 1 {
 		t.Errorf("limit=1: %v", got)
 	}
+	got := hitIDs(t, h, "q=gofmt&project=api&global=true")
+	slices.Sort(got)
+	if want := []string{"global/style/go", "projects/api/style/go"}; !slices.Equal(got, want) {
+		t.Errorf("project=api&global=true: %v, want %v", got, want)
+	}
 }
 
 func TestSearchFollowsWrites(t *testing.T) {

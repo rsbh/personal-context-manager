@@ -260,6 +260,25 @@ func TestFilters(t *testing.T) {
 	}
 }
 
+func TestProjectWithGlobal(t *testing.T) {
+	webGo := Doc{ID: "projects/web/style/webgo", Scope: "project", Project: "web", Section: "style", Name: "webgo",
+		Content: "Run gofmt in web."}
+	idx := newIndex(t, goStyle, goReview, apiGo, webGo)
+	for _, tc := range []struct {
+		q    Query
+		want []string
+	}{
+		{Query{Q: "gofmt", Project: "api", Global: true}, []string{goReview.ID, goStyle.ID, apiGo.ID}},
+		{Query{Q: "gofmt", Project: "api", Global: true, Section: "style"}, []string{goStyle.ID, apiGo.ID}},
+	} {
+		got := ids(t, idx, tc.q)
+		slices.Sort(got)
+		if !slices.Equal(got, tc.want) {
+			t.Errorf("%+v: hits = %v, want %v", tc.q, got, tc.want)
+		}
+	}
+}
+
 func TestLimit(t *testing.T) {
 	var docs []Doc
 	for i := range 25 {

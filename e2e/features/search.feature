@@ -56,12 +56,54 @@ Feature: Search
     And the output contains "gorev"
     And the output does not contain "gostyle"
 
-  Scenario: Filter by project
+  Scenario: Project flag searches global and that project
     Given a project "api" section "style" with a context "apigo" and content "Run gofmt in api."
+    And a project "web" section "style" with a context "webgo" and content "Run gofmt in web."
     When I run "pcm search gofmt -p api"
     Then the exit code is 0
     And the output contains "apigo"
-    And the output does not contain "gostyle"
+    And the output contains "gostyle"
+    And the output does not contain "webgo"
+
+  Scenario: In a git repo search global and current project
+    Given a project "api" section "style" with a context "apigo" and content "Run gofmt in api."
+    And a project "web" section "style" with a context "webgo" and content "Run gofmt in web."
+    And I am in a git repo named "api"
+    When I run "pcm search gofmt"
+    Then the exit code is 0
+    And the output contains "apigo"
+    And the output contains "gostyle"
+    And the output does not contain "webgo"
+
+  Scenario: Global flag searches global only
+    Given a project "api" section "style" with a context "apigo" and content "Run gofmt in api."
+    And I am in a git repo named "api"
+    When I run "pcm search gofmt -g"
+    Then the exit code is 0
+    And the output contains "gostyle"
+    And the output does not contain "apigo"
+
+  Scenario: All flag searches all projects
+    Given a project "api" section "style" with a context "apigo" and content "Run gofmt in api."
+    And a project "web" section "style" with a context "webgo" and content "Run gofmt in web."
+    And I am in a git repo named "api"
+    When I run "pcm search gofmt --all"
+    Then the exit code is 0
+    And the output contains "apigo"
+    And the output contains "gostyle"
+    And the output contains "webgo"
+
+  Scenario: Not in a git repo searches all projects
+    Given a project "web" section "style" with a context "webgo" and content "Run gofmt in web."
+    When I run "pcm search gofmt"
+    Then the exit code is 0
+    And the output contains "gostyle"
+    And the output contains "webgo"
+
+  Scenario: Only one scope flag
+    When I run "pcm search gofmt -p api --all"
+    Then the exit code is 1
+    And the output contains "error: use only one of -p, -g and --all"
 
   Scenario: Limit results
     Given a global section "review" with a context "gorev" and content "Check gofmt in review."
@@ -139,6 +181,13 @@ Feature: Search
     And the body contains "\"title\":\"gostyle\""
     And the body contains "\"snippet\""
     And the body contains "\"score\""
+
+  Scenario: API project with global
+    Given a project "api" section "style" with a context "apigo" and content "Run gofmt in api."
+    When I GET "/api/v1/search?q=gofmt&project=api&global=true"
+    Then the status is 200
+    And the body contains "\"id\":\"projects/api/style/apigo\""
+    And the body contains "\"id\":\"global/style/gostyle\""
 
   Scenario: API missing q
     When I GET "/api/v1/search"

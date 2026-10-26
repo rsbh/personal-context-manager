@@ -43,7 +43,7 @@
 | POST | `/contexts` | Create context |
 | PUT | `/contexts/{id}` | Update context |
 | DELETE | `/contexts/{id}` | Delete context |
-| GET | `/search?q=&scope=&project=&section=&limit=` | Full-text search (Bleve). Fuzzy, ranked, all scopes by default, `limit` default 20. Hit: id, scope, project, section, name, title, description, snippet, score |
+| GET | `/search?q=&scope=&project=&global=&section=&limit=` | Full-text search (Bleve). Fuzzy, ranked, all scopes by default. `project=X` only X; `project=X&global=true` global + X. `limit` default 20, must be > 0. Query: words OR, `+word` must, `-word` must not, `"phrase"` exact. Hit: id, scope, project, section, name, title (name if none), description, snippet (HTML escaped, `<mark>`), score |
 | POST | `/index/rebuild` | Rebuild search index from md files |
 | GET | `/resolve?project=&section=` | Merged global + project contexts with content. Project overrides global on same section/name. No project: global only |
 | GET | `/git/status` | branch, remote, changes (porcelain), ahead, behind (from last fetch) |
@@ -65,7 +65,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm create context <name> -s <section> (-m <text> \| -f <file\|->) [--title] [--description] [--tag ...] [--force] [-p <project> \| -g]` | Create context. `--force` replaces existing (PUT) |
 | `pcm delete context <name> -s <section> [-p <project> \| -g]` | Delete context |
 | `pcm edit context <name> -s <section>` | Open in `$EDITOR` (later) |
-| `pcm search <query> [-s <section>] [-p <project>] [--scope <scope>] [--limit 20]` | Search contexts. Table: SCOPE, NAME, SECTION, TITLE, SNIPPET, SCORE |
+| `pcm search <query> [-s <section>] [-p <project> \| -g \| --all] [--limit 20]` | Search contexts. No flag: global + git repo project; not in git repo: all. `-p`: global + project. `-g`: global only. `--all`: all. Table: SCOPE, NAME, SECTION, TITLE, SNIPPET, SCORE. Matches bold on a terminal |
 | `pcm index rebuild` | Rebuild search index from md files |
 | `pcm get contexts -o md [-s <section>] [-p <project> \| -g]` | Merged global + project contexts as markdown (for skill). Not in git repo: global only |
 | `pcm get project(s) [name]` | List projects or show one |

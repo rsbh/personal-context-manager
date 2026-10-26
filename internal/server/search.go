@@ -52,6 +52,7 @@ func (s *server) searchContexts(w http.ResponseWriter, r *http.Request) {
 		Q:       text,
 		Scope:   q.Get("scope"),
 		Project: q.Get("project"),
+		Global:  q.Get("global") == "true",
 		Section: q.Get("section"),
 		Limit:   limit,
 	})

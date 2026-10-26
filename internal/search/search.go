@@ -76,11 +76,13 @@ type Doc struct {
 }
 
 // Query selects hits. Empty Scope, Project and Section match all.
+// Global with Project matches global contexts and that project.
 // Limit 0 means defaultLimit. A negative limit is ErrInvalidLimit.
 type Query struct {
 	Q       string
 	Scope   string
 	Project string
+	Global  bool
 	Section string
 	Limit   int
 }
@@ -356,17 +358,29 @@ func buildQuery(q Query) (query.Query, error) {
 	}
 
 	var filters []query.Query
-	for f, v := range map[string]string{"scope": q.Scope, "project": q.Project, "section": q.Section} {
+	for f, v := range map[string]string{"scope": q.Scope, "section": q.Section} {
 		if v != "" {
-			tq := bleve.NewTermQuery(v)
-			tq.SetField(f)
-			filters = append(filters, tq)
+			filters = append(filters, fieldIs(f, v))
 		}
+	}
+	if q.Project != "" {
+		var pq query.Query = fieldIs("project", q.Project)
+		if q.Global {
+			pq = bleve.NewDisjunctionQuery(pq, fieldIs("scope", "global"))
+		}
+		filters = append(filters, pq)
 	}
 	if len(filters) > 0 {
 		bq.AddFilter(bleve.NewConjunctionQuery(filters...))
 	}
 	return bq, nil
+}
+
+// fieldIs matches docs whose keyword field f is v.
+func fieldIs(f, v string) *query.TermQuery {
+	tq := bleve.NewTermQuery(v)
+	tq.SetField(f)
+	return tq
 }
 
 type term struct {
