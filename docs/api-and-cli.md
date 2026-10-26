@@ -97,4 +97,4 @@ Source: `internal/skill/SKILL.md`, embedded in `pcm` with `go:embed`.
 | `pcm skill uninstall` | Remove `~/.claude/skills/pcm/` |
 | `pcm skill show` | Print SKILL.md |
 
-Skill: start server if needed, load `pcm get contexts -o md` at start of coding task and before review, save with `pcm create context` when user asks to remember, manage contexts on request. `allowed-tools: Bash(pcm:*)`.
+Skill: start server if needed, load `pcm get contexts -o md` at start of coding task and before review, save with `pcm create context` when user asks to remember, dump session rules and decisions to a project context named after the PR title (fallback: branch) on request (user approves first; asks overwrite with `--force` or new name with `-2` suffix), manage contexts on request. `allowed-tools: Bash(pcm:*), Bash(gh pr view:*), Bash(git branch:*)`.
