@@ -89,3 +89,11 @@ export async function sentBody(fetchMock: Mock<typeof fetch>, method: string) {
   if (!call) throw new Error(`no ${method} request`);
   return (call[0] as Request).clone().json();
 }
+
+// json is a JSON Response with status, for mockAPI routes.
+export function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}

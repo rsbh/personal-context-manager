@@ -5,6 +5,8 @@ import { ContextView } from "./components/ContextView";
 import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { CurrentContexts } from "./pages/CurrentContexts";
+import { EditContext } from "./pages/EditContext";
+import { NewContext } from "./pages/NewContext";
 
 function Home() {
   return <Text variant="secondary">Select a context in the sidebar.</Text>;
@@ -37,6 +39,8 @@ export const routes: RouteObject[] = [
     element: <Layout />,
     children: [
       { path: "/contexts/*", element: <ContextPage /> },
+      { path: "/edit/*", element: <EditContext /> },
+      { path: "/new", element: <NewContext /> },
       { path: "/current", element: <CurrentContexts /> },
       { path: "*", element: <Home /> },
     ],

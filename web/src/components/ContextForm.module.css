@@ -1,0 +1,60 @@
+.form {
+  max-width: 1440px;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: var(--rs-space-4);
+  background: var(--rs-color-background-base-secondary);
+}
+
+.actions {
+  margin-left: auto;
+}
+
+.path {
+  font-family: var(--rs-font-mono);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--rs-space-5);
+  padding: var(--rs-space-5);
+  border-radius: var(--rs-radius-4);
+  border: 0.5px solid var(--rs-color-border-base-primary);
+  background: var(--rs-color-background-base-primary);
+}
+
+.panes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rs-space-5);
+}
+
+.pane {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--rs-radius-4);
+  border: 0.5px solid var(--rs-color-border-base-primary);
+  background: var(--rs-color-background-base-primary);
+  overflow: hidden;
+}
+
+.paneTitle {
+  padding: var(--rs-space-3) var(--rs-space-4);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+.paneBody {
+  flex: 1;
+  min-height: 420px;
+}
+
+.preview {
+  padding: var(--rs-space-5) var(--rs-space-7);
+}

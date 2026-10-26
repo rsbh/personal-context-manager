@@ -34,7 +34,7 @@ describe("TagsInput", () => {
   it("removes a tag", async () => {
     const onChange = vi.fn<(tags: string[]) => void>();
     renderUI(<TagsInput label="Tags" value={two} onChange={onChange} />);
-    await userEvent.click(screen.getByRole("button", { name: "Remove tag go" }));
+    await userEvent.click(screen.getByRole("button", { name: "Remove go" }));
     expect(onChange).toHaveBeenCalledWith(["fmt"]);
   });
 });

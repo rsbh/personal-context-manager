@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { mockAPI, renderUI, sentBody } from "../test/render";
+import { json, mockAPI, renderUI, sentBody } from "../test/render";
 import { NewContext } from "./NewContext";
 
 const created = {
@@ -39,7 +39,7 @@ describe("NewContext", () => {
 
   it("creates with POST and opens the new context", async () => {
     const fetchMock = base({
-      "POST /api/v1/contexts": new Response(JSON.stringify(created), { status: 201 }),
+      "POST /api/v1/contexts": json(created, 201),
     });
     renderUI(<NewContext />, "/new?scope=global&section=style", "/new");
     await userEvent.type(await screen.findByLabelText("Name"), "py");
@@ -59,10 +59,7 @@ describe("NewContext", () => {
 
   it("sends the project for a project scope", async () => {
     const fetchMock = base({
-      "POST /api/v1/contexts": new Response(
-        JSON.stringify({ ...created, id: "projects/api/review/pr" }),
-        { status: 201 },
-      ),
+      "POST /api/v1/contexts": json({ ...created, id: "projects/api/review/pr" }, 201),
     });
     renderUI(<NewContext />, "/new?scope=project&project=api&section=review", "/new");
     await userEvent.type(await screen.findByLabelText("Name"), "pr");
@@ -83,10 +80,7 @@ describe("NewContext", () => {
 
   it("shows a conflict in a toast and keeps the values", async () => {
     base({
-      "POST /api/v1/contexts": new Response(
-        JSON.stringify({ error: 'context "global/style/go": already exists' }),
-        { status: 409 },
-      ),
+      "POST /api/v1/contexts": json({ error: 'context "global/style/go": already exists' }, 409),
     });
     renderUI(<NewContext />, "/new?scope=global&section=style", "/new");
     await userEvent.type(await screen.findByLabelText("Name"), "go");

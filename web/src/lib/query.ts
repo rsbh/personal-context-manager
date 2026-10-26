@@ -31,3 +31,19 @@ export function setupClient() {
 export function newQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: shouldRetry } } });
 }
+
+// contextQueries are the query ids that show context data.
+const contextQueries = ["listContexts", "getContext", "searchContexts", "resolveContexts"];
+
+// invalidateContexts refetches all context data after a create, update or delete.
+// A key is [{ _id, ...options }]; a partial key matches all options.
+export function invalidateContexts(queryClient: QueryClient) {
+  return Promise.all(
+    contextQueries.map((id) => queryClient.invalidateQueries({ queryKey: [{ _id: id }] })),
+  );
+}
+
+// errorMessage is the server message of an API error.
+export function errorMessage(error: unknown): string {
+  return (error as APIErrorBody | null)?.error ?? "Request failed";
+}

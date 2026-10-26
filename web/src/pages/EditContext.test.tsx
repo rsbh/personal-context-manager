@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { mockAPI, renderUI, sentBody } from "../test/render";
+import { json, mockAPI, renderUI, sentBody } from "../test/render";
 import { EditContext } from "./EditContext";
 
 const ctx = {
@@ -27,7 +27,9 @@ describe("EditContext", () => {
     expect(await screen.findByLabelText("Title")).toHaveValue("Go");
     expect(screen.getByLabelText("Description")).toHaveValue("Go style");
     expect(screen.getByText("go")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: "Markdown" })).toHaveTextContent("Use gofmt.");
+    expect(await screen.findByRole("textbox", { name: "Markdown" })).toHaveTextContent(
+      "Use gofmt.",
+    );
     expect(screen.getByRole("region", { name: "Preview" })).toHaveTextContent("Use gofmt.");
     expect(screen.queryByText("Unsaved changes")).not.toBeInTheDocument();
   });
@@ -64,7 +66,7 @@ describe("EditContext", () => {
   it("shows the server error in a toast and stays", async () => {
     mockAPI({
       [path]: ctx,
-      [`PUT ${path}`]: new Response(JSON.stringify({ error: "invalid tag" }), { status: 400 }),
+      [`PUT ${path}`]: json({ error: "invalid tag" }, 400),
     });
     renderEdit();
     await userEvent.type(await screen.findByLabelText("Title"), "!");

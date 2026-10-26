@@ -1,7 +1,8 @@
-import { Search, Sidebar as ApsaraSidebar, Spinner, Text } from "@raystack/apsara";
+import { IconButton, Search, Sidebar as ApsaraSidebar, Spinner, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   listContextsOptions,
   listProjectsOptions,
@@ -40,14 +41,37 @@ function ContextItem({ context }: ContextItemProps) {
   );
 }
 
+interface NewButtonProps {
+  section: string;
+  project?: string;
+}
+
+// NewButton opens the new context form with the scope and section filled in.
+function NewButton({ section, project }: NewButtonProps) {
+  const navigate = useNavigate();
+  const onClick = useCallback(() => {
+    const q = new URLSearchParams(
+      project ? { scope: "project", project, section } : { scope: "global", section },
+    );
+    navigate(`/new?${q}`);
+  }, [navigate, section, project]);
+  return (
+    <IconButton size={1} aria-label={`New context in ${section}`} onClick={onClick}>
+      <Plus size={12} />
+    </IconButton>
+  );
+}
+
 interface SectionNodeProps {
   section: string;
+  project?: string;
   contexts: StoreContext[];
 }
 
-function SectionNode({ section, contexts }: SectionNodeProps) {
+function SectionNode({ section, project, contexts }: SectionNodeProps) {
+  const add = useMemo(() => <NewButton section={section} project={project} />, [section, project]);
   return (
-    <ApsaraSidebar.Group label={section} collapsible defaultOpen>
+    <ApsaraSidebar.Group label={section} collapsible defaultOpen trailingIcon={add}>
       {contexts.map((c) => (
         <ContextItem key={c.id} context={c} />
       ))}
@@ -79,7 +103,7 @@ function ProjectNode({ project }: ProjectNodeProps) {
       {opened && (sections.isPending || contexts.isPending) && <Spinner size={2} />}
       {sections.data?.length === 0 && <Empty>No sections</Empty>}
       {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
-        <SectionNode key={s} section={s} contexts={cs} />
+        <SectionNode key={s} section={s} project={project} contexts={cs} />
       ))}
     </ApsaraSidebar.Group>
   );
