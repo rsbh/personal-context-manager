@@ -59,6 +59,7 @@ After a code change: `make install && make restart`.
 | `pcm delete section <name> [-p <project> \| -g] [--force]` | Delete section |
 | `pcm get contexts [-s <section>] [-p <project> \| -g]` | List contexts |
 | `pcm get context <name> -s <section>` | Print context md |
+| `pcm get contexts -o md [-s <section>]` | Merged global + project contexts as markdown |
 | `pcm create context <name> -s <section> -m <text> [--title] [--description] [--tag ...]` | Create context |
 | `pcm delete context <name> -s <section>` | Delete context |
 
