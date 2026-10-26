@@ -4,9 +4,10 @@
 build:
 	go build -o bin/ ./cmd/...
 
-# Install pcm and pcm-server into $(go env GOPATH)/bin.
+# Install pcm and pcm-server into $(go env GOPATH)/bin, then the Claude Code skill.
 install:
 	go install ./cmd/...
+	$(shell go env GOPATH)/bin/pcm skill install
 
 # Restart the background server with the installed binary.
 restart:

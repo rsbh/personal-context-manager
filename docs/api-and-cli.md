@@ -82,4 +82,12 @@ No flag: current project = git repo root folder name (`git rev-parse --show-topl
 
 ## Claude Code skill
 
-Skill runs `pcm context` and `pcm add`. Skill file ships in repo.
+Source: `internal/skill/SKILL.md`, embedded in `pcm` with `go:embed`.
+
+| Command | Purpose |
+|---|---|
+| `pcm skill install` | Write SKILL.md to `~/.claude/skills/pcm/` (overwrite) |
+| `pcm skill uninstall` | Remove `~/.claude/skills/pcm/` |
+| `pcm skill show` | Print SKILL.md |
+
+Skill: start server if needed, load `pcm get contexts -o md` at start of coding task and before review, save with `pcm create context` when user asks to remember, manage contexts on request. `allowed-tools: Bash(pcm:*)`.
