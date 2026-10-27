@@ -32,8 +32,16 @@ export function newQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: shouldRetry } } });
 }
 
-// contextQueries are the query ids that show context data.
-const contextQueries = ["listContexts", "getContext", "searchContexts", "resolveContexts"];
+// contextQueries are the query ids that show context data, and the git status and log
+// (every change to a context changes them).
+const contextQueries = [
+  "listContexts",
+  "getContext",
+  "searchContexts",
+  "resolveContexts",
+  "gitStatus",
+  "gitLog",
+];
 
 // treeQueries are contextQueries plus the sidebar tree lists.
 const treeQueries = [...contextQueries, "listSections", "listProjects"];
@@ -52,6 +60,11 @@ export function invalidateContexts(queryClient: QueryClient) {
 // invalidateTree refetches the tree and context data after a section or project change.
 export function invalidateTree(queryClient: QueryClient) {
   return invalidate(queryClient, treeQueries);
+}
+
+// APIConflict is a sync conflict error (409): the files that conflict.
+export interface APIConflict extends APIErrorBody {
+  files?: string[];
 }
 
 // errorStatus is the HTTP status of an API error (added by withStatus).

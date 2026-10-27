@@ -18,6 +18,7 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 | Edit form | Title, Description, Tags (Apsara `Input` chips: Enter adds, × removes). CodeMirror (lazy loaded, `--rs-*` theme) and live preview side by side, stacked on narrow screens |
 | Feedback | Toasts: "Saved" (go to the view), "Deleted" (go to `/`, after an AlertDialog confirm), server errors (form keeps the values). Mutations invalidate list, get, search and resolve queries |
 | Sections / projects | Sidebar "+" on Global (new section), Projects (new project), each project row (new section in it): Name dialog, stays open on error. "⋯" menu on section and project rows: Delete with confirm; on 409 (not empty) the dialog asks again, "Delete all" sends `force=true`. Go to `/` when the open context is in the deleted section or project. Toasts; tree refreshes |
+| Sync | Header "Sync" link with a badge (changes + commits ahead, hidden at 0). `/sync` page: remote · branch, "Sync now" (disabled without remote, info callout with `pcm config set remote <git-url>`), cards Changes / Ahead / Behind (no "Last sync": API has no time), changed files, last 10 commits. 409: conflict callout with files until the next successful sync; other errors in a toast. No polling: refetch on focus and after every change |
 | Embed | `web/dist` embedded with `go:embed`. Not in git. No build: placeholder page "UI not built: run make web" |
 | Serving | One port: UI at `/` (SPA fallback to `index.html`), API at `/api/v1`, `/health`. Unknown `/api/*`: JSON 404 |
 | Bind | `127.0.0.1` only |
@@ -32,4 +33,4 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 3. **Edit**
    - 3a: create/edit/delete contexts (fields, CodeMirror, preview, save/discard, unsaved warning).
    - 3b: create/delete sections and projects (sidebar "+" and "⋯" menu, confirm, force on 409).
-4. **Sync**: header badge + Sync button, Sync page (status, changed files, log, conflict).
+4. **Sync**: header Sync link + badge, Sync page (status, changed files, log, conflict).

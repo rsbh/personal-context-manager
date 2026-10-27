@@ -7,6 +7,7 @@ import { Sidebar } from "./components/Sidebar";
 import { CurrentContexts } from "./pages/CurrentContexts";
 import { EditContext } from "./pages/EditContext";
 import { NewContext } from "./pages/NewContext";
+import { SyncPage } from "./pages/SyncPage";
 
 function Home() {
   return <Text variant="secondary">Select a context in the sidebar.</Text>;
@@ -42,6 +43,7 @@ export const routes: RouteObject[] = [
       { path: "/edit/*", element: <EditContext /> },
       { path: "/new", element: <NewContext /> },
       { path: "/current", element: <CurrentContexts /> },
+      { path: "/sync", element: <SyncPage /> },
       { path: "*", element: <Home /> },
     ],
   },

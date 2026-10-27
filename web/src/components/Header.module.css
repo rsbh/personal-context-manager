@@ -61,3 +61,7 @@
 .down {
   background: var(--rs-color-foreground-danger-primary);
 }
+
+.badge {
+  margin-left: var(--rs-space-2);
+}
