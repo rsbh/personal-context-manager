@@ -1,7 +1,8 @@
-import { Flex, Text } from "@raystack/apsara";
-import { useQuery } from "@tanstack/react-query";
+import { Badge, Flex, Text } from "@raystack/apsara";
+import { useQueries } from "@tanstack/react-query";
 import { NavLink } from "react-router";
-import { getHealthOptions } from "../client/@tanstack/react-query.gen";
+import { getHealthOptions, gitStatusOptions } from "../client/@tanstack/react-query.gen";
+import { pendingCount } from "../lib/sync";
 import classes from "./Header.module.css";
 
 function navClass({ isActive }: { isActive: boolean }) {
@@ -9,7 +10,10 @@ function navClass({ isActive }: { isActive: boolean }) {
 }
 
 export function Header() {
-  const health = useQuery({ ...getHealthOptions(), refetchInterval: 10_000 });
+  const [health, status] = useQueries({
+    queries: [{ ...getHealthOptions(), refetchInterval: 10_000 }, gitStatusOptions()],
+  });
+  const pending = pendingCount(status.data);
   const ok = health.data?.status === "ok";
 
   return (
@@ -29,6 +33,14 @@ export function Header() {
         </NavLink>
         <NavLink to="/current" className={navClass}>
           Current contexts
+        </NavLink>
+        <NavLink to="/sync" className={navClass}>
+          Sync
+          {pending > 0 && (
+            <Badge variant="accent" size="small" className={classes.badge}>
+              {pending}
+            </Badge>
+          )}
         </NavLink>
       </nav>
       {!health.isPending && (

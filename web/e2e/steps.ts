@@ -1,3 +1,5 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { expect } from "@playwright/test";
 import { createBdd } from "playwright-bdd";
 import { test } from "./fixtures";
@@ -205,4 +207,83 @@ When("I click {string} in the menu", async ({ page }, name: string) => {
 
 Then("the {string} field is {string}", async ({ page }, label: string, value: string) => {
   await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);
+});
+
+// Git and sync steps: same text as the godog steps in e2e/steps_test.go.
+
+Given("a git remote", async ({ pcm }) => {
+  pcm.remote = join(pcm.home, "remote.git");
+  pcm.git(pcm.home, "init", "--quiet", "--bare", "-b", "main", pcm.remote);
+});
+
+Given("the remote is set", async ({ pcm }) => {
+  const r = pcm.run("config", "set", "remote", pcm.remote);
+  expect(r.code, r.output).toBe(0);
+});
+
+Given("I run {string}", async ({ pcm }, command: string) => {
+  const [bin, ...args] = command.split(" ");
+  expect(bin).toBe("pcm");
+  const r = pcm.run(...args);
+  expect(r.code, r.output).toBe(0);
+});
+
+Given(
+  "another clone pushes {string} with content {string}",
+  async ({ pcm }, path: string, content: string) => {
+    const dir = mkdtempSync(join(pcm.home, "clone-"));
+    pcm.git(pcm.home, "clone", "--quiet", pcm.remote, dir);
+    const file = join(dir, path);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, content);
+    pcm.git(dir, "add", "-A");
+    pcm.git(dir, "commit", "--quiet", "-m", "change from other clone");
+    pcm.git(dir, "push", "--quiet", "origin", "main");
+  },
+);
+
+Given("the context {string} has content {string}", async ({ pcm }, id: string, content: string) => {
+  await pcm.put(`/api/v1/contexts/${id}`, { content });
+});
+
+Then("the remote has the file {string}", async ({ pcm }, path: string) => {
+  const out = pcm.git(pcm.home, "--git-dir", pcm.remote, "ls-tree", "-r", "--name-only", "main");
+  expect(out.split("\n")).toContain(path);
+});
+
+// The Sync link is in the header nav; its badge is the number of changes + commits ahead.
+function syncLink(page: import("@playwright/test").Page) {
+  return page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: /^Sync/ });
+}
+
+Then("the Sync badge shows {string}", async ({ page }, count: string) => {
+  await expect(syncLink(page)).toHaveText(`Sync${count}`);
+});
+
+Then("the Sync badge is not shown", async ({ page }) => {
+  await expect(syncLink(page)).toHaveText("Sync");
+});
+
+// Status cards are groups named by their label.
+Then("the {string} card shows {string}", async ({ page }, label: string, value: string) => {
+  await expect(page.getByRole("group", { name: label, exact: true })).toHaveText(
+    `${label}${value}`,
+  );
+});
+
+Then("the changed files show {string}", async ({ page }, path: string) => {
+  await expect(page.getByRole("region", { name: "Changed files" })).toContainText(path);
+});
+
+Then("the recent commits show {string}", async ({ page }, text: string) => {
+  await expect(page.getByRole("region", { name: "Recent commits" })).toContainText(text);
+});
+
+Then("the {string} button is disabled", async ({ page }, name: string) => {
+  await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
+});
+
+// The Sync link name includes the badge count ("Sync 1"), so match by prefix.
+When("I click the Sync link", async ({ page }) => {
+  await syncLink(page).click();
 });
