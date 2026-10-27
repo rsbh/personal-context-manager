@@ -35,12 +35,28 @@ export function newQueryClient() {
 // contextQueries are the query ids that show context data.
 const contextQueries = ["listContexts", "getContext", "searchContexts", "resolveContexts"];
 
-// invalidateContexts refetches all context data after a create, update or delete.
+// treeQueries are contextQueries plus the sidebar tree lists.
+const treeQueries = [...contextQueries, "listSections", "listProjects"];
+
+// invalidate refetches the queries with these ids.
 // A key is [{ _id, ...options }]; a partial key matches all options.
+function invalidate(queryClient: QueryClient, ids: string[]) {
+  return Promise.all(ids.map((id) => queryClient.invalidateQueries({ queryKey: [{ _id: id }] })));
+}
+
+// invalidateContexts refetches all context data after a create, update or delete.
 export function invalidateContexts(queryClient: QueryClient) {
-  return Promise.all(
-    contextQueries.map((id) => queryClient.invalidateQueries({ queryKey: [{ _id: id }] })),
-  );
+  return invalidate(queryClient, contextQueries);
+}
+
+// invalidateTree refetches the tree and context data after a section or project change.
+export function invalidateTree(queryClient: QueryClient) {
+  return invalidate(queryClient, treeQueries);
+}
+
+// errorStatus is the HTTP status of an API error (added by withStatus).
+export function errorStatus(error: unknown): number | undefined {
+  return (error as APIErrorBody | null)?.status;
 }
 
 // errorMessage is the server message of an API error.

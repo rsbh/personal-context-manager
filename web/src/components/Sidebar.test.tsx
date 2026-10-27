@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { mockAPI, renderUI } from "../test/render";
+import { json, mockAPI, renderUI, sentBody } from "../test/render";
 import { Sidebar } from "./Sidebar";
 
 // Apsara sidebar items are <a href> with role="listitem" (list semantics), so find them by text.
@@ -121,5 +121,122 @@ describe("Sidebar", () => {
     expect(screen.getByLabelText("Location")).toHaveTextContent(
       "/new?scope=project&project=api&section=review",
     );
+  });
+
+  it("creates a global section", async () => {
+    const fetchMock = base({ "POST /api/v1/sections": json({}, 201) });
+    renderUI(<Sidebar />);
+    await userEvent.click(screen.getByRole("button", { name: "New global section" }));
+    const dialog = await screen.findByRole("dialog", { name: "New section" });
+    await userEvent.type(within(dialog).getByLabelText("Name"), "review");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Section created")).toBeInTheDocument();
+    expect(await sentBody(fetchMock, "POST")).toEqual({ scope: "global", name: "review" });
+    expect(screen.queryByRole("dialog", { name: "New section" })).not.toBeInTheDocument();
+  });
+
+  it("creates a project", async () => {
+    const fetchMock = base({ "POST /api/v1/projects": json({}, 201) });
+    renderUI(<Sidebar />);
+    await userEvent.click(screen.getByRole("button", { name: "New project" }));
+    const dialog = await screen.findByRole("dialog", { name: "New project" });
+    await userEvent.type(within(dialog).getByLabelText("Name"), "web");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Project created")).toBeInTheDocument();
+    expect(await sentBody(fetchMock, "POST")).toEqual({ name: "web" });
+  });
+
+  it("creates a section in a project", async () => {
+    const fetchMock = base({ "POST /api/v1/sections": json({}, 201) });
+    renderUI(<Sidebar />);
+    await userEvent.click(await screen.findByRole("button", { name: "New section in api" }));
+    const dialog = await screen.findByRole("dialog", { name: "New section" });
+    await userEvent.type(within(dialog).getByLabelText("Name"), "review");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    expect(await sentBody(fetchMock, "POST")).toEqual({
+      scope: "project",
+      project: "api",
+      name: "review",
+    });
+  });
+
+  it("keeps the create dialog open on an error", async () => {
+    base({
+      "POST /api/v1/sections": json({ error: 'section "style": already exists' }, 409),
+    });
+    renderUI(<Sidebar />);
+    await userEvent.click(screen.getByRole("button", { name: "New global section" }));
+    const dialog = await screen.findByRole("dialog", { name: "New section" });
+    await userEvent.type(within(dialog).getByLabelText("Name"), "style");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    expect(await screen.findByText(/already exists/)).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Name")).toHaveValue("style");
+  });
+
+  it("deletes an empty section", async () => {
+    base({ "DELETE /api/v1/sections/empty?scope=global": new Response(null, { status: 204 }) });
+    renderUI(<Sidebar />);
+    await userEvent.click(await screen.findByRole("button", { name: "Section empty actions" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    const dialog = await screen.findByRole("alertdialog", { name: "Delete section?" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Deleted")).toBeInTheDocument();
+  });
+
+  it("asks again and forces the delete of a section that is not empty", async () => {
+    const fetchMock = base({
+      "DELETE /api/v1/sections/style?scope=global": json({ error: "not empty" }, 409),
+      "DELETE /api/v1/sections/style?scope=global&force=true": new Response(null, {
+        status: 204,
+      }),
+    });
+    renderUI(<Sidebar />, "/contexts/global/style/go");
+    await userEvent.click(await screen.findByRole("button", { name: "Section style actions" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    await userEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+    );
+    const dialog = await screen.findByRole("alertdialog", { name: "Section is not empty" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Delete all" }));
+
+    expect(await screen.findByText("Deleted")).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(
+        ([r]) => r instanceof Request && r.method === "DELETE" && r.url.endsWith("force=true"),
+      ),
+    ).toBe(true);
+    expect(screen.getByLabelText("Location")).toHaveTextContent(/^\/$/);
+  });
+
+  it("deletes a project with force", async () => {
+    base({
+      "DELETE /api/v1/projects/api": json({ error: "not empty" }, 409),
+      "DELETE /api/v1/projects/api?force=true": new Response(null, { status: 204 }),
+    });
+    renderUI(<Sidebar />);
+    await userEvent.click(await screen.findByRole("button", { name: "Project api actions" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    await userEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+    );
+    await userEvent.click(
+      within(await screen.findByRole("alertdialog", { name: "Project is not empty" })).getByRole(
+        "button",
+        { name: "Delete all" },
+      ),
+    );
+    expect(await screen.findByText("Deleted")).toBeInTheDocument();
+  });
+
+  it("stays on the page when a different section is deleted", async () => {
+    base({ "DELETE /api/v1/sections/empty?scope=global": new Response(null, { status: 204 }) });
+    renderUI(<Sidebar />, "/contexts/global/style/go");
+    await userEvent.click(await screen.findByRole("button", { name: "Section empty actions" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    await userEvent.click(
+      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
+    );
+    expect(await screen.findByText("Deleted")).toBeInTheDocument();
+    expect(screen.getByLabelText("Location")).toHaveTextContent("/contexts/global/style/go");
   });
 });

@@ -28,6 +28,18 @@ Given(
   },
 );
 
+Given("a global section {string}", async ({ pcm }, name: string) => {
+  await pcm.post("/api/v1/sections", { scope: "global", name });
+});
+
+Given(
+  "a project {string} with a section {string}",
+  async ({ pcm }, project: string, name: string) => {
+    await pcm.post("/api/v1/projects", { name: project });
+    await pcm.post("/api/v1/sections", { scope: "project", project, name });
+  },
+);
+
 // Browser steps.
 
 When("I open the UI", async ({ page, pcm }) => {
@@ -141,8 +153,13 @@ When("I click the {string} button", async ({ page }, name: string) => {
   await page.getByRole("button", { name, exact: true }).click();
 });
 
+// dialog is the open dialog: a Dialog (role dialog) or an AlertDialog (role alertdialog).
+function dialog(page: import("@playwright/test").Page, name?: string) {
+  return page.getByRole("dialog", { name }).or(page.getByRole("alertdialog", { name }));
+}
+
 When("I click the {string} button in the dialog", async ({ page }, name: string) => {
-  await page.getByRole("alertdialog").getByRole("button", { name, exact: true }).click();
+  await dialog(page).getByRole("button", { name, exact: true }).click();
 });
 
 // The CodeMirror content element is a textbox with aria-label "Markdown".
@@ -169,7 +186,7 @@ Then("I do not see {string}", async ({ page }, text: string) => {
 });
 
 Then("I see the dialog {string}", async ({ page }, name: string) => {
-  await expect(page.getByRole("alertdialog", { name })).toBeVisible();
+  await expect(dialog(page, name)).toBeVisible();
 });
 
 Then("I see the toast {string}", async ({ page }, text: string) => {
@@ -178,4 +195,14 @@ Then("I see the toast {string}", async ({ page }, text: string) => {
 
 Then("the {string} select shows {string}", async ({ page }, label: string, value: string) => {
   await expect(page.getByRole("combobox", { name: label, exact: true })).toHaveText(value);
+});
+
+// Section and project steps.
+
+When("I click {string} in the menu", async ({ page }, name: string) => {
+  await page.getByRole("menuitem", { name, exact: true }).click();
+});
+
+Then("the {string} field is {string}", async ({ page }, label: string, value: string) => {
+  await expect(page.getByLabel(label, { exact: true })).toHaveValue(value);
 });

@@ -17,6 +17,7 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 | Edit routes | `/edit/<id>` (Edit button on the context view), `/new?scope=&project=&section=` ("+" on a sidebar section fills the values). New: pick scope and an existing section, then a name |
 | Edit form | Title, Description, Tags (Apsara `Input` chips: Enter adds, × removes). CodeMirror (lazy loaded, `--rs-*` theme) and live preview side by side, stacked on narrow screens |
 | Feedback | Toasts: "Saved" (go to the view), "Deleted" (go to `/`, after an AlertDialog confirm), server errors (form keeps the values). Mutations invalidate list, get, search and resolve queries |
+| Sections / projects | Sidebar "+" on Global (new section), Projects (new project), each project row (new section in it): Name dialog, stays open on error. "⋯" menu on section and project rows: Delete with confirm; on 409 (not empty) the dialog asks again, "Delete all" sends `force=true`. Go to `/` when the open context is in the deleted section or project. Toasts; tree refreshes |
 | Embed | `web/dist` embedded with `go:embed`. Not in git. No build: placeholder page "UI not built: run make web" |
 | Serving | One port: UI at `/` (SPA fallback to `index.html`), API at `/api/v1`, `/health`. Unknown `/api/*`: JSON 404 |
 | Bind | `127.0.0.1` only |
@@ -30,5 +31,5 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 2. **Browse**: full tree (sections > contexts; project loads on expand), full-text search (`/api/v1/search`, results replace the tree), context view at `/contexts/<id>` (rendered md + raw file, "Context not found"), Current contexts table at `/current?project=&section=` (header link). No retry on 4xx.
 3. **Edit**
    - 3a: create/edit/delete contexts (fields, CodeMirror, preview, save/discard, unsaved warning).
-   - 3b: create/delete sections and projects (confirm, force).
+   - 3b: create/delete sections and projects (sidebar "+" and "⋯" menu, confirm, force on 409).
 4. **Sync**: header badge + Sync button, Sync page (status, changed files, log, conflict).

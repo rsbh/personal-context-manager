@@ -1,4 +1,11 @@
-import { IconButton, Search, Sidebar as ApsaraSidebar, Spinner, Text } from "@raystack/apsara";
+import {
+  Flex,
+  IconButton,
+  Search,
+  Sidebar as ApsaraSidebar,
+  Spinner,
+  Text,
+} from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -12,6 +19,7 @@ import type { StoreContext } from "../client/types.gen";
 import { useDebouncedValue } from "../lib/debounce";
 import { contextPath } from "../lib/format";
 import { SearchResults } from "./SearchResults";
+import { CreateProjectButton, CreateSectionButton, RowMenu } from "./SidebarActions";
 import classes from "./Sidebar.module.css";
 
 interface EmptyProps {
@@ -69,9 +77,17 @@ interface SectionNodeProps {
 }
 
 function SectionNode({ section, project, contexts }: SectionNodeProps) {
-  const add = useMemo(() => <NewButton section={section} project={project} />, [section, project]);
+  const actions = useMemo(
+    () => (
+      <Flex gap={1}>
+        <NewButton section={section} project={project} />
+        <RowMenu kind="section" name={section} project={project} />
+      </Flex>
+    ),
+    [section, project],
+  );
   return (
-    <ApsaraSidebar.Group label={section} collapsible defaultOpen trailingIcon={add}>
+    <ApsaraSidebar.Group label={section} collapsible defaultOpen trailingIcon={actions}>
       {contexts.map((c) => (
         <ContextItem key={c.id} context={c} />
       ))}
@@ -90,6 +106,16 @@ interface ProjectNodeProps {
 
 function ProjectNode({ project }: ProjectNodeProps) {
   const [opened, setOpened] = useState(false);
+  const open = useCallback(() => setOpened(true), []);
+  const actions = useMemo(
+    () => (
+      <Flex gap={1}>
+        <CreateSectionButton project={project} onCreated={open} />
+        <RowMenu kind="project" name={project} />
+      </Flex>
+    ),
+    [project, open],
+  );
   const scope = { scope: "project", project };
   const [sections, contexts] = useQueries({
     queries: [
@@ -99,7 +125,13 @@ function ProjectNode({ project }: ProjectNodeProps) {
   });
 
   return (
-    <ApsaraSidebar.Group label={project} collapsible open={opened} onOpenChange={setOpened}>
+    <ApsaraSidebar.Group
+      label={project}
+      collapsible
+      open={opened}
+      onOpenChange={setOpened}
+      trailingIcon={actions}
+    >
       {opened && (sections.isPending || contexts.isPending) && <Spinner size={2} />}
       {sections.data?.length === 0 && <Empty>No sections</Empty>}
       {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
@@ -108,6 +140,9 @@ function ProjectNode({ project }: ProjectNodeProps) {
     </ApsaraSidebar.Group>
   );
 }
+
+const globalActions = <CreateSectionButton />;
+const projectsActions = <CreateProjectButton />;
 
 export function Sidebar() {
   const [query, setQuery] = useState("");
@@ -143,14 +178,14 @@ export function Sidebar() {
             <SearchResults query={debounced} />
           ) : (
             <>
-              <ApsaraSidebar.Group label="Global">
+              <ApsaraSidebar.Group label="Global" trailingIcon={globalActions}>
                 {(sections.isPending || contexts.isPending) && <Spinner size={2} />}
                 {sections.data?.length === 0 && <Empty>No sections</Empty>}
                 {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
                   <SectionNode key={s} section={s} contexts={cs} />
                 ))}
               </ApsaraSidebar.Group>
-              <ApsaraSidebar.Group label="Projects">
+              <ApsaraSidebar.Group label="Projects" trailingIcon={projectsActions}>
                 {projects.isPending && <Spinner size={2} />}
                 {projects.data?.length === 0 && <Empty>No projects</Empty>}
                 {projects.data?.map((p) => (
