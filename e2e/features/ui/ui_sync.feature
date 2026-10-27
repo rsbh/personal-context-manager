@@ -14,7 +14,7 @@ Feature: Sync
     And the remote is set
     And a global section "style" with a context "go" and content "Use gofmt."
     When I open the UI
-    And I click the "Sync" link
+    And I click the Sync link
     Then the URL path is "/sync"
     And I see "main"
     And the "Changes" card shows "1"

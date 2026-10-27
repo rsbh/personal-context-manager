@@ -282,3 +282,8 @@ Then("the recent commits show {string}", async ({ page }, text: string) => {
 Then("the {string} button is disabled", async ({ page }, name: string) => {
   await expect(page.getByRole("button", { name, exact: true })).toBeDisabled();
 });
+
+// The Sync link name includes the badge count ("Sync 1"), so match by prefix.
+When("I click the Sync link", async ({ page }) => {
+  await syncLink(page).click();
+});
