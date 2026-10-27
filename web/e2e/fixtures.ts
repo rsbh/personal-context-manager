@@ -17,6 +17,11 @@ export interface PcmWorld {
   url(path: string): string;
   run(...args: string[]): RunResult;
   post(path: string, body: unknown, ...okStatus: number[]): Promise<void>;
+  put(path: string, body: unknown): Promise<void>;
+  // git runs git in dir with the scenario env. It throws when git fails.
+  git(dir: string, ...args: string[]): string;
+  // remote is the bare git remote of "a git remote", or "" before that step.
+  remote: string;
 }
 
 function freePort(): Promise<number> {
@@ -58,6 +63,22 @@ export const test = base.extend<{ pcm: PcmWorld }>({
       run: (...args) => {
         const r = spawnSync(join(binDir, "pcm"), args, { env, cwd: home, encoding: "utf8" });
         return { code: r.status ?? -1, output: (r.stdout ?? "") + (r.stderr ?? "") };
+      },
+      remote: "",
+      git: (dir, ...args) => {
+        const r = spawnSync("git", args, { env, cwd: dir, encoding: "utf8" });
+        if (r.status !== 0) throw new Error(`git ${args.join(" ")}: ${r.stdout}${r.stderr}`);
+        return r.stdout;
+      },
+      put: async (path, body) => {
+        const res = await fetch(world.url(path), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (res.status !== 200) {
+          throw new Error(`PUT ${path}: status ${res.status}: ${await res.text()}`);
+        }
       },
       post: async (path, body, ...okStatus) => {
         const res = await fetch(world.url(path), {
