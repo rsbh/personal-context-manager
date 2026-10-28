@@ -56,11 +56,11 @@ export function CreateSectionButton({ project, onCreated }: CreateSectionButtonP
   return (
     <>
       <IconButton
-        size={1}
+        size={4}
         aria-label={project ? `New section in ${project}` : "New global section"}
         onClick={show}
       >
-        <Plus size={12} />
+        <Plus size={16} />
       </IconButton>
       {open && (
         <NameDialog
@@ -88,8 +88,8 @@ export function CreateProjectButton() {
   const onSubmit = useCallback((name: string) => create.mutate({ body: { name } }), [create]);
   return (
     <>
-      <IconButton size={1} aria-label="New project" onClick={show}>
-        <Plus size={12} />
+      <IconButton size={4} aria-label="New project" onClick={show}>
+        <Plus size={16} />
       </IconButton>
       {open && (
         <NameDialog
@@ -166,12 +166,12 @@ export function RowMenu({ kind, name, project }: RowMenuProps) {
     kind === "project"
       ? `Project ${name} actions`
       : `Section ${project ? `${project}/${name}` : name} actions`;
-  const trigger = useMemo(() => <IconButton size={1} aria-label={label} />, [label]);
+  const trigger = useMemo(() => <IconButton size={4} aria-label={label} />, [label]);
   return (
     <>
       <Menu>
         <Menu.Trigger render={trigger}>
-          <Ellipsis size={12} />
+          <Ellipsis size={16} />
         </Menu.Trigger>
         <Menu.Content>
           <Menu.Item onClick={show}>Delete</Menu.Item>

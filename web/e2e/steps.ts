@@ -287,3 +287,72 @@ Then("the {string} button is disabled", async ({ page }, name: string) => {
 When("I click the Sync link", async ({ page }) => {
   await syncLink(page).click();
 });
+
+// Sidebar tree steps.
+
+// heading is the collapse button of a sidebar section.
+function heading(page: import("@playwright/test").Page, name: string) {
+  return page
+    .getByRole("navigation", { name: "Contexts" })
+    .getByRole("button", { name, exact: true });
+}
+
+When("I click the {string} section heading", async ({ page }, name: string) => {
+  await heading(page, name).click();
+});
+
+async function fontSize(loc: import("@playwright/test").Locator): Promise<number> {
+  return loc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+}
+
+Then(
+  "the {string} heading font size is larger than the {string} item",
+  async ({ page }, head: string, item: string) => {
+    const nav = page.getByRole("navigation", { name: "Contexts" });
+    const h = await fontSize(heading(page, head));
+    const i = await fontSize(nav.locator('a[href^="/contexts/"]').filter({ hasText: item }));
+    expect(h).toBeGreaterThan(i);
+  },
+);
+
+// rows returns the bounding boxes of the item links, top to bottom.
+async function rows(page: import("@playwright/test").Page) {
+  const links = page.getByRole("navigation", { name: "Contexts" }).locator('a[href^="/contexts/"]');
+  const boxes = await links.evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { top: r.top, height: r.height };
+    }),
+  );
+  return boxes.toSorted((a, b) => a.top - b.top);
+}
+
+Then("all item rows have the same height", async ({ page }) => {
+  const heights = (await rows(page)).map((r) => Math.round(r.height));
+  expect(heights.length).toBeGreaterThan(1);
+  expect(new Set(heights).size).toBe(1);
+});
+
+Then("the gaps between rows are equal", async ({ page }) => {
+  const r = await rows(page);
+  const gaps = r.slice(1).map((b, i) => Math.round(b.top - (r[i].top + r[i].height)));
+  expect(gaps.length).toBeGreaterThan(0);
+  expect(new Set(gaps).size).toBe(1);
+});
+
+Then("the {string} button is at least {int}px wide", async ({ page }, name: string, px: number) => {
+  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(px);
+});
+
+Then(
+  "the gap below the {string} heading equals the gaps between rows",
+  async ({ page }, name: string) => {
+    const head = await heading(page, name).boundingBox();
+    const r = await rows(page);
+    expect(head).not.toBeNull();
+    const below = Math.round(r[0].top - ((head?.y ?? 0) + (head?.height ?? 0)));
+    const gap = Math.round(r[1].top - (r[0].top + r[0].height));
+    expect(below).toBe(gap);
+  },
+);

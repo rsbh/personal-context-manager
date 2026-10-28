@@ -1,10 +1,9 @@
-import { Sidebar, Spinner, Text } from "@raystack/apsara";
+import { Spinner, Text } from "@raystack/apsara";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
-import { Link } from "react-router";
 import { searchContextsOptions } from "../client/@tanstack/react-query.gen";
 import type { SearchHit as SearchHitType } from "../client/types.gen";
 import { contextPath } from "../lib/format";
+import { Item } from "./SidebarNav";
 import classes from "./SearchResults.module.css";
 
 interface SearchResultsProps {
@@ -35,9 +34,11 @@ export function SearchResults({ query }: SearchResultsProps) {
           No results
         </Text>
       )}
-      {search.data?.map((hit) => (
-        <SearchHit key={hit.id} hit={hit} />
-      ))}
+      <ul className={classes.list}>
+        {search.data?.map((hit) => (
+          <SearchHit key={hit.id} hit={hit} />
+        ))}
+      </ul>
     </section>
   );
 }
@@ -48,9 +49,8 @@ interface SearchHitProps {
 
 function SearchHit({ hit }: SearchHitProps) {
   const to = contextPath(hit.id ?? "");
-  const link = useMemo(() => <Link to={to} />, [to]);
   return (
-    <Sidebar.Item render={link}>
+    <Item to={to}>
       <span className={classes.hit}>
         <span>{hit.name}</span>
         <Text size="mini" variant="tertiary" lineClamp={2}>
@@ -58,6 +58,6 @@ function SearchHit({ hit }: SearchHitProps) {
           {stripTags(hit.snippet)}
         </Text>
       </span>
-    </Sidebar.Item>
+    </Item>
   );
 }
