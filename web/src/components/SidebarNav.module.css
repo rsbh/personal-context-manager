@@ -1,0 +1,98 @@
+.group,
+.children {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+}
+
+.children {
+  padding-left: var(--rs-space-4);
+}
+
+.heading,
+.item {
+  box-sizing: border-box;
+  min-height: var(--rs-space-8);
+  border-radius: var(--rs-radius-2);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+  padding-right: var(--rs-space-2);
+  font-size: 15px;
+  font-weight: var(--rs-font-weight-medium);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--rs-space-2);
+  min-width: 0;
+  min-height: inherit;
+  padding: 0 var(--rs-space-2);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.toggle:hover,
+.item:hover {
+  background: var(--rs-color-background-base-primary-hover);
+}
+
+.title {
+  flex: 1;
+  padding: 0 var(--rs-space-2);
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron,
+.chevronOpen {
+  flex: none;
+  transition: transform 0.1s;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--rs-space-1);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: var(--rs-space-2) var(--rs-space-3);
+  font-size: 14px;
+  color: var(--rs-color-foreground-base-secondary);
+  text-decoration: none;
+}
+
+.item[aria-current="page"] {
+  background: var(--rs-color-background-base-primary-hover);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.row {
+  padding: var(--rs-space-2) var(--rs-space-3);
+}

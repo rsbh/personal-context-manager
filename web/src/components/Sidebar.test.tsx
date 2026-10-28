@@ -240,3 +240,51 @@ describe("Sidebar", () => {
     expect(screen.getByLabelText("Location")).toHaveTextContent("/contexts/global/style/go");
   });
 });
+
+describe("Sidebar tree", () => {
+  it("collapses and expands a section from its heading", async () => {
+    base();
+    renderUI(<Sidebar />);
+    const global = screen.getByRole("listitem", { name: "Global" });
+    const heading = await within(global).findByRole("button", { name: "style", expanded: true });
+    expect(within(global).getByText("go")).toBeInTheDocument();
+    await userEvent.click(heading);
+    expect(
+      within(global).getByRole("button", { name: "style", expanded: false }),
+    ).toBeInTheDocument();
+    expect(within(global).queryByText("go")).not.toBeInTheDocument();
+    await userEvent.click(heading);
+    expect(within(global).getByText("go")).toBeInTheDocument();
+  });
+
+  it("keeps a project closed until its heading is clicked", async () => {
+    base({
+      "/api/v1/sections?scope=project&project=api": [],
+      "/api/v1/contexts?scope=project&project=api": [],
+    });
+    renderUI(<Sidebar />);
+    const projects = screen.getByRole("listitem", { name: "Projects" });
+    const heading = await within(projects).findByRole("button", { name: "api", expanded: false });
+    await userEvent.click(heading);
+    expect(
+      within(projects).getByRole("button", { name: "api", expanded: true }),
+    ).toBeInTheDocument();
+  });
+
+  it("marks the open context as the current page", async () => {
+    base();
+    renderUI(<Sidebar />, "/contexts/global/style/go");
+    const link = anchor(await screen.findByText("go"));
+    expect(link).toHaveAttribute("aria-current", "page");
+    expect(anchor(screen.getByText("commits"))).not.toHaveAttribute("aria-current");
+  });
+
+  it("keeps the section actions outside the heading button", async () => {
+    base();
+    renderUI(<Sidebar />);
+    const heading = await screen.findByRole("button", { name: "style", expanded: true });
+    expect(heading).not.toContainElement(
+      screen.getByRole("button", { name: "New context in style" }),
+    );
+  });
+});

@@ -1,15 +1,8 @@
-import {
-  Flex,
-  IconButton,
-  Search,
-  Sidebar as ApsaraSidebar,
-  Spinner,
-  Text,
-} from "@raystack/apsara";
+import { Flex, IconButton, Search, Spinner, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import {
   listContextsOptions,
   listProjectsOptions,
@@ -19,8 +12,17 @@ import type { StoreContext } from "../client/types.gen";
 import { useDebouncedValue } from "../lib/debounce";
 import { contextPath } from "../lib/format";
 import { SearchResults } from "./SearchResults";
+import { Group, Item, Row } from "./SidebarNav";
 import { CreateProjectButton, CreateSectionButton, RowMenu } from "./SidebarActions";
 import classes from "./Sidebar.module.css";
+
+function Loading() {
+  return (
+    <Row>
+      <Spinner size={2} />
+    </Row>
+  );
+}
 
 interface EmptyProps {
   children: React.ReactNode;
@@ -28,9 +30,11 @@ interface EmptyProps {
 
 function Empty({ children }: EmptyProps) {
   return (
-    <Text size="small" variant="tertiary" className={classes.empty}>
-      {children}
-    </Text>
+    <Row>
+      <Text size="small" variant="tertiary">
+        {children}
+      </Text>
+    </Row>
   );
 }
 
@@ -41,11 +45,10 @@ interface ContextItemProps {
 function ContextItem({ context }: ContextItemProps) {
   const { pathname } = useLocation();
   const to = contextPath(context.id ?? "");
-  const link = useMemo(() => <Link to={to} />, [to]);
   return (
-    <ApsaraSidebar.Item active={pathname === to} render={link}>
+    <Item to={to} active={pathname === to}>
       {context.name}
-    </ApsaraSidebar.Item>
+    </Item>
   );
 }
 
@@ -64,8 +67,8 @@ function NewButton({ section, project }: NewButtonProps) {
     navigate(`/new?${q}`);
   }, [navigate, section, project]);
   return (
-    <IconButton size={1} aria-label={`New context in ${section}`} onClick={onClick}>
-      <Plus size={12} />
+    <IconButton size={4} aria-label={`New context in ${section}`} onClick={onClick}>
+      <Plus size={16} />
     </IconButton>
   );
 }
@@ -87,11 +90,11 @@ function SectionNode({ section, project, contexts }: SectionNodeProps) {
     [section, project],
   );
   return (
-    <ApsaraSidebar.Group label={section} collapsible defaultOpen trailingIcon={actions}>
+    <Group label={section} collapsible defaultOpen trailing={actions}>
       {contexts.map((c) => (
         <ContextItem key={c.id} context={c} />
       ))}
-    </ApsaraSidebar.Group>
+    </Group>
   );
 }
 
@@ -125,19 +128,13 @@ function ProjectNode({ project }: ProjectNodeProps) {
   });
 
   return (
-    <ApsaraSidebar.Group
-      label={project}
-      collapsible
-      open={opened}
-      onOpenChange={setOpened}
-      trailingIcon={actions}
-    >
-      {opened && (sections.isPending || contexts.isPending) && <Spinner size={2} />}
+    <Group label={project} collapsible open={opened} onOpenChange={setOpened} trailing={actions}>
+      {opened && (sections.isPending || contexts.isPending) && <Loading />}
       {sections.data?.length === 0 && <Empty>No sections</Empty>}
       {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
         <SectionNode key={s} section={s} project={project} contexts={cs} />
       ))}
-    </ApsaraSidebar.Group>
+    </Group>
   );
 }
 
@@ -161,8 +158,8 @@ export function Sidebar() {
   const onClear = useCallback(() => setQuery(""), []);
 
   return (
-    <ApsaraSidebar collapsible="none" className={classes.sidebar}>
-      <ApsaraSidebar.Header>
+    <aside className={classes.sidebar}>
+      <div className={classes.header}>
         <Search
           aria-label="Search contexts"
           placeholder="Search contexts"
@@ -171,31 +168,31 @@ export function Sidebar() {
           showClearButton
           onClear={onClear}
         />
-      </ApsaraSidebar.Header>
-      <ApsaraSidebar.Main>
+      </div>
+      <div className={classes.main}>
         <nav aria-label="Contexts">
           {debounced ? (
             <SearchResults query={debounced} />
           ) : (
-            <>
-              <ApsaraSidebar.Group label="Global" trailingIcon={globalActions}>
-                {(sections.isPending || contexts.isPending) && <Spinner size={2} />}
+            <ul className={classes.list}>
+              <Group label="Global" trailing={globalActions}>
+                {(sections.isPending || contexts.isPending) && <Loading />}
                 {sections.data?.length === 0 && <Empty>No sections</Empty>}
                 {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
                   <SectionNode key={s} section={s} contexts={cs} />
                 ))}
-              </ApsaraSidebar.Group>
-              <ApsaraSidebar.Group label="Projects" trailingIcon={projectsActions}>
-                {projects.isPending && <Spinner size={2} />}
+              </Group>
+              <Group label="Projects" trailing={projectsActions}>
+                {projects.isPending && <Loading />}
                 {projects.data?.length === 0 && <Empty>No projects</Empty>}
                 {projects.data?.map((p) => (
                   <ProjectNode key={p} project={p} />
                 ))}
-              </ApsaraSidebar.Group>
-            </>
+              </Group>
+            </ul>
           )}
         </nav>
-      </ApsaraSidebar.Main>
-    </ApsaraSidebar>
+      </div>
+    </aside>
   );
 }
