@@ -12,7 +12,9 @@ func TestContent(t *testing.T) {
 	for _, want := range []string{"---\nname: pcm\n", "description: ", "allowed-tools: Bash(pcm:*)", "pcm get contexts -o md", "pcm server start",
 		"## 5. Dump session", "pcm create context <name> -s <section> -f <file>", "--force", "scratchpad",
 		"If there is no branch", "Bash(gh pr view:*)", "Bash(git branch:*)", ", Write",
-		"pcm search", "pcm index rebuild"} {
+		"pcm search", "pcm index rebuild",
+		"## 6. Before a pull request", "pcm get contexts -o md -s review", "git log", "co-author",
+		"gh pr create", "Do not rewrite history", "Bash(gh pr create:*)", "Bash(git log:*)"} {
 		if !strings.Contains(c, want) {
 			t.Errorf("SKILL.md does not contain %q", want)
 		}
