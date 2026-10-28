@@ -43,3 +43,15 @@ Feature: Claude Code skill
     And the output contains "Bash(gh pr view:*)"
     And the output contains "Bash(git branch:*)"
     And the output contains ", Write"
+
+  Scenario: Skill checks pcm before a pull request
+    When I run "pcm skill show"
+    Then the exit code is 0
+    And the output contains "## 6. Before a pull request"
+    And the output contains "pcm get contexts -o md -s review"
+    And the output contains "git log"
+    And the output contains "co-author"
+    And the output contains "gh pr create"
+    And the output contains "Do not rewrite history"
+    And the output contains "Bash(gh pr create:*)"
+    And the output contains "Bash(git log:*)"
