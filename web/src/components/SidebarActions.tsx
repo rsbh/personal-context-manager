@@ -1,7 +1,7 @@
 import { IconButton, Menu, useToastManager } from "@raystack/apsara";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Ellipsis, Plus } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   createProjectMutation,
@@ -35,10 +35,23 @@ interface CreateSectionButtonProps {
   project?: string;
   // onCreated runs after a create (for example, to open the project row).
   onCreated?: () => void;
+  // label replaces the default accessible name.
+  label?: string;
+  // icon replaces the default "+" icon.
+  icon?: ReactNode;
+  className?: string;
 }
 
+const plusIcon = <Plus size={16} />;
+
 // CreateSectionButton is a "+" that creates a section, global or in a project.
-export function CreateSectionButton({ project, onCreated }: CreateSectionButtonProps) {
+export function CreateSectionButton({
+  project,
+  onCreated,
+  label,
+  icon = plusIcon,
+  className,
+}: CreateSectionButtonProps) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const show = useCallback(() => setOpen(true), []);
@@ -57,10 +70,12 @@ export function CreateSectionButton({ project, onCreated }: CreateSectionButtonP
     <>
       <IconButton
         size={4}
-        aria-label={project ? `New section in ${project}` : "New global section"}
+        aria-label={label ?? (project ? `New section in ${project}` : "New global section")}
+        title={label}
+        className={className}
         onClick={show}
       >
-        <Plus size={16} />
+        {icon}
       </IconButton>
       {open && (
         <NameDialog
@@ -110,20 +125,26 @@ function idPrefix(kind: DeleteKind, name: string, project?: string): string {
   return project ? `projects/${project}/${name}/` : `global/${name}/`;
 }
 
-// insideDeleted is true when the current page shows a context in the deleted section or project.
+// insideDeleted is true when the current page shows the deleted project or a context in the
+// deleted section or project.
 function insideDeleted(pathname: string, prefix: string): boolean {
-  return pathname.startsWith(`/contexts/${prefix}`) || pathname.startsWith(`/edit/${prefix}`);
+  return (
+    `${pathname}/` === `/${prefix}` ||
+    pathname.startsWith(`/contexts/${prefix}`) ||
+    pathname.startsWith(`/edit/${prefix}`)
+  );
 }
 
-interface RowMenuProps {
+interface ScopeDeleteProps {
   kind: DeleteKind;
   name: string;
   // project of a project section.
   project?: string;
 }
 
-// RowMenu is the "⋯" menu of a section or project row, with Delete.
-export function RowMenu({ kind, name, project }: RowMenuProps) {
+// useScopeDelete deletes a section or project after a confirm. On 409 (not empty) the dialog
+// asks again and "Delete all" sends force=true. show opens the dialog.
+export function useScopeDelete({ kind, name, project }: ScopeDeleteProps) {
   const [open, setOpen] = useState(false);
   const [notEmpty, setNotEmpty] = useState(false);
   const { pathname } = useLocation();
@@ -162,6 +183,23 @@ export function RowMenu({ kind, name, project }: RowMenuProps) {
     setOpen(true);
   }, []);
 
+  const dialog = (
+    <DeleteDialog
+      kind={kind}
+      name={project ? `${project}/${name}` : name}
+      open={open}
+      onOpenChange={setOpen}
+      notEmpty={notEmpty}
+      pending={pending}
+      onDelete={onDelete}
+    />
+  );
+  return { show, dialog };
+}
+
+// RowMenu is the "⋯" menu of a section or project row, with Delete.
+export function RowMenu({ kind, name, project }: ScopeDeleteProps) {
+  const { show, dialog } = useScopeDelete({ kind, name, project });
   const label =
     kind === "project"
       ? `Project ${name} actions`
@@ -177,15 +215,7 @@ export function RowMenu({ kind, name, project }: RowMenuProps) {
           <Menu.Item onClick={show}>Delete</Menu.Item>
         </Menu.Content>
       </Menu>
-      <DeleteDialog
-        kind={kind}
-        name={project ? `${project}/${name}` : name}
-        open={open}
-        onOpenChange={setOpen}
-        notEmpty={notEmpty}
-        pending={pending}
-        onDelete={onDelete}
-      />
+      {dialog}
     </>
   );
 }

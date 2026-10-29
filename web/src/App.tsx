@@ -1,6 +1,7 @@
 import { Text } from "@raystack/apsara";
 import { useCallback, useState } from "react";
 import { Outlet, useParams, type RouteObject } from "react-router";
+import { ProjectPage, ScopePage } from "./pages/ScopePage";
 import classes from "./App.module.css";
 import { ContextView } from "./components/ContextView";
 import { Header } from "./components/Header";
@@ -47,6 +48,8 @@ export const routes: RouteObject[] = [
   {
     element: <Layout />,
     children: [
+      { path: "/global", element: <ScopePage /> },
+      { path: "/projects/:name", element: <ProjectPage /> },
       { path: "/contexts/*", element: <ContextPage /> },
       { path: "/edit/*", element: <EditContext /> },
       { path: "/new", element: <NewContext /> },
