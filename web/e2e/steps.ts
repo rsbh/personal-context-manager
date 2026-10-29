@@ -350,6 +350,11 @@ Then("the gaps between rows are equal", async ({ page }) => {
   expect(new Set(gaps).size).toBe(1);
 });
 
+Then("the {string} button is at least {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(px);
+});
+
 Then("the {string} button is at least {int}px wide", async ({ page }, name: string, px: number) => {
   const box = await page.getByRole("button", { name, exact: true }).boundingBox();
   expect(box?.width ?? 0).toBeGreaterThanOrEqual(px);
@@ -466,4 +471,8 @@ Then("the {string} navigation link is the current page", async ({ page }, name: 
 
 Then("the {string} navigation link is not the current page", async ({ page }, name: string) => {
   await expect(mainNav(page).getByRole("link", { name })).not.toHaveAttribute("aria-current");
+});
+
+Then("the page body has no margin", async ({ page }) => {
+  await expect(page.locator("body")).toHaveCSS("margin", "0px");
 });
