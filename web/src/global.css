@@ -1,0 +1,4 @@
+/* Global reset: the browser default body margin leaves a gap around the app. */
+body {
+  margin: 0;
+}
