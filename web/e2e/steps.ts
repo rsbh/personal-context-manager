@@ -448,8 +448,10 @@ async function navBoxes(page: import("@playwright/test").Page) {
 }
 
 Then("the header is {int}px high", async ({ page }, px: number) => {
-  const box = await page.getByRole("banner").boundingBox();
-  expect(Math.round(box?.height ?? 0)).toBe(px);
+  // The bottom border is 0.5px: allow the part pixel, it rounds differently per screen.
+  const height = (await page.getByRole("banner").boundingBox())?.height ?? 0;
+  expect(height).toBeGreaterThanOrEqual(px);
+  expect(height).toBeLessThan(px + 1);
 });
 
 Then("each main navigation link is at least {int}px high", async ({ page }, px: number) => {
