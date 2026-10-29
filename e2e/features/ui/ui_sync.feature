@@ -45,7 +45,7 @@ Feature: Sync
     When I open the UI at "/sync"
     And I click the "Sync now" button
     Then I see the toast "1 commit pulled"
-    And the sidebar shows "py" under "Global"
+    And the sidebar shows "py" under "style"
 
   Scenario: Sync conflict
     Given the server is running

@@ -8,13 +8,13 @@ Feature: UI shell
     Then the page title is "pcm"
     And I see "server ok"
 
-  Scenario: Sidebar lists projects and global sections
+  Scenario: Scope select lists Global and projects
     Given the server is running
     And a global section "git" with a context "commits" and content "x"
     And a project "api" section "review" with a context "pr" and content "y"
     When I open the UI
-    Then the sidebar shows "git" under "Global"
-    And the sidebar shows "api" under "Projects"
+    Then the "Scope" select shows "Global"
+    And the "Scope" select has the options "Global, api, New project…"
 
   Scenario: Deep link loads the app
     Given the server is running

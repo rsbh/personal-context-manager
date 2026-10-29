@@ -111,8 +111,19 @@ When("I type {string} in {string}", async ({ page }, text: string, label: string
     .fill(text);
 });
 
+// combobox finds a select by label: the page form first, then the sidebar ("Scope" is in both).
+async function combobox(page: import("@playwright/test").Page, name: string) {
+  await page.getByRole("combobox", { name, exact: true }).first().waitFor();
+  const inMain = page.getByRole("main").getByRole("combobox", { name, exact: true });
+  if ((await inMain.count()) > 0) return inMain;
+  return page.getByRole("navigation", { name: "Contexts" }).getByRole("combobox", {
+    name,
+    exact: true,
+  });
+}
+
 When("I select {string} in {string}", async ({ page }, option: string, label: string) => {
-  await page.getByRole("combobox", { name: label, exact: true }).click();
+  await (await combobox(page, label)).click();
   await page.getByRole("option", { name: option, exact: true }).click();
 });
 
@@ -206,7 +217,7 @@ Then("I see the toast {string}", async ({ page }, text: string) => {
 });
 
 Then("the {string} select shows {string}", async ({ page }, label: string, value: string) => {
-  await expect(page.getByRole("combobox", { name: label, exact: true })).toHaveText(value);
+  await expect(await combobox(page, label)).toHaveText(value);
 });
 
 // Section and project steps.
@@ -298,32 +309,7 @@ When("I click the Sync link", async ({ page }) => {
   await syncLink(page).click();
 });
 
-// Sidebar tree steps.
-
-// heading is the collapse button of a sidebar section.
-function heading(page: import("@playwright/test").Page, name: string) {
-  return page
-    .getByRole("navigation", { name: "Contexts" })
-    .getByRole("button", { name, exact: true });
-}
-
-When("I click the {string} section heading", async ({ page }, name: string) => {
-  await heading(page, name).click();
-});
-
-async function fontSize(loc: import("@playwright/test").Locator): Promise<number> {
-  return loc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-}
-
-Then(
-  "the {string} heading font size is larger than the {string} item",
-  async ({ page }, head: string, item: string) => {
-    const nav = page.getByRole("navigation", { name: "Contexts" });
-    const h = await fontSize(heading(page, head));
-    const i = await fontSize(nav.locator('a[href^="/contexts/"]').filter({ hasText: item }));
-    expect(h).toBeGreaterThan(i);
-  },
-);
+// Sidebar steps.
 
 // rows returns the bounding boxes of the item links, top to bottom.
 async function rows(page: import("@playwright/test").Page) {
@@ -337,38 +323,47 @@ async function rows(page: import("@playwright/test").Page) {
   return boxes.toSorted((a, b) => a.top - b.top);
 }
 
-Then("all item rows have the same height", async ({ page }) => {
+const sidebar = (page: import("@playwright/test").Page) =>
+  page.getByRole("navigation", { name: "Contexts" });
+
+Then("all item rows are {int}px high", async ({ page }, px: number) => {
   const heights = (await rows(page)).map((r) => Math.round(r.height));
   expect(heights.length).toBeGreaterThan(1);
-  expect(new Set(heights).size).toBe(1);
+  for (const h of heights) expect(h).toBe(px);
 });
 
-Then("the gaps between rows are equal", async ({ page }) => {
-  const r = await rows(page);
-  const gaps = r.slice(1).map((b, i) => Math.round(b.top - (r[i].top + r[i].height)));
-  expect(gaps.length).toBeGreaterThan(0);
-  expect(new Set(gaps).size).toBe(1);
+Then("the sidebar shows the section {string}", async ({ page }, name: string) => {
+  await expect(sidebar(page).getByRole("listitem", { name, exact: true })).toBeVisible();
 });
 
-Then("the {string} button is at least {int}px high", async ({ page }, name: string, px: number) => {
-  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
-  expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(px);
+Then("the sidebar does not show the section {string}", async ({ page }, name: string) => {
+  await expect(sidebar(page).getByRole("listitem", { name, exact: true })).toHaveCount(0);
 });
 
-Then("the {string} button is at least {int}px wide", async ({ page }, name: string, px: number) => {
-  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
-  expect(box?.width ?? 0).toBeGreaterThanOrEqual(px);
+// The "⋯" button shows on hover: hover the row, then click it.
+When("I open the sidebar menu of context {string}", async ({ page }, name: string) => {
+  await sidebar(page).getByRole("link", { name, exact: true }).hover();
+  await sidebar(page)
+    .getByRole("button", { name: `Actions for ${name}`, exact: true })
+    .click();
+});
+
+When("I open the sidebar menu of section {string}", async ({ page }, name: string) => {
+  const label = `Actions for section ${name}`;
+  await sidebar(page).getByRole("listitem", { name, exact: true }).hover();
+  await sidebar(page).getByRole("button", { name: label, exact: true }).click();
+});
+
+Then("I see the menu items {string}", async ({ page }, names: string) => {
+  await expect(page.getByRole("menuitem")).toHaveText(names.split(", "));
 });
 
 Then(
-  "the gap below the {string} heading equals the gaps between rows",
-  async ({ page }, name: string) => {
-    const head = await heading(page, name).boundingBox();
-    const r = await rows(page);
-    expect(head).not.toBeNull();
-    const below = Math.round(r[0].top - ((head?.y ?? 0) + (head?.height ?? 0)));
-    const gap = Math.round(r[1].top - (r[0].top + r[0].height));
-    expect(below).toBe(gap);
+  "the {string} select has the options {string}",
+  async ({ page }, label: string, names: string) => {
+    await (await combobox(page, label)).click();
+    await expect(page.getByRole("option")).toHaveText(names.split(", "));
+    await page.keyboard.press("Escape");
   },
 );
 
@@ -522,3 +517,25 @@ for (const tone of ["success", "danger"]) {
     );
   });
 }
+
+Then("the {string} button is at least {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(px);
+});
+
+Then("the {string} sidebar link is {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await sidebar(page).getByRole("link", { name, exact: true }).boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBe(px);
+});
+
+Then(
+  "the sidebar shows the section {string} right below the overview link",
+  async ({ page }, name: string) => {
+    const link = await sidebar(page)
+      .getByRole("link", { name: /overview$/ })
+      .boundingBox();
+    const section = await sidebar(page).getByRole("listitem", { name, exact: true }).boundingBox();
+    const gap = (section?.y ?? 0) - ((link?.y ?? 0) + (link?.height ?? 0));
+    expect(gap).toBeLessThanOrEqual(16);
+  },
+);

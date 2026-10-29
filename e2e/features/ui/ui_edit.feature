@@ -58,7 +58,8 @@ Feature: Edit contexts
     Given the server is running
     And a global section "style" with a context "go" and content "Use gofmt."
     When I open the UI
-    And I click the "New context in style" button
+    And I open the sidebar menu of section "style"
+    And I click "New context" in the menu
     Then the URL path is "/new"
     And the "Scope" select shows "Global"
     And the "Section" select shows "style"
@@ -67,7 +68,7 @@ Feature: Edit contexts
     And I click the "Save" button
     Then the URL path is "/contexts/global/style/py"
     And I see the toast "Saved"
-    And the sidebar shows "py" under "Global"
+    And the sidebar shows "py" under "style"
 
   Scenario: Create a context that exists
     Given the server is running

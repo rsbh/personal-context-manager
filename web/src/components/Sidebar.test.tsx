@@ -1,13 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { json, mockAPI, renderUI, sentBody } from "../test/render";
-import { Sidebar } from "./Sidebar";
-
-// Apsara sidebar items are <a href> with role="listitem" (list semantics), so find them by text.
-function anchor(el: HTMLElement): HTMLAnchorElement | null {
-  return el.closest("a");
-}
+import { scopeOf, Sidebar } from "./Sidebar";
 
 const globalContexts = [
   { id: "global/git/commits", scope: "global", section: "git", name: "commits" },
@@ -23,45 +18,69 @@ function base(extra: Record<string, unknown> = {}) {
   });
 }
 
+const apiScope = {
+  "/api/v1/sections?scope=project&project=api": ["review"],
+  "/api/v1/contexts?scope=project&project=api": [
+    {
+      id: "projects/api/review/pr",
+      scope: "project",
+      project: "api",
+      section: "review",
+      name: "pr",
+    },
+  ],
+};
+
+// openMenu opens the "⋯" menu of a sidebar row.
+async function openMenu(label: string) {
+  await userEvent.click(await screen.findByRole("button", { name: label }));
+}
+
+describe("scopeOf", () => {
+  it("reads the scope from the URL", () => {
+    expect(scopeOf("/contexts/projects/api/review/pr")).toBe("api");
+    expect(scopeOf("/edit/projects/api/review/pr")).toBe("api");
+    expect(scopeOf("/projects/api")).toBe("api");
+    expect(scopeOf("/global")).toBe("");
+    expect(scopeOf("/contexts/global/style/go")).toBe("");
+    expect(scopeOf("/sync")).toBeUndefined();
+  });
+});
+
 describe("Sidebar", () => {
-  it("lists global sections with their contexts, and projects", async () => {
+  it("lists the global sections with their contexts", async () => {
     base();
     renderUI(<Sidebar />);
     const nav = screen.getByRole("navigation", { name: "Contexts" });
-    const global = within(nav).getByRole("listitem", { name: "Global" });
-    expect(await within(global).findByText("commits")).toBeInTheDocument();
-    expect(within(global).getByText("go")).toBeInTheDocument();
-    expect(within(global).getByText("empty")).toBeInTheDocument();
-    expect(anchor(within(global).getByText("go"))).toHaveAttribute(
+    const style = await within(nav).findByRole("listitem", { name: "style" });
+    expect(within(style).getByRole("link", { name: "go" })).toHaveAttribute(
       "href",
       "/contexts/global/style/go",
     );
-    expect(await within(nav).findByText("api")).toBeInTheDocument();
+    expect(within(nav).getByRole("listitem", { name: "empty" })).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /Global overview/ })).toHaveAttribute(
+      "href",
+      "/global",
+    );
+    expect(within(nav).getByRole("combobox", { name: "Scope" })).toHaveTextContent("Global");
   });
 
-  it("loads project sections and contexts when a project opens", async () => {
-    base({
-      "/api/v1/sections?scope=project&project=api": ["review"],
-      "/api/v1/contexts?scope=project&project=api": [
-        {
-          id: "projects/api/review/pr",
-          scope: "project",
-          project: "api",
-          section: "review",
-          name: "pr",
-        },
-      ],
-    });
-    renderUI(<Sidebar />);
-    const projects = screen.getByRole("listitem", { name: "Projects" });
-    await userEvent.click(await within(projects).findByText("api"));
-    expect(anchor(await within(projects).findByText("pr"))).toHaveAttribute(
+  it("shows the project of the open context", async () => {
+    base(apiScope);
+    renderUI(<Sidebar />, "/contexts/projects/api/review/pr");
+    const nav = screen.getByRole("navigation", { name: "Contexts" });
+    expect(await within(nav).findByRole("link", { name: "pr" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(nav).queryByRole("link", { name: "go" })).not.toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: /Project overview/ })).toHaveAttribute(
       "href",
-      "/contexts/projects/api/review/pr",
+      "/projects/api",
     );
   });
 
-  it("shows empty states", async () => {
+  it("shows an empty state", async () => {
     mockAPI({
       "/api/v1/sections?scope=global": [],
       "/api/v1/contexts?scope=global": [],
@@ -69,95 +88,24 @@ describe("Sidebar", () => {
     });
     renderUI(<Sidebar />);
     expect(await screen.findByText("No sections")).toBeInTheDocument();
-    expect(await screen.findByText("No projects")).toBeInTheDocument();
   });
 
-  it("has no search box", async () => {
-    base();
-    renderUI(<Sidebar />);
-    await screen.findByText("commits");
-    expect(screen.queryByLabelText("Search contexts")).not.toBeInTheDocument();
-  });
-
-  it("opens a new context form from a global section", async () => {
-    base();
-    renderUI(<Sidebar />);
-    await userEvent.click(await screen.findByRole("button", { name: "New context in style" }));
-    expect(screen.getByLabelText("Location")).toHaveTextContent("/new?scope=global&section=style");
-  });
-
-  it("opens a new context form from a project section", async () => {
-    base({
-      "/api/v1/sections?scope=project&project=api": ["review"],
-      "/api/v1/contexts?scope=project&project=api": [],
-    });
-    renderUI(<Sidebar />);
-    const projects = screen.getByRole("listitem", { name: "Projects" });
-    await userEvent.click(await within(projects).findByText("api"));
-    await userEvent.click(await screen.findByRole("button", { name: "New context in review" }));
+  it("opens a new context form from the section menu", async () => {
+    base(apiScope);
+    renderUI(<Sidebar />, "/projects/api");
+    await openMenu("Actions for section review");
+    await userEvent.click(await screen.findByRole("menuitem", { name: "New context" }));
     expect(screen.getByLabelText("Location")).toHaveTextContent(
       "/new?scope=project&project=api&section=review",
     );
   });
 
-  it("creates a global section", async () => {
-    const fetchMock = base({ "POST /api/v1/sections": json({}, 201) });
+  it("opens the edit form from the context menu", async () => {
+    base();
     renderUI(<Sidebar />);
-    await userEvent.click(screen.getByRole("button", { name: "New global section" }));
-    const dialog = await screen.findByRole("dialog", { name: "New section" });
-    await userEvent.type(within(dialog).getByLabelText("Name"), "review");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
-    expect(await screen.findByText("Section created")).toBeInTheDocument();
-    expect(await sentBody(fetchMock, "POST")).toEqual({ scope: "global", name: "review" });
-    expect(screen.queryByRole("dialog", { name: "New section" })).not.toBeInTheDocument();
-  });
-
-  it("creates a project", async () => {
-    const fetchMock = base({ "POST /api/v1/projects": json({}, 201) });
-    renderUI(<Sidebar />);
-    await userEvent.click(screen.getByRole("button", { name: "New project" }));
-    const dialog = await screen.findByRole("dialog", { name: "New project" });
-    await userEvent.type(within(dialog).getByLabelText("Name"), "web");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
-    expect(await screen.findByText("Project created")).toBeInTheDocument();
-    expect(await sentBody(fetchMock, "POST")).toEqual({ name: "web" });
-  });
-
-  it("creates a section in a project", async () => {
-    const fetchMock = base({ "POST /api/v1/sections": json({}, 201) });
-    renderUI(<Sidebar />);
-    await userEvent.click(await screen.findByRole("button", { name: "New section in api" }));
-    const dialog = await screen.findByRole("dialog", { name: "New section" });
-    await userEvent.type(within(dialog).getByLabelText("Name"), "review");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
-    expect(await sentBody(fetchMock, "POST")).toEqual({
-      scope: "project",
-      project: "api",
-      name: "review",
-    });
-  });
-
-  it("keeps the create dialog open on an error", async () => {
-    base({
-      "POST /api/v1/sections": json({ error: 'section "style": already exists' }, 409),
-    });
-    renderUI(<Sidebar />);
-    await userEvent.click(screen.getByRole("button", { name: "New global section" }));
-    const dialog = await screen.findByRole("dialog", { name: "New section" });
-    await userEvent.type(within(dialog).getByLabelText("Name"), "style");
-    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
-    expect(await screen.findByText(/already exists/)).toBeInTheDocument();
-    expect(within(dialog).getByLabelText("Name")).toHaveValue("style");
-  });
-
-  it("deletes an empty section", async () => {
-    base({ "DELETE /api/v1/sections/empty?scope=global": new Response(null, { status: 204 }) });
-    renderUI(<Sidebar />);
-    await userEvent.click(await screen.findByRole("button", { name: "Section empty actions" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
-    const dialog = await screen.findByRole("alertdialog", { name: "Delete section?" });
-    await userEvent.click(within(dialog).getByRole("button", { name: "Delete" }));
-    expect(await screen.findByText("Deleted")).toBeInTheDocument();
+    await openMenu("Actions for go");
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    expect(screen.getByLabelText("Location")).toHaveTextContent("/edit/global/style/go");
   });
 
   it("asks again and forces the delete of a section that is not empty", async () => {
@@ -168,8 +116,8 @@ describe("Sidebar", () => {
       }),
     });
     renderUI(<Sidebar />, "/contexts/global/style/go");
-    await userEvent.click(await screen.findByRole("button", { name: "Section style actions" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    await openMenu("Actions for section style");
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete section" }));
     await userEvent.click(
       within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
     );
@@ -182,86 +130,22 @@ describe("Sidebar", () => {
         ([r]) => r instanceof Request && r.method === "DELETE" && r.url.endsWith("force=true"),
       ),
     ).toBe(true);
-    expect(screen.getByLabelText("Location")).toHaveTextContent(/^\/$/);
+    // The redirect runs right after the toast: wait for it.
+    await waitFor(() => expect(screen.getByLabelText("Location")).toHaveTextContent(/^\/$/));
   });
 
-  it("deletes a project with force", async () => {
-    base({
-      "DELETE /api/v1/projects/api": json({ error: "not empty" }, 409),
-      "DELETE /api/v1/projects/api?force=true": new Response(null, { status: 204 }),
-    });
+  it("creates a project from the scope select and opens it", async () => {
+    const fetchMock = base({ "POST /api/v1/projects": json({}, 201) });
     renderUI(<Sidebar />);
-    await userEvent.click(await screen.findByRole("button", { name: "Project api actions" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
-    await userEvent.click(
-      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
-    );
-    await userEvent.click(
-      within(await screen.findByRole("alertdialog", { name: "Project is not empty" })).getByRole(
-        "button",
-        { name: "Delete all" },
-      ),
-    );
-    expect(await screen.findByText("Deleted")).toBeInTheDocument();
-  });
-
-  it("stays on the page when a different section is deleted", async () => {
-    base({ "DELETE /api/v1/sections/empty?scope=global": new Response(null, { status: 204 }) });
-    renderUI(<Sidebar />, "/contexts/global/style/go");
-    await userEvent.click(await screen.findByRole("button", { name: "Section empty actions" }));
-    await userEvent.click(await screen.findByRole("menuitem", { name: "Delete" }));
-    await userEvent.click(
-      within(await screen.findByRole("alertdialog")).getByRole("button", { name: "Delete" }),
-    );
-    expect(await screen.findByText("Deleted")).toBeInTheDocument();
-    expect(screen.getByLabelText("Location")).toHaveTextContent("/contexts/global/style/go");
-  });
-});
-
-describe("Sidebar tree", () => {
-  it("collapses and expands a section from its heading", async () => {
-    base();
-    renderUI(<Sidebar />);
-    const global = screen.getByRole("listitem", { name: "Global" });
-    const heading = await within(global).findByRole("button", { name: "style", expanded: true });
-    expect(within(global).getByText("go")).toBeInTheDocument();
-    await userEvent.click(heading);
-    expect(
-      within(global).getByRole("button", { name: "style", expanded: false }),
-    ).toBeInTheDocument();
-    expect(within(global).queryByText("go")).not.toBeInTheDocument();
-    await userEvent.click(heading);
-    expect(within(global).getByText("go")).toBeInTheDocument();
-  });
-
-  it("keeps a project closed until its heading is clicked", async () => {
-    base({
-      "/api/v1/sections?scope=project&project=api": [],
-      "/api/v1/contexts?scope=project&project=api": [],
-    });
-    renderUI(<Sidebar />);
-    const projects = screen.getByRole("listitem", { name: "Projects" });
-    const heading = await within(projects).findByRole("button", { name: "api", expanded: false });
-    await userEvent.click(heading);
-    expect(
-      within(projects).getByRole("button", { name: "api", expanded: true }),
-    ).toBeInTheDocument();
-  });
-
-  it("marks the open context as the current page", async () => {
-    base();
-    renderUI(<Sidebar />, "/contexts/global/style/go");
-    const link = anchor(await screen.findByText("go"));
-    expect(link).toHaveAttribute("aria-current", "page");
-    expect(anchor(screen.getByText("commits"))).not.toHaveAttribute("aria-current");
-  });
-
-  it("keeps the section actions outside the heading button", async () => {
-    base();
-    renderUI(<Sidebar />);
-    const heading = await screen.findByRole("button", { name: "style", expanded: true });
-    expect(heading).not.toContainElement(
-      screen.getByRole("button", { name: "New context in style" }),
+    await userEvent.click(screen.getByRole("combobox", { name: "Scope" }));
+    await userEvent.click(await screen.findByRole("option", { name: "New project…" }));
+    const dialog = await screen.findByRole("dialog", { name: "New project" });
+    await userEvent.type(within(dialog).getByLabelText("Name"), "web");
+    await userEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Project created")).toBeInTheDocument();
+    expect(await sentBody(fetchMock, "POST")).toEqual({ name: "web" });
+    await waitFor(() =>
+      expect(screen.getByLabelText("Location")).toHaveTextContent("/projects/web"),
     );
   });
 });
