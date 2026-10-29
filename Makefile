@@ -1,4 +1,4 @@
-.PHONY: build swagger client web install restart release-check test web-test web-lint web-fmt e2e e2e-ui fmt lint vet
+.PHONY: build swagger client web install restart release-check release-workflow-check test web-test web-lint web-fmt e2e e2e-ui fmt lint vet
 
 SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
 
@@ -28,6 +28,10 @@ release-check:
 	goreleaser check
 	goreleaser release --snapshot --clean
 	scripts/release-check.sh
+
+# Check the release workflow file (actionlint and the rules in docs/release.md).
+release-workflow-check:
+	scripts/release-workflow-check.sh
 
 # Restart the background server with the installed binary.
 restart:
