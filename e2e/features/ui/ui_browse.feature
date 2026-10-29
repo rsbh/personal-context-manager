@@ -2,13 +2,13 @@
 Feature: Browse contexts
   As a user I want to browse and read contexts in the web UI.
 
-  Scenario: Tree shows contexts under global sections
+  Scenario: Sidebar shows contexts under global sections
     Given the server is running
     And a global section "git" with a context "commits" and content "x"
     When I open the UI
-    Then the sidebar shows "commits" under "Global"
+    Then the sidebar shows "commits" under "git"
 
-  Scenario: Open a context from the tree
+  Scenario: Open a context from the sidebar
     Given the server is running
     And a global section "style" with a context "go" and content "Use **gofmt**." and description "Go style"
     When I open the UI
@@ -29,12 +29,12 @@ Feature: Browse contexts
     When I open the UI at "/contexts/global/git/none"
     Then I see "Context not found"
 
-  Scenario: Project contexts after expand
+  Scenario: Project contexts after scope select
     Given the server is running
     And a project "api" section "review" with a context "pr" and content "y"
     When I open the UI
-    And I click "api" in the sidebar
-    Then the sidebar shows "pr" under "Projects"
+    And I select "api" in "Scope"
+    Then the sidebar shows "pr" under "review"
 
   Scenario: Current contexts table
     Given the server is running

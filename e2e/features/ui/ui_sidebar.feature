@@ -1,40 +1,67 @@
 @ui
-Feature: Sidebar tree
-  As a user I want a clear, consistent sidebar tree.
+Feature: Sidebar
+  As a user I want a flat sidebar: one scope at a time, its sections and contexts.
 
-  Scenario: Collapse and expand a section
+  Scenario: Scope select shows one scope at a time
     Given the server is running
-    And a global section "style" with a context "tabs" and content "x"
+    And a global section "style" with a context "go" and content "x"
+    And a project "api" section "review" with a context "pr" and content "y"
     When I open the UI
-    Then the sidebar shows "tabs" under "style"
-    When I click the "style" section heading
-    Then the sidebar does not show "tabs"
-    When I click the "style" section heading
-    Then the sidebar shows "tabs" under "style"
+    Then the "Scope" select shows "Global"
+    And the sidebar shows "go" under "style"
+    And the sidebar does not show "pr"
+    When I select "api" in "Scope"
+    Then the sidebar shows "pr" under "review"
+    And the sidebar does not show "go"
 
-  Scenario: Section heading is larger than its items
+  Scenario: Overview link opens the scope page
     Given the server is running
-    And a global section "style" with a context "tabs" and content "x"
     When I open the UI
-    Then the "style" heading font size is larger than the "tabs" item
+    And I click "Global overview" in the sidebar
+    Then the URL path is "/global"
 
-  Scenario: Rows have the same height and spacing
+  Scenario: Opening a context selects its scope
     Given the server is running
-    And a global section "style" with a context "tabs" and content "x"
+    And a project "api" section "review" with a context "pr" and content "y"
+    When I open the UI at "/contexts/projects/api/review/pr"
+    Then the "Scope" select shows "api"
+    And the sidebar shows "pr" under "review"
+
+  Scenario: Create a project from the scope select
+    Given the server is running
+    When I open the UI
+    And I select "New project…" in "Scope"
+    Then I see the dialog "New project"
+    When I type "web" in "Name"
+    And I click the "Create" button in the dialog
+    Then I see the toast "Project created"
+    And the URL path is "/projects/web"
+
+  Scenario: Context row menu
+    Given the server is running
+    And a global section "style" with a context "go" and content "x"
+    When I open the UI
+    And I open the sidebar menu of context "go"
+    Then I see the menu items "Edit, Delete"
+
+  Scenario: Section row menu
+    Given the server is running
+    And a global section "style" with a context "go" and content "x"
+    When I open the UI
+    And I open the sidebar menu of section "style"
+    Then I see the menu items "New context, Delete section"
+
+  Scenario: Edit from the context row menu
+    Given the server is running
+    And a global section "style" with a context "go" and content "x"
+    When I open the UI
+    And I open the sidebar menu of context "go"
+    And I click "Edit" in the menu
+    Then the URL path is "/edit/global/style/go"
+
+  Scenario: Rows are 40px high
+    Given the server is running
+    And a global section "style" with a context "go" and content "x"
     And a global section "style" with a context "naming" and content "y"
     When I open the UI
-    Then all item rows have the same height
-    And the gaps between rows are equal
-
-  Scenario: Heading and children have the same spacing
-    Given the server is running
-    And a global section "style" with a context "tabs" and content "x"
-    And a global section "style" with a context "naming" and content "y"
-    When I open the UI
-    Then the gap below the "style" heading equals the gaps between rows
-
-  Scenario: Action buttons are easy to hit
-    Given the server is running
-    And a global section "style"
-    When I open the UI
-    Then the "New context in style" button is at least 24px wide
+    Then all item rows are 40px high
