@@ -376,3 +376,58 @@ Then("the page does not scroll sideways", async ({ page }) => {
   const widths = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
   expect(widths[0]).toBeLessThanOrEqual(widths[1]);
 });
+
+// Theme: the Apsara theme element carries the settings as data attributes.
+const themeRoot = (page: import("@playwright/test").Page) =>
+  page.locator("[data-accent-color]").first();
+
+// resolved returns the computed value of a CSS property on a probe element,
+// so tokens compare as real colours in light and dark mode.
+async function resolved(
+  page: import("@playwright/test").Page,
+  prop: "color" | "backgroundColor",
+  value: string,
+) {
+  return themeRoot(page).evaluate(
+    (root, [p, v]) => {
+      const probe = document.createElement("span");
+      probe.style[p as "color"] = v;
+      root.append(probe);
+      const out = getComputedStyle(probe)[p as "color"];
+      probe.remove();
+      return out;
+    },
+    [prop, value],
+  );
+}
+
+Then("the theme accent color is {string}", async ({ page }, value: string) => {
+  await expect(themeRoot(page)).toHaveAttribute("data-accent-color", value);
+});
+
+Then("the theme gray color is {string}", async ({ page }, value: string) => {
+  await expect(themeRoot(page)).toHaveAttribute("data-gray-color", value);
+});
+
+Then("the body text size is {int}px", async ({ page }, px: number) => {
+  await expect(themeRoot(page)).toHaveCSS("font-size", `${px}px`);
+});
+
+Then("the main text color is gray step {int}", async ({ page }, step: number) => {
+  await expect(themeRoot(page)).toHaveCSS(
+    "color",
+    await resolved(page, "color", `var(--rs-gray-${step})`),
+  );
+});
+
+Then("the page background is gray step {int}", async ({ page }, step: number) => {
+  await expect(themeRoot(page)).toHaveCSS(
+    "background-color",
+    await resolved(page, "backgroundColor", `var(--rs-gray-${step})`),
+  );
+});
+
+Then("the secondary text color is gray step {int}", async ({ page }, step: number) => {
+  const secondary = await resolved(page, "color", "var(--rs-color-foreground-base-secondary)");
+  expect(secondary).toBe(await resolved(page, "color", `var(--rs-gray-${step})`));
+});
