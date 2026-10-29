@@ -589,3 +589,27 @@ Then(
     expect(gap).toBeLessThanOrEqual(px);
   },
 );
+
+// Sync page panels are regions named by their heading.
+Then("{string} is below the {string} heading", async ({ page }, text: string, name: string) => {
+  const panel = page.getByRole("region", { name, exact: true });
+  const head = await panel.getByRole("heading", { name, exact: true }).boundingBox();
+  const body = await panel.getByText(text, { exact: true }).boundingBox();
+  expect(body?.y ?? 0).toBeGreaterThanOrEqual((head?.y ?? 0) + (head?.height ?? 0));
+});
+
+Then("the {string} panel is at most {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await page.getByRole("region", { name, exact: true }).boundingBox();
+  expect(box?.height ?? 0).toBeLessThanOrEqual(px);
+});
+
+Then("the command {string} is on one line", async ({ page }, command: string) => {
+  const code = page.getByRole("main").locator("code", { hasText: command });
+  await expect(code).toHaveText(command);
+  const lines = await code.evaluate((el) => el.getClientRects().length);
+  expect(lines).toBe(1);
+});
+
+Then("I see the {string} button", async ({ page }, name: string) => {
+  await expect(page.getByRole("button", { name, exact: true })).toBeVisible();
+});
