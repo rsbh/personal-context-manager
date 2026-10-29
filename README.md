@@ -9,7 +9,15 @@ Design: [docs/api-and-cli.md](docs/api-and-cli.md). Requirements: [docs/requirem
 
 ## Install
 
-Needs Go (version in `go.mod`) and git. macOS or Linux.
+Homebrew (macOS arm64, Linux amd64 and arm64):
+
+```sh
+brew install rsbh/tap/pcm
+pcm server start
+pcm skill install
+```
+
+From source: needs Go (version in `go.mod`), Node and git. macOS or Linux.
 
 ```sh
 make install          # UI build, pcm + pcm-server into $(go env GOPATH)/bin, skill into ~/.claude/skills/pcm
