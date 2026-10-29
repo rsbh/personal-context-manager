@@ -13,7 +13,11 @@ const router = createBrowserRouter(routes);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Theme isRoot hasBackground defaultValue={{ appearance: "system", accentColor: "indigo" }}>
+    <Theme
+      isRoot
+      hasBackground
+      defaultValue={{ appearance: "system", accentColor: "indigo", grayColor: "slate" }}
+    >
       <Toast.Provider>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
