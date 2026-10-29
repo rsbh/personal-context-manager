@@ -68,7 +68,9 @@
   font-weight: var(--rs-font-weight-medium);
 }
 
+/* The overview link sits in the column itself: no flex grow (rows grow in width only). */
 .overview {
+  flex: none;
   color: var(--rs-color-foreground-base-secondary);
 }
 
