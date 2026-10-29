@@ -15,6 +15,27 @@ Scenario: Snapshot release builds
 Scenario: Binary has the release version
   When I run the darwin arm64 pcm from dist/ with --version
   Then the output has the snapshot version and the commit sha, not "dev"
+
+Scenario: A v* tag starts a release
+  When I push the tag "v0.1.0"
+  Then the "release" workflow runs: tests, then goreleaser
+  And the GitHub release "v0.1.0" has 3 archives and checksums.txt
+  And rsbh/homebrew-tap has Casks/pcm.rb with version 0.1.0
+  And "brew install rsbh/tap/pcm" then "pcm --version" prints 0.1.0
+
+Scenario: Missing token stops the release early
+  Given HOMEBREW_TAP_TOKEN is empty
+  When the workflow runs
+  Then it fails before the build, with the message "HOMEBREW_TAP_TOKEN is not set"
+
+Scenario: Branches and PRs do not release
+  When I push a branch or open a PR
+  Then the release workflow does not run
+
+Scenario: Pre-release tag does not touch the tap
+  When I push the tag "v0.1.0-rc.1"
+  Then a GitHub pre-release is created
+  And the tap is not changed
 ```
 
 ## Files
