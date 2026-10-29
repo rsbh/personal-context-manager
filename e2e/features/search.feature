@@ -49,6 +49,30 @@ Feature: Search
     Then the exit code is 0
     And the line with "title-hit" comes before the line with "body-hit"
 
+  Scenario: Word in the name matches
+    Given a global section "notes" with a context "error-handling" and content "x"
+    When I run "pcm search handling"
+    Then the exit code is 0
+    And the output contains "error-handling"
+
+  Scenario: Section name matches
+    Given a global section "review" with a context "pr" and content "x"
+    When I run "pcm search review"
+    Then the exit code is 0
+    And the line with "pr" contains "review"
+
+  Scenario: Project name matches
+    Given a project "billing" section "style" with a context "ctx" and content "x"
+    When I run "pcm search billing --all"
+    Then the exit code is 0
+    And the output contains "ctx"
+
+  Scenario: Name match ranks above content match
+    Given a global section "notes" with a context "caching" and content "x"
+    And a global section "notes" with a context "other" and content "Some caching tips."
+    When I run "pcm search caching"
+    Then the line with "caching" comes before the line with "other"
+
   Scenario: Filter by section
     Given a global section "review" with a context "gorev" and content "Check gofmt in review."
     When I run "pcm search gofmt -s review"
