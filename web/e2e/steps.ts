@@ -366,3 +366,13 @@ Then(
     expect(below).toBe(gap);
   },
 );
+
+Given("the window is {int}px wide", async ({ page }, px: number) => {
+  await page.setViewportSize({ width: px, height: 800 });
+});
+
+Then("the page does not scroll sideways", async ({ page }) => {
+  await expect(page.getByRole("table")).toBeVisible();
+  const widths = await page.evaluate(() => [document.documentElement.scrollWidth, innerWidth]);
+  expect(widths[0]).toBeLessThanOrEqual(widths[1]);
+});

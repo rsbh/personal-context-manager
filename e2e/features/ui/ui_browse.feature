@@ -45,3 +45,10 @@ Feature: Browse contexts
     And I select "api" in "Project"
     Then the table has 1 row with "go"
     And the row with "go" contains "project"
+
+  Scenario: Wide table does not widen the page
+    Given the server is running
+    And a project "api" section "style" with a context "go" and content "project"
+    And the window is 900px wide
+    When I open the UI at "/current?project=api"
+    Then the page does not scroll sideways
