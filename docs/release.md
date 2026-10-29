@@ -55,3 +55,13 @@ Scenario: Pre-release tag does not touch the tap
 GoReleaser writes `Casks/pcm.rb` to `rsbh/homebrew-tap` (token: `HOMEBREW_TAP_TOKEN`, a fine-grained PAT with Contents write on the tap). A cask works on macOS and Linux brew. The macOS quarantine flag is removed in `postflight_steps`, because the binaries are not notarized. macOS Intel is not built.
 
 Install: `brew install rsbh/tap/pcm`. Then `pcm server start` and `pcm skill install`.
+
+## Make a release
+
+1. Merge to `main`. Wait for CI.
+2. Try a pre-release first: `git tag v0.1.0-rc.1 && git push origin v0.1.0-rc.1`. Check the GitHub release page. The tap does not change.
+3. Delete the pre-release and its tag: `gh release delete v0.1.0-rc.1 --cleanup-tag`.
+4. Tag the release: `git tag v0.1.0 && git push origin v0.1.0`. The `release` workflow builds, publishes and updates the cask.
+5. Check: `brew install rsbh/tap/pcm && pcm --version`.
+
+The secret `HOMEBREW_TAP_TOKEN` is a fine-grained PAT (Contents write on `rsbh/homebrew-tap`). The workflow stops early if it is empty.
