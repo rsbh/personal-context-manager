@@ -1,4 +1,4 @@
-.PHONY: build swagger client web install restart test web-test web-lint web-fmt e2e e2e-ui fmt lint vet
+.PHONY: build swagger client web install restart release-check test web-test web-lint web-fmt e2e e2e-ui fmt lint vet
 
 SWAG := go run github.com/swaggo/swag/cmd/swag@v1.16.6
 
@@ -22,6 +22,12 @@ build: swagger web
 install: web
 	go install ./cmd/...
 	$(shell go env GOPATH)/bin/pcm skill install
+
+# Check the release config and build a snapshot (no publish) into dist/.
+release-check:
+	goreleaser check
+	goreleaser release --snapshot --clean
+	scripts/release-check.sh
 
 # Restart the background server with the installed binary.
 restart:
