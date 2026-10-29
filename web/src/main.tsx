@@ -1,4 +1,5 @@
 import "@raystack/apsara/style.css";
+import "./global.css";
 import { Theme, Toast } from "@raystack/apsara";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";

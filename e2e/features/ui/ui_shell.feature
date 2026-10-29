@@ -20,3 +20,8 @@ Feature: UI shell
     Given the server is running
     When I open the UI at "/contexts/global/git/commits"
     Then the page title is "pcm"
+
+  Scenario: Page has no outer margin
+    Given the server is running
+    When I open the UI
+    Then the page body has no margin

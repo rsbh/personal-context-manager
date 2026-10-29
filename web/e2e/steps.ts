@@ -350,6 +350,11 @@ Then("the gaps between rows are equal", async ({ page }) => {
   expect(new Set(gaps).size).toBe(1);
 });
 
+Then("the {string} button is at least {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await page.getByRole("button", { name, exact: true }).boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(px);
+});
+
 Then("the {string} button is at least {int}px wide", async ({ page }, name: string, px: number) => {
   const box = await page.getByRole("button", { name, exact: true }).boundingBox();
   expect(box?.width ?? 0).toBeGreaterThanOrEqual(px);
@@ -430,4 +435,45 @@ Then("the page background is gray step {int}", async ({ page }, step: number) =>
 Then("the secondary text color is gray step {int}", async ({ page }, step: number) => {
   const secondary = await resolved(page, "color", "var(--rs-color-foreground-base-secondary)");
   expect(secondary).toBe(await resolved(page, "color", `var(--rs-gray-${step})`));
+});
+
+// Header: the main navigation is a nav landmark named "Main".
+const mainNav = (page: import("@playwright/test").Page) =>
+  page.getByRole("navigation", { name: "Main" });
+
+async function navBoxes(page: import("@playwright/test").Page) {
+  const links = await mainNav(page).getByRole("link").all();
+  const boxes = await Promise.all(links.map((l) => l.boundingBox()));
+  return boxes.filter((b) => b !== null);
+}
+
+Then("the header is {int}px high", async ({ page }, px: number) => {
+  // clientHeight leaves out the 0.5px bottom border: screens draw it as 0.5px or 1px.
+  const height = await page.getByRole("banner").evaluate((el) => el.clientHeight);
+  expect(height).toBe(px);
+});
+
+Then("each main navigation link is at least {int}px high", async ({ page }, px: number) => {
+  const boxes = await navBoxes(page);
+  expect(boxes.length).toBeGreaterThan(1);
+  for (const b of boxes) expect(Math.round(b.height)).toBeGreaterThanOrEqual(px);
+});
+
+Then("the gap between main navigation links is at least {int}px", async ({ page }, px: number) => {
+  const boxes = await navBoxes(page);
+  const gaps = boxes.slice(1).map((b, i) => Math.round(b.x - (boxes[i].x + boxes[i].width)));
+  expect(gaps.length).toBeGreaterThan(0);
+  for (const g of gaps) expect(g).toBeGreaterThanOrEqual(px);
+});
+
+Then("the {string} navigation link is the current page", async ({ page }, name: string) => {
+  await expect(mainNav(page).getByRole("link", { name })).toHaveAttribute("aria-current", "page");
+});
+
+Then("the {string} navigation link is not the current page", async ({ page }, name: string) => {
+  await expect(mainNav(page).getByRole("link", { name })).not.toHaveAttribute("aria-current");
+});
+
+Then("the page body has no margin", async ({ page }) => {
+  await expect(page.locator("body")).toHaveCSS("margin", "0px");
 });
