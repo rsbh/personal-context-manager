@@ -522,3 +522,20 @@ Then("the {string} button is at least {int}px high", async ({ page }, name: stri
   const box = await page.getByRole("button", { name, exact: true }).boundingBox();
   expect(Math.round(box?.height ?? 0)).toBeGreaterThanOrEqual(px);
 });
+
+Then("the {string} sidebar link is {int}px high", async ({ page }, name: string, px: number) => {
+  const box = await sidebar(page).getByRole("link", { name, exact: true }).boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBe(px);
+});
+
+Then(
+  "the sidebar shows the section {string} right below the overview link",
+  async ({ page }, name: string) => {
+    const link = await sidebar(page)
+      .getByRole("link", { name: /overview$/ })
+      .boundingBox();
+    const section = await sidebar(page).getByRole("listitem", { name, exact: true }).boundingBox();
+    const gap = (section?.y ?? 0) - ((link?.y ?? 0) + (link?.height ?? 0));
+    expect(gap).toBeLessThanOrEqual(16);
+  },
+);

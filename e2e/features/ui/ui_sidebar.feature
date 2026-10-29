@@ -65,3 +65,10 @@ Feature: Sidebar
     And a global section "style" with a context "naming" and content "y"
     When I open the UI
     Then all item rows are 40px high
+
+  Scenario: Sidebar items stay at the top
+    Given the server is running
+    And a global section "style" with a context "go" and content "x"
+    When I open the UI
+    Then the "Global overview" sidebar link is 40px high
+    And the sidebar shows the section "style" right below the overview link
