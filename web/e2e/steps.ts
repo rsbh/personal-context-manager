@@ -539,3 +539,53 @@ Then(
     expect(gap).toBeLessThanOrEqual(16);
   },
 );
+
+// Context view: the breadcrumb is a nav named "Breadcrumb" in main.
+const breadcrumb = (page: import("@playwright/test").Page) =>
+  page.getByRole("main").getByRole("navigation", { name: "Breadcrumb" });
+
+Then("the breadcrumb shows {string}", async ({ page }, text: string) => {
+  const shown = await breadcrumb(page).innerText();
+  expect(shown.replace(/\s/g, "")).toBe(text.replace(/\s/g, ""));
+});
+
+When("I click {string} in the breadcrumb", async ({ page }, name: string) => {
+  await breadcrumb(page).getByRole("link", { name, exact: true }).click();
+});
+
+Then("the {string} button has no text", async ({ page }, name: string) => {
+  const button = page.getByRole("main").getByRole("button", { name, exact: true });
+  expect((await button.innerText()).trim()).toBe("");
+});
+
+Then("the {string} button on the page is danger colour", async ({ page }, name: string) => {
+  const button = page.getByRole("main").getByRole("button", { name, exact: true });
+  await expect(button).toHaveCSS(
+    "color",
+    await resolved(page, "color", "var(--rs-color-foreground-danger-primary)"),
+  );
+});
+
+Then("the context title is at least {int}px and bold", async ({ page }, px: number) => {
+  const style = await page
+    .getByRole("main")
+    .getByRole("heading", { level: 1 })
+    .evaluate((el) => getComputedStyle(el));
+  expect(parseFloat(style.fontSize)).toBeGreaterThanOrEqual(px);
+  expect(Number(style.fontWeight)).toBeGreaterThanOrEqual(600);
+});
+
+Then(
+  "the gap between the title and {string} is at most {int}px",
+  async ({ page }, text: string, px: number) => {
+    const title = await page.getByRole("main").getByRole("heading", { level: 1 }).boundingBox();
+    const desc = await page
+      .getByRole("main")
+      .getByText(text, { exact: true })
+      .first()
+      .boundingBox();
+    const gap = (desc?.y ?? 0) - ((title?.y ?? 0) + (title?.height ?? 0));
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(px);
+  },
+);
