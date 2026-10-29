@@ -72,34 +72,11 @@ describe("Sidebar", () => {
     expect(await screen.findByText("No projects")).toBeInTheDocument();
   });
 
-  it("shows search results instead of the tree while searching", async () => {
-    base({
-      "/api/v1/search?q=black": [
-        {
-          id: "global/style/py",
-          scope: "global",
-          section: "style",
-          name: "py",
-          snippet: "Use <mark>black</mark>.",
-          score: 1,
-        },
-      ],
-    });
+  it("has no search box", async () => {
+    base();
     renderUI(<Sidebar />);
-    await userEvent.type(screen.getByLabelText("Search contexts"), "black");
-    const results = await screen.findByRole("region", { name: "Search results" });
-    expect(anchor(await within(results).findByText("py"))).toHaveAttribute(
-      "href",
-      "/contexts/global/style/py",
-    );
-    expect(screen.queryByRole("listitem", { name: "Global" })).not.toBeInTheDocument();
-  });
-
-  it("shows no results", async () => {
-    base({ "/api/v1/search?q=zzz": [] });
-    renderUI(<Sidebar />);
-    await userEvent.type(screen.getByLabelText("Search contexts"), "zzz");
-    expect(await screen.findByText("No results")).toBeInTheDocument();
+    await screen.findByText("commits");
+    expect(screen.queryByLabelText("Search contexts")).not.toBeInTheDocument();
   });
 
   it("opens a new context form from a global section", async () => {
