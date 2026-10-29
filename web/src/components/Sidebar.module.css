@@ -1,25 +1,116 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 260px;
+  width: 264px;
   flex: none;
   border-right: 1px solid var(--rs-color-border-base-primary);
   background: var(--rs-color-background-base-primary);
 }
 
 .main {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  gap: var(--rs-space-1);
   overflow-y: auto;
   padding: var(--rs-space-4) var(--rs-space-3);
 }
 
+.select {
+  width: 100%;
+  margin-bottom: var(--rs-space-2);
+}
+
 .list {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.group {
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-3);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.item {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--rs-space-2);
+  min-width: 0;
+  height: 40px;
+  padding: 0 40px 0 var(--rs-space-4);
+  overflow: hidden;
+  border-radius: var(--rs-radius-2);
+  color: var(--rs-color-foreground-base-primary);
+  font-size: var(--rs-font-size-small);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item:hover {
+  background: var(--rs-color-background-base-primary-hover);
+}
+
+.item[aria-current="page"] {
+  background: var(--rs-color-background-accent-primary);
+  color: var(--rs-color-foreground-accent-primary);
+  font-weight: var(--rs-font-weight-medium);
+}
+
+.overview {
+  color: var(--rs-color-foreground-base-secondary);
+}
+
+.sectionLabel {
+  flex: 1;
+  min-width: 0;
+  padding: var(--rs-space-5) 40px var(--rs-space-2) var(--rs-space-4);
+  overflow: hidden;
+  color: var(--rs-color-foreground-base-secondary);
+  font-size: var(--rs-font-size-mini);
+  font-weight: var(--rs-font-weight-medium);
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.more {
+  position: absolute;
+  right: var(--rs-space-2);
+  bottom: 6px;
+  opacity: 0;
+}
+
+.row:hover .more,
+.row:focus-within .more,
+.more[data-popup-open] {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .more {
+    opacity: 1;
+  }
+}
+
+.danger {
+  color: var(--rs-color-foreground-danger-primary);
+}
+
+.empty {
+  padding: var(--rs-space-3) var(--rs-space-4);
 }
 
 @media (max-width: 768px) {

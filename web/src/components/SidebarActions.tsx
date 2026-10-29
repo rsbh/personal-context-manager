@@ -1,7 +1,7 @@
-import { IconButton, Menu, useToastManager } from "@raystack/apsara";
+import { IconButton, useToastManager } from "@raystack/apsara";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ellipsis, Plus } from "lucide-react";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { type ReactNode, useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   createProjectMutation,
@@ -91,32 +91,35 @@ export function CreateSectionButton({
   );
 }
 
-// CreateProjectButton is a "+" that creates a project.
-export function CreateProjectButton() {
+// useCreateProject creates a project from a name dialog. show opens the dialog; onCreated
+// gets the new project name.
+export function useCreateProject(onCreated?: (name: string) => void) {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
   const close = useCallback(() => setOpen(false), []);
   const show = useCallback(() => setOpen(true), []);
+  const after = useCallback(() => onCreated?.(name), [onCreated, name]);
   const create = useMutation({
     ...createProjectMutation(),
-    ...useCreated("Project created", close),
+    ...useCreated("Project created", close, after),
   });
-  const onSubmit = useCallback((name: string) => create.mutate({ body: { name } }), [create]);
-  return (
-    <>
-      <IconButton size={4} aria-label="New project" onClick={show}>
-        <Plus size={16} />
-      </IconButton>
-      {open && (
-        <NameDialog
-          title="New project"
-          open
-          onOpenChange={setOpen}
-          pending={create.isPending}
-          onSubmit={onSubmit}
-        />
-      )}
-    </>
+  const onSubmit = useCallback(
+    (n: string) => {
+      setName(n);
+      create.mutate({ body: { name: n } });
+    },
+    [create],
   );
+  const dialog = open && (
+    <NameDialog
+      title="New project"
+      open
+      onOpenChange={setOpen}
+      pending={create.isPending}
+      onSubmit={onSubmit}
+    />
+  );
+  return { show, dialog };
 }
 
 // idPrefix is the start of the ids of all contexts in a section or project.
@@ -195,27 +198,4 @@ export function useScopeDelete({ kind, name, project }: ScopeDeleteProps) {
     />
   );
   return { show, dialog };
-}
-
-// RowMenu is the "⋯" menu of a section or project row, with Delete.
-export function RowMenu({ kind, name, project }: ScopeDeleteProps) {
-  const { show, dialog } = useScopeDelete({ kind, name, project });
-  const label =
-    kind === "project"
-      ? `Project ${name} actions`
-      : `Section ${project ? `${project}/${name}` : name} actions`;
-  const trigger = useMemo(() => <IconButton size={4} aria-label={label} />, [label]);
-  return (
-    <>
-      <Menu>
-        <Menu.Trigger render={trigger}>
-          <Ellipsis size={16} />
-        </Menu.Trigger>
-        <Menu.Content>
-          <Menu.Item onClick={show}>Delete</Menu.Item>
-        </Menu.Content>
-      </Menu>
-      {dialog}
-    </>
-  );
 }

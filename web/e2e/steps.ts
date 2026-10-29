@@ -111,8 +111,19 @@ When("I type {string} in {string}", async ({ page }, text: string, label: string
     .fill(text);
 });
 
+// combobox finds a select by label: the page form first, then the sidebar ("Scope" is in both).
+async function combobox(page: import("@playwright/test").Page, name: string) {
+  await page.getByRole("combobox", { name, exact: true }).first().waitFor();
+  const inMain = page.getByRole("main").getByRole("combobox", { name, exact: true });
+  if ((await inMain.count()) > 0) return inMain;
+  return page.getByRole("navigation", { name: "Contexts" }).getByRole("combobox", {
+    name,
+    exact: true,
+  });
+}
+
 When("I select {string} in {string}", async ({ page }, option: string, label: string) => {
-  await page.getByRole("combobox", { name: label, exact: true }).click();
+  await (await combobox(page, label)).click();
   await page.getByRole("option", { name: option, exact: true }).click();
 });
 
@@ -206,7 +217,7 @@ Then("I see the toast {string}", async ({ page }, text: string) => {
 });
 
 Then("the {string} select shows {string}", async ({ page }, label: string, value: string) => {
-  await expect(page.getByRole("combobox", { name: label, exact: true })).toHaveText(value);
+  await expect(await combobox(page, label)).toHaveText(value);
 });
 
 // Section and project steps.
@@ -350,7 +361,7 @@ Then("I see the menu items {string}", async ({ page }, names: string) => {
 Then(
   "the {string} select has the options {string}",
   async ({ page }, label: string, names: string) => {
-    await page.getByRole("combobox", { name: label, exact: true }).click();
+    await (await combobox(page, label)).click();
     await expect(page.getByRole("option")).toHaveText(names.split(", "));
     await page.keyboard.press("Escape");
   },
