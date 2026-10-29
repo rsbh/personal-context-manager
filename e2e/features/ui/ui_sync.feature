@@ -66,3 +66,15 @@ Feature: Sync
     Then I see "Remote not set"
     And I see "pcm config set remote <git-url>"
     And the "Sync now" button is disabled
+
+  Scenario: No changes is shown under its heading
+    Given the server is running
+    When I open the UI at "/sync"
+    Then "No changes" is below the "Changed files" heading
+    And the "Changed files" panel is at most 120px high
+
+  Scenario: Remote command is on its own line with a copy button
+    Given the server is running
+    When I open the UI at "/sync"
+    Then the command "pcm config set remote <git-url>" is on one line
+    And I see the "Copy command" button
