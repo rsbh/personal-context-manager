@@ -378,3 +378,61 @@ func TestRebuild(t *testing.T) {
 		t.Errorf("after reopen: hits = %v", got)
 	}
 }
+
+func TestOpenSchemaV1Rebuilds(t *testing.T) {
+	dir := t.TempDir()
+	idx, _, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := idx.setSchemaVersion("1"); err != nil {
+		t.Fatal(err)
+	}
+	idx.Close()
+
+	idx, need, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer idx.Close()
+	if !need {
+		t.Error("schema 1: needRebuild = false, want true")
+	}
+}
+
+func TestNameSectionProjectMatch(t *testing.T) {
+	idx := newIndex(t,
+		Doc{ID: "global/notes/error-handling", Scope: "global", Section: "notes", Name: "error-handling", Content: "x"},
+		Doc{ID: "global/review/pr", Scope: "global", Section: "review", Name: "pr", Content: "x"},
+		Doc{ID: "project/billing/style/ctx", Scope: "project", Project: "billing", Section: "style", Name: "ctx", Content: "x"})
+	for q, want := range map[string]string{
+		"handling": "global/notes/error-handling",
+		"review":   "global/review/pr",
+		"billing":  "project/billing/style/ctx",
+	} {
+		got := ids(t, idx, Query{Q: q})
+		if len(got) != 1 || got[0] != want {
+			t.Errorf("Search(%q) = %v, want [%s]", q, got, want)
+		}
+	}
+}
+
+func TestNameBoost(t *testing.T) {
+	idx := newIndex(t,
+		Doc{ID: "global/n/other", Scope: "global", Section: "n", Name: "other", Content: "Some caching tips."},
+		Doc{ID: "global/n/caching", Scope: "global", Section: "n", Name: "caching", Content: "x"})
+	got := ids(t, idx, Query{Q: "caching"})
+	if len(got) != 2 || got[0] != "global/n/caching" {
+		t.Errorf("hits = %v, want caching first", got)
+	}
+}
+
+func TestFilterStillExact(t *testing.T) {
+	idx := newIndex(t,
+		Doc{ID: "global/review/a", Scope: "global", Section: "review", Name: "a", Content: "gofmt"},
+		Doc{ID: "global/code-review/b", Scope: "global", Section: "code-review", Name: "b", Content: "gofmt"})
+	got := ids(t, idx, Query{Q: "gofmt", Section: "review"})
+	if len(got) != 1 || got[0] != "global/review/a" {
+		t.Errorf("hits = %v, want only review/a", got)
+	}
+}
