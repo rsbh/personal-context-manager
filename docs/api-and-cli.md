@@ -78,6 +78,7 @@ k8s style: `pcm <verb> <resource> [name] [flags]`. Output is a table. No short n
 | `pcm sync status` | Branch, remote, changes, ahead, behind, changed files |
 | `pcm sync log [-n 10]` | Recent commits (HASH, DATE, MESSAGE) |
 | `pcm health` | Check server is reachable (text output, exit 1 if not) |
+| `pcm --version`, `pcm-server --version` | Print `<name> <version> (commit <sha>, built <date>)`. No server needed. Release builds set the values with ldflags (`internal/version`); local builds print `dev` |
 | `pcm server start` | Start `pcm-server` in background (pid/log in `~/.pcm/`) |
 | `pcm server stop` | Stop background server |
 | `pcm server status` | Show server health and pid |

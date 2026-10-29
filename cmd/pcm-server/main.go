@@ -9,8 +9,10 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
@@ -22,12 +24,17 @@ import (
 	"github.com/rsbh/personal-context-manager/internal/search"
 	"github.com/rsbh/personal-context-manager/internal/server"
 	"github.com/rsbh/personal-context-manager/internal/store"
+	"github.com/rsbh/personal-context-manager/internal/version"
 	"github.com/rsbh/personal-context-manager/web"
 )
 
 const shutdownTimeout = 10 * time.Second
 
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println(version.String("pcm-server"))
+		return
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 

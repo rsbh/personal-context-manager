@@ -12,6 +12,7 @@ import (
 
 	"github.com/rsbh/personal-context-manager/internal/client"
 	"github.com/rsbh/personal-context-manager/internal/config"
+	"github.com/rsbh/personal-context-manager/internal/version"
 )
 
 // errSilent makes pcm exit 1 without printing an error. The command already printed output.
@@ -58,6 +59,7 @@ func newRootCmd(a *app) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "pcm",
 		Short:         "Personal context manager",
+		Version:       version.String("pcm"),
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(*cobra.Command, []string) error {
@@ -67,6 +69,7 @@ func newRootCmd(a *app) *cobra.Command {
 			return a.load()
 		},
 	}
+	root.SetVersionTemplate("{{.Version}}\n")
 	root.AddCommand(
 		newHealthCmd(a),
 		newServerCmd(a),
