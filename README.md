@@ -64,6 +64,7 @@ UI development: `make web` builds `web/` into `web/dist/app` (embedded in `pcm-s
 | Command | Purpose |
 |---|---|
 | `pcm health` | Check server is reachable |
+| `pcm --version` | Print the version (also `pcm-server --version`) |
 | `pcm ui` | Open the web UI in the browser |
 | `pcm server start\|stop\|status` | Manage background server |
 | `pcm get projects [name]` | List projects or show one |
