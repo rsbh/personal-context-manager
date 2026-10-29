@@ -1,0 +1,76 @@
+version: 2
+project_name: pcm
+
+before:
+  hooks:
+    # The UI is embedded in pcm-server, so build it before go build.
+    - make web
+
+builds:
+  - id: pcm
+    main: ./cmd/pcm
+    binary: pcm
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: darwin
+        goarch: amd64
+    ldflags: &ldflags
+      - -s -w
+      - -X github.com/rsbh/personal-context-manager/internal/version.Version={{ .Version }}
+      - -X github.com/rsbh/personal-context-manager/internal/version.Commit={{ .ShortCommit }}
+      - -X github.com/rsbh/personal-context-manager/internal/version.Date={{ .Date }}
+  - id: pcm-server
+    main: ./cmd/pcm-server
+    binary: pcm-server
+    env: [CGO_ENABLED=0]
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: darwin
+        goarch: amd64
+    ldflags: *ldflags
+
+archives:
+  - formats: [tar.gz]
+    name_template: "pcm_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^test:"
+      - "^docs:"
+      - "^chore:"
+
+homebrew_casks:
+  - name: pcm
+    repository:
+      owner: rsbh
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/rsbh/personal-context-manager
+    description: Personal context manager for coding agents
+    # A snapshot build does not publish the cask.
+    skip_upload: auto
+    binaries:
+      - pcm
+      - pcm-server
+    caveats: |
+      Start the server:         pcm server start
+      Install the Claude skill: pcm skill install
+    hooks:
+      post:
+        # The binaries are not notarized: remove the macOS quarantine flag.
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/pcm"]
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/pcm-server"]
+          end

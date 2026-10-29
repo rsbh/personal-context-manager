@@ -46,3 +46,6 @@ web/.features-gen/
 web/test-results/
 web/playwright-report/
 web/tsconfig.tsbuildinfo
+
+# GoReleaser output
+dist/
