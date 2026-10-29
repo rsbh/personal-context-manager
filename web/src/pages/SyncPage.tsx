@@ -1,6 +1,7 @@
 import {
   Button,
   Callout,
+  CopyButton,
   Flex,
   Headline,
   Spinner,
@@ -10,7 +11,7 @@ import {
 } from "@raystack/apsara";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import {
   gitLogOptions,
   gitStatusOptions,
@@ -68,17 +69,46 @@ function Conflict({ files }: ConflictProps) {
   );
 }
 
+const remoteCommand = "pcm config set remote <git-url>";
+
 function NoRemote() {
   return (
-    <Callout type="normal">
-      <Flex direction="column" gap={2}>
+    <Callout type="normal" className={classes.callout}>
+      <Flex direction="column" gap={3}>
         <Text weight="medium">Remote not set</Text>
-        <Text>
-          Contexts are local only. To sync, run{" "}
-          <code className={classes.mono}>pcm config set remote &lt;git-url&gt;</code>
-        </Text>
+        <Text>Contexts are local only. To sync, set a git remote:</Text>
+        <div className={classes.command}>
+          <code className={classes.commandText}>{remoteCommand}</code>
+          <CopyButton text={remoteCommand} size={3} aria-label="Copy command" />
+        </div>
       </Flex>
     </Callout>
+  );
+}
+
+interface PanelProps {
+  title: string;
+  // count is shown next to the title.
+  count: number;
+  className: string;
+  children: React.ReactNode;
+}
+
+// Panel is a card with a header row (title and count) and its content below.
+function Panel({ title, count, className, children }: PanelProps) {
+  const id = useId();
+  return (
+    <section aria-labelledby={id} className={`${classes.panel} ${className}`}>
+      <div className={classes.panelHead}>
+        <h2 id={id} className={classes.panelTitle}>
+          {title}
+        </h2>
+        <Text size="small" variant="tertiary">
+          {count}
+        </Text>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -151,10 +181,7 @@ export function SyncPage() {
       </div>
 
       <div className={classes.panels}>
-        <section aria-label="Changed files" className={`${classes.panel} ${classes.files}`}>
-          <Text size="small" weight="medium" variant="tertiary" className={classes.panelTitle}>
-            Changed files
-          </Text>
+        <Panel title="Changed files" count={changes.length} className={classes.files}>
           {changes.length === 0 ? (
             <Text size="small" variant="secondary" className={classes.empty}>
               No changes
@@ -169,12 +196,9 @@ export function SyncPage() {
               ))}
             </ul>
           )}
-        </section>
+        </Panel>
 
-        <section aria-label="Recent commits" className={`${classes.panel} ${classes.commits}`}>
-          <Text size="small" weight="medium" variant="tertiary" className={classes.panelTitle}>
-            Recent commits
-          </Text>
+        <Panel title="Recent commits" count={log.data?.length ?? 0} className={classes.commits}>
           {log.data?.length ? (
             <Table>
               <Table.Header>
@@ -199,7 +223,7 @@ export function SyncPage() {
               No commits
             </Text>
           )}
-        </section>
+        </Panel>
       </div>
     </Flex>
   );

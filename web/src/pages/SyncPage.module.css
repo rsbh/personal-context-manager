@@ -43,10 +43,13 @@
 .panels {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--rs-space-4);
 }
 
 .panel {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   border-radius: var(--rs-radius-4);
   border: 0.5px solid var(--rs-color-border-base-primary);
@@ -62,9 +65,43 @@
   flex: 2 1 480px;
 }
 
-.panelTitle {
-  padding: var(--rs-space-3) var(--rs-space-4);
+.panelHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
+  padding: var(--rs-space-4) var(--rs-space-5);
   border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--rs-font-size-small);
+  font-weight: var(--rs-font-weight-medium);
+}
+
+.callout {
+  max-width: 640px;
+}
+
+.command {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-3);
+  max-width: 100%;
+  padding: var(--rs-space-2) var(--rs-space-2) var(--rs-space-2) var(--rs-space-4);
+  border: 0.5px solid var(--rs-color-border-base-primary);
+  border-radius: var(--rs-radius-3);
+  background: var(--rs-color-background-base-primary);
+}
+
+.commandText {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-small);
+  white-space: nowrap;
 }
 
 .fileList {
@@ -93,7 +130,7 @@
 }
 
 .empty {
-  padding: var(--rs-space-4);
+  padding: var(--rs-space-4) var(--rs-space-5);
 }
 
 .mono {
