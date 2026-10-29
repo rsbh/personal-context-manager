@@ -19,7 +19,7 @@ make install          # UI build, pcm + pcm-server into $(go env GOPATH)/bin, sk
 
 ## Claude Code
 
-`make install` also installs the pcm skill. In Claude Code, the skill loads your contexts at the start of a coding task and before a review, saves a rule when you ask Claude to remember it, and dumps the session rules and decisions to pcm when you ask (for example "dump context to pcm"). Claude shows the draft first. Source: `internal/skill/SKILL.md`.
+`make install` also installs the pcm skill. In Claude Code, the skill loads your contexts at the start of a coding task, before a review and before a pull request (checks commits and branch against your rules), saves a rule when you ask Claude to remember it, and dumps the session rules and decisions to pcm when you ask (for example "dump context to pcm"). Claude shows the draft first. Source: `internal/skill/SKILL.md`.
 
 ## Quick start
 

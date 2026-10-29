@@ -1,7 +1,7 @@
 ---
 name: pcm
-description: Load and save the user's personal coding context (code style, review rules, notes) with the pcm CLI. Use at the start of any coding task, before a code review, when the user asks to remember or save a rule or style, when the user asks to dump or save the session context to pcm, and when the user asks to list, show or delete pcm contexts, sections or projects.
-allowed-tools: Bash(pcm:*), Bash(gh pr view:*), Bash(git branch:*), Write
+description: Load and save the user's personal coding context (code style, review rules, notes) with the pcm CLI. Use at the start of any coding task, before a code review, when the user asks to remember or save a rule or style, when the user asks to dump or save the session context to pcm, before creating a pull request, and when the user asks to list, show or delete pcm contexts, sections or projects.
+allowed-tools: Bash(pcm:*), Bash(gh pr view:*), Bash(gh pr create:*), Bash(git branch:*), Bash(git log:*), Write
 ---
 
 # pcm: personal context manager
@@ -74,3 +74,13 @@ Do this when the user asks to dump or save the current session context to pcm.
    Do not use a heredoc. Do not delete the file.
 
 7. Tell the user the scope, section and name.
+
+## 6. Before a pull request
+
+Do this before `gh pr create`.
+
+1. Run `pcm health`. If the exit code is 1, run `pcm server start`.
+2. Run `pcm get contexts -o md`. If a `review` section exists, also run `pcm get contexts -o md -s review`. If the output is `No contexts found.`, go to step 5.
+3. Run `git log --format='%h %s%n%b' main..HEAD` and `git branch --show-current`. Compare each commit message and the branch name with the rules (for example: no AI co-author trailer, branch prefix, commit style). If a commit breaks a rule, show the commit, the rule and a proposed fix. Do not rewrite history. Ask the user first.
+4. List each rule that fails. If none fail, say `pcm check: pass`.
+5. Show the title and body to the user. Wait for approval. Then run `gh pr create`.
