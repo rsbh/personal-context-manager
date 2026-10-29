@@ -1,4 +1,4 @@
-import { Badge, Flex, Text } from "@raystack/apsara";
+import { Badge, Button, Flex, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
 import { NavLink } from "react-router";
 import { getHealthOptions, gitStatusOptions } from "../client/@tanstack/react-query.gen";
@@ -9,7 +9,12 @@ function navClass({ isActive }: { isActive: boolean }) {
   return isActive ? `${classes.navLink} ${classes.active}` : classes.navLink;
 }
 
-export function Header() {
+interface HeaderProps {
+  // onSearch opens the search palette.
+  onSearch: () => void;
+}
+
+export function Header({ onSearch }: HeaderProps) {
   const [health, status] = useQueries({
     queries: [{ ...getHealthOptions(), refetchInterval: 10_000 }, gitStatusOptions()],
   });
@@ -43,8 +48,20 @@ export function Header() {
           )}
         </NavLink>
       </nav>
+      <Button
+        variant="outline"
+        color="neutral"
+        size="small"
+        onClick={onSearch}
+        className={classes.search}
+      >
+        Search{" "}
+        <kbd aria-hidden="true" className={classes.kbd}>
+          ⌘K
+        </kbd>
+      </Button>
       {!health.isPending && (
-        <Flex align="center" gap={2} className={classes.status}>
+        <Flex align="center" gap={2}>
           <span className={`${classes.dot} ${ok ? classes.ok : classes.down}`} aria-hidden="true" />
           <Text size="small" variant="secondary">
             {ok ? "server ok" : "server down"}

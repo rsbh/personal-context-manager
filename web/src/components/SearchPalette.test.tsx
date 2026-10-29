@@ -16,13 +16,13 @@ const hit = {
 describe("SearchPalette", () => {
   it("renders nothing when closed", () => {
     mockAPI({});
-    renderUI(<SearchPalette open={false} onOpenChange={vi.fn()} />);
+    renderUI(<SearchPalette open={false} onOpenChange={vi.fn<() => void>()} />);
     expect(screen.queryByRole("dialog", { name: "Search contexts" })).not.toBeInTheDocument();
   });
 
   it("shows name, section and snippet without tags", async () => {
     mockAPI({ "/api/v1/search?q=black": [hit] });
-    renderUI(<SearchPalette open onOpenChange={vi.fn()} />);
+    renderUI(<SearchPalette open onOpenChange={vi.fn<() => void>()} />);
     await userEvent.type(screen.getByRole("combobox", { name: "Search contexts" }), "black");
     const row = await screen.findByRole("option", { name: /py/ });
     expect(row).toHaveTextContent("style");
@@ -32,7 +32,7 @@ describe("SearchPalette", () => {
 
   it("opens the context and closes on select", async () => {
     mockAPI({ "/api/v1/search?q=black": [hit] });
-    const onOpenChange = vi.fn();
+    const onOpenChange = vi.fn<() => void>();
     renderUI(<SearchPalette open onOpenChange={onOpenChange} />);
     await userEvent.type(screen.getByRole("combobox", { name: "Search contexts" }), "black");
     await userEvent.click(await screen.findByRole("option", { name: /py/ }));
@@ -42,21 +42,21 @@ describe("SearchPalette", () => {
 
   it("shows no results", async () => {
     mockAPI({ "/api/v1/search?q=zzz": [] });
-    renderUI(<SearchPalette open onOpenChange={vi.fn()} />);
+    renderUI(<SearchPalette open onOpenChange={vi.fn<() => void>()} />);
     await userEvent.type(screen.getByRole("combobox", { name: "Search contexts" }), "zzz");
     expect(await screen.findByText("No results")).toBeInTheDocument();
   });
 
   it("shows an error", async () => {
     mockAPI({ "/api/v1/search?q=bad": new Response("{}", { status: 500 }) });
-    renderUI(<SearchPalette open onOpenChange={vi.fn()} />);
+    renderUI(<SearchPalette open onOpenChange={vi.fn<() => void>()} />);
     await userEvent.type(screen.getByRole("combobox", { name: "Search contexts" }), "bad");
     expect(await screen.findByText("Search failed")).toBeInTheDocument();
   });
 
   it("does not search an empty query", async () => {
     const fetchMock = mockAPI({});
-    renderUI(<SearchPalette open onOpenChange={vi.fn()} />);
+    renderUI(<SearchPalette open onOpenChange={vi.fn<() => void>()} />);
     await new Promise((r) => setTimeout(r, 400));
     expect(fetchMock).not.toHaveBeenCalled();
   });

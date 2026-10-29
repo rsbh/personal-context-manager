@@ -1,9 +1,12 @@
 import { Text } from "@raystack/apsara";
+import { useCallback, useState } from "react";
 import { Outlet, useParams, type RouteObject } from "react-router";
 import classes from "./App.module.css";
 import { ContextView } from "./components/ContextView";
 import { Header } from "./components/Header";
+import { SearchPalette } from "./components/SearchPalette";
 import { Sidebar } from "./components/Sidebar";
+import { useHotkey } from "./lib/hotkey";
 import { CurrentContexts } from "./pages/CurrentContexts";
 import { EditContext } from "./pages/EditContext";
 import { NewContext } from "./pages/NewContext";
@@ -21,9 +24,14 @@ function ContextPage() {
 
 // Layout is the app shell: header, sidebar and the routed page.
 function Layout() {
+  const [searching, setSearching] = useState(false);
+  const openSearch = useCallback(() => setSearching(true), []);
+  const toggleSearch = useCallback(() => setSearching((s) => !s), []);
+  useHotkey("k", toggleSearch);
   return (
     <div className={classes.shell}>
-      <Header />
+      <Header onSearch={openSearch} />
+      <SearchPalette open={searching} onOpenChange={setSearching} />
       <div className={classes.body}>
         <Sidebar />
         <main className={classes.main}>

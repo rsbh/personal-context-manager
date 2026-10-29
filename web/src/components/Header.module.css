@@ -44,10 +44,6 @@
   color: var(--rs-color-foreground-base-primary);
 }
 
-.status {
-  margin-left: auto;
-}
-
 .dot {
   width: 6px;
   height: 6px;
@@ -64,4 +60,15 @@
 
 .badge {
   margin-left: var(--rs-space-2);
+}
+
+.search {
+  margin-left: auto;
+}
+
+.kbd {
+  margin-left: var(--rs-space-3);
+  font-family: inherit;
+  font-size: var(--rs-font-size-mini);
+  color: var(--rs-color-foreground-base-tertiary);
 }

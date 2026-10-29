@@ -104,7 +104,11 @@ When("I click the {string} link", async ({ page }, name: string) => {
 });
 
 When("I type {string} in {string}", async ({ page }, text: string, label: string) => {
-  await page.getByLabel(label, { exact: true }).fill(text);
+  // Only fields: a dialog can have the same label as its input.
+  await page
+    .getByLabel(label, { exact: true })
+    .and(page.locator("input, textarea, [contenteditable]"))
+    .fill(text);
 });
 
 When("I select {string} in {string}", async ({ page }, option: string, label: string) => {
