@@ -43,7 +43,7 @@
 | POST | `/contexts` | Create context |
 | PUT | `/contexts/{id}` | Update context |
 | DELETE | `/contexts/{id}` | Delete context |
-| GET | `/search?q=&scope=&project=&global=&section=&limit=` | Full-text search (Bleve). Fuzzy, ranked, all scopes by default. `project=X` only X; `project=X&global=true` global + X. `limit` default 20, must be > 0. Query: words OR, `+word` must, `-word` must not, `"phrase"` exact. Hit: id, scope, project, section, name, title (name if none), description, snippet (HTML escaped, `<mark>`), score |
+| GET | `/search?q=&scope=&project=&global=&section=&limit=` | Full-text search (Bleve) in title, name, description, tags, content, section and project. Fuzzy, ranked, all scopes by default. `project=X` only X; `project=X&global=true` global + X. `limit` default 20, must be > 0. Query: words OR, `+word` must, `-word` must not, `"phrase"` exact. Hit: id, scope, project, section, name, title (name if none), description, snippet (HTML escaped, `<mark>`), score |
 | POST | `/index/rebuild` | Rebuild search index from md files |
 | GET | `/resolve?project=&section=` | Merged global + project contexts with content. Project overrides global on same section/name. No project: global only |
 | GET | `/git/status` | branch, remote, changes (porcelain), ahead, behind (from last fetch) |

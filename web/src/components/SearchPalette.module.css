@@ -1,0 +1,11 @@
+.hit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+  min-width: 0;
+}
+
+.note {
+  display: block;
+  padding: var(--rs-space-3) var(--rs-space-4);
+}

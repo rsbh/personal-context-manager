@@ -1,4 +1,4 @@
-import { Flex, IconButton, Search, Spinner, Text } from "@raystack/apsara";
+import { Flex, IconButton, Spinner, Text } from "@raystack/apsara";
 import { useQueries } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -9,9 +9,7 @@ import {
   listSectionsOptions,
 } from "../client/@tanstack/react-query.gen";
 import type { StoreContext } from "../client/types.gen";
-import { useDebouncedValue } from "../lib/debounce";
 import { contextPath } from "../lib/format";
-import { SearchResults } from "./SearchResults";
 import { Group, Item, Row } from "./SidebarNav";
 import { CreateProjectButton, CreateSectionButton, RowMenu } from "./SidebarActions";
 import classes from "./Sidebar.module.css";
@@ -142,8 +140,6 @@ const globalActions = <CreateSectionButton />;
 const projectsActions = <CreateProjectButton />;
 
 export function Sidebar() {
-  const [query, setQuery] = useState("");
-  const debounced = useDebouncedValue(query.trim(), 250);
   const [sections, contexts, projects] = useQueries({
     queries: [
       listSectionsOptions({ query: { scope: "global" } }),
@@ -151,46 +147,26 @@ export function Sidebar() {
       listProjectsOptions(),
     ],
   });
-  const onChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.currentTarget.value),
-    [],
-  );
-  const onClear = useCallback(() => setQuery(""), []);
-
   return (
     <aside className={classes.sidebar}>
-      <div className={classes.header}>
-        <Search
-          aria-label="Search contexts"
-          placeholder="Search contexts"
-          value={query}
-          onChange={onChange}
-          showClearButton
-          onClear={onClear}
-        />
-      </div>
       <div className={classes.main}>
         <nav aria-label="Contexts">
-          {debounced ? (
-            <SearchResults query={debounced} />
-          ) : (
-            <ul className={classes.list}>
-              <Group label="Global" trailing={globalActions}>
-                {(sections.isPending || contexts.isPending) && <Loading />}
-                {sections.data?.length === 0 && <Empty>No sections</Empty>}
-                {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
-                  <SectionNode key={s} section={s} contexts={cs} />
-                ))}
-              </Group>
-              <Group label="Projects" trailing={projectsActions}>
-                {projects.isPending && <Loading />}
-                {projects.data?.length === 0 && <Empty>No projects</Empty>}
-                {projects.data?.map((p) => (
-                  <ProjectNode key={p} project={p} />
-                ))}
-              </Group>
-            </ul>
-          )}
+          <ul className={classes.list}>
+            <Group label="Global" trailing={globalActions}>
+              {(sections.isPending || contexts.isPending) && <Loading />}
+              {sections.data?.length === 0 && <Empty>No sections</Empty>}
+              {bySection(sections.data ?? [], contexts.data ?? []).map(([s, cs]) => (
+                <SectionNode key={s} section={s} contexts={cs} />
+              ))}
+            </Group>
+            <Group label="Projects" trailing={projectsActions}>
+              {projects.isPending && <Loading />}
+              {projects.data?.length === 0 && <Empty>No projects</Empty>}
+              {projects.data?.map((p) => (
+                <ProjectNode key={p} project={p} />
+              ))}
+            </Group>
+          </ul>
         </nav>
       </div>
     </aside>

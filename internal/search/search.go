@@ -30,7 +30,7 @@ const (
 
 	// schemaVersion changes when the mapping changes. An index with another
 	// version is deleted and rebuilt.
-	schemaVersion = "1"
+	schemaVersion = "2"
 	highlighter   = "pcm"
 )
 
@@ -42,13 +42,16 @@ var (
 	schemaKey = []byte("schema_version")
 )
 
-// Field boosts: a title hit ranks above a description or tag hit,
-// and these rank above a content hit.
+// Field boosts: a title or name hit ranks above a description or tag hit,
+// and these rank above a content, section or project hit.
 var boosts = map[string]float64{
-	"title":       3,
-	"description": 2,
-	"tags":        2,
-	"content":     1,
+	"title":        3,
+	"name_text":    3,
+	"description":  2,
+	"tags":         2,
+	"content":      1,
+	"section_text": 1,
+	"project_text": 1,
 }
 
 func init() {
@@ -183,10 +186,19 @@ type record struct {
 	Description string   `json:"description"`
 	Content     string   `json:"content"`
 	Tags        []string `json:"tags"`
+
+	// Text copies of the keyword fields, so words in them match.
+	NameText    string `json:"name_text"`
+	SectionText string `json:"section_text"`
+	ProjectText string `json:"project_text"`
 }
 
 func toRecord(d Doc) record {
-	return record{d.Scope, d.Project, d.Section, d.Name, d.Title, d.Description, d.Content, d.Tags}
+	return record{
+		Scope: d.Scope, Project: d.Project, Section: d.Section, Name: d.Name,
+		Title: d.Title, Description: d.Description, Content: d.Content, Tags: d.Tags,
+		NameText: d.Name, SectionText: d.Section, ProjectText: d.Project,
+	}
 }
 
 // Index adds or replaces d.

@@ -1,6 +1,6 @@
 @ui
 Feature: Browse contexts
-  As a user I want to browse, search and read contexts in the web UI.
+  As a user I want to browse and read contexts in the web UI.
 
   Scenario: Tree shows contexts under global sections
     Given the server is running
@@ -35,17 +35,6 @@ Feature: Browse contexts
     When I open the UI
     And I click "api" in the sidebar
     Then the sidebar shows "pr" under "Projects"
-
-  Scenario: Search contexts
-    Given the server is running
-    And a global section "style" with a context "go" and content "Use gofmt."
-    And a global section "style" with a context "py" and content "Use black."
-    When I open the UI
-    And I type "black" in "Search contexts"
-    Then the search results show "py"
-    And the search results do not show "go"
-    When I click "py" in the search results
-    Then the URL path is "/contexts/global/style/py"
 
   Scenario: Current contexts table
     Given the server is running
