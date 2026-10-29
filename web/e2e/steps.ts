@@ -477,3 +477,48 @@ Then("the {string} navigation link is not the current page", async ({ page }, na
 Then("the page body has no margin", async ({ page }) => {
   await expect(page.locator("body")).toHaveCSS("margin", "0px");
 });
+
+// Scope overview pages: steps look only inside main, the sidebar has the same names.
+const overview = (page: import("@playwright/test").Page) => page.getByRole("main");
+
+Then("I see the heading {string}", async ({ page }, name: string) => {
+  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+});
+
+Then(
+  "the overview section {string} lists {string}",
+  async ({ page }, section: string, name: string) => {
+    const card = overview(page).getByRole("region", { name: section, exact: true });
+    await expect(card.getByRole("link", { name, exact: true })).toBeVisible();
+  },
+);
+
+When("I click {string} in the overview", async ({ page }, name: string) => {
+  await overview(page).getByRole("link", { name, exact: true }).click();
+});
+
+When("I click the {string} button in the overview", async ({ page }, name: string) => {
+  await overview(page).getByRole("button", { name, exact: true }).click();
+});
+
+Then("the overview shows the section {string}", async ({ page }, name: string) => {
+  await expect(overview(page).getByRole("region", { name, exact: true })).toBeVisible();
+});
+
+Then("the overview does not show the section {string}", async ({ page }, name: string) => {
+  await expect(overview(page).getByRole("region", { name, exact: true })).toHaveCount(0);
+});
+
+Then("the overview does not show {string}", async ({ page }, name: string) => {
+  await expect(overview(page).getByRole("link", { name, exact: true })).toHaveCount(0);
+});
+
+for (const tone of ["success", "danger"]) {
+  Then(`the {string} button in the overview is ${tone} colour`, async ({ page }, name: string) => {
+    const button = overview(page).getByRole("button", { name, exact: true });
+    await expect(button).toHaveCSS(
+      "color",
+      await resolved(page, "color", `var(--rs-color-foreground-${tone}-primary)`),
+    );
+  });
+}
