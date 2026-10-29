@@ -431,3 +431,39 @@ Then("the secondary text color is gray step {int}", async ({ page }, step: numbe
   const secondary = await resolved(page, "color", "var(--rs-color-foreground-base-secondary)");
   expect(secondary).toBe(await resolved(page, "color", `var(--rs-gray-${step})`));
 });
+
+// Header: the main navigation is a nav landmark named "Main".
+const mainNav = (page: import("@playwright/test").Page) =>
+  page.getByRole("navigation", { name: "Main" });
+
+async function navBoxes(page: import("@playwright/test").Page) {
+  const links = await mainNav(page).getByRole("link").all();
+  const boxes = await Promise.all(links.map((l) => l.boundingBox()));
+  return boxes.filter((b) => b !== null);
+}
+
+Then("the header is {int}px high", async ({ page }, px: number) => {
+  const box = await page.getByRole("banner").boundingBox();
+  expect(Math.round(box?.height ?? 0)).toBe(px);
+});
+
+Then("each main navigation link is at least {int}px high", async ({ page }, px: number) => {
+  const boxes = await navBoxes(page);
+  expect(boxes.length).toBeGreaterThan(1);
+  for (const b of boxes) expect(Math.round(b.height)).toBeGreaterThanOrEqual(px);
+});
+
+Then("the gap between main navigation links is at least {int}px", async ({ page }, px: number) => {
+  const boxes = await navBoxes(page);
+  const gaps = boxes.slice(1).map((b, i) => Math.round(b.x - (boxes[i].x + boxes[i].width)));
+  expect(gaps.length).toBeGreaterThan(0);
+  for (const g of gaps) expect(g).toBeGreaterThanOrEqual(px);
+});
+
+Then("the {string} navigation link is the current page", async ({ page }, name: string) => {
+  await expect(mainNav(page).getByRole("link", { name })).toHaveAttribute("aria-current", "page");
+});
+
+Then("the {string} navigation link is not the current page", async ({ page }, name: string) => {
+  await expect(mainNav(page).getByRole("link", { name })).not.toHaveAttribute("aria-current");
+});
