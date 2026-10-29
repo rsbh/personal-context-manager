@@ -57,8 +57,12 @@ interface ItemProps {
   children: React.ReactNode;
 }
 
+interface RowProps {
+  children: React.ReactNode;
+}
+
 // Row is a plain list row for text that is not a link (empty and loading states).
-export function Row({ children }: { children: React.ReactNode }) {
+export function Row({ children }: RowProps) {
   return <li className={classes.row}>{children}</li>;
 }
 
