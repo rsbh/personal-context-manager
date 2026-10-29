@@ -29,7 +29,7 @@ Web UI for pcm, served by `pcm-server`. Design: Claude Design canvas "pcm UI des
 ## Phases (one PR each, specs first)
 
 1. **Skeleton**: `web/` scaffold, embed + placeholder, SPA route, bind 127.0.0.1, `pcm ui`, Makefile, CI. Header (server status) + sidebar (projects, global sections), read-only.
-2. **Browse**: full tree (sections > contexts; project loads on expand), full-text search (`/api/v1/search`, results replace the tree), context view at `/contexts/<id>` (rendered md + raw file, "Context not found"), Current contexts table at `/current?project=&section=` (header link). No retry on 4xx.
+2. **Browse**: full tree (sections > contexts; project loads on expand), full-text search (`/api/v1/search`) in a Cmd+K / Ctrl+K palette (Apsara `Command.Dialog`; header "Search" button too; rows show name, section/scope and snippet; select opens the context), context view at `/contexts/<id>` (rendered md + raw file, "Context not found"), Current contexts table at `/current?project=&section=` (header link). No retry on 4xx.
 3. **Edit**
    - 3a: create/edit/delete contexts (fields, CodeMirror, preview, save/discard, unsaved warning).
    - 3b: create/delete sections and projects (sidebar "+" and "⋯" menu, confirm, force on 409).

@@ -7,14 +7,10 @@
   background: var(--rs-color-background-base-primary);
 }
 
-.header {
-  padding: var(--rs-space-4);
-}
-
 .main {
   flex: 1;
   overflow-y: auto;
-  padding: 0 var(--rs-space-3) var(--rs-space-4);
+  padding: var(--rs-space-4) var(--rs-space-3);
 }
 
 .list {
