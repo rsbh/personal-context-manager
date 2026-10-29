@@ -86,11 +86,17 @@ When("I click {string} in the sidebar", async ({ page }, text: string) => {
   await page.getByRole("navigation", { name: "Contexts" }).getByText(text, { exact: true }).click();
 });
 
-When("I click {string} in the search results", async ({ page }, text: string) => {
-  await page
-    .getByRole("region", { name: "Search results" })
-    .getByText(text, { exact: true })
-    .click();
+When("I press {string}", async ({ page }, key: string) => {
+  await page.keyboard.press(key);
+});
+
+// The palette is a dialog named "Search contexts".
+function palette(page: import("@playwright/test").Page) {
+  return page.getByRole("dialog", { name: "Search contexts" });
+}
+
+When("I click {string} in the palette", async ({ page }, text: string) => {
+  await palette(page).getByRole("option", { name: text }).click();
 });
 
 When("I click the {string} link", async ({ page }, name: string) => {
@@ -124,16 +130,12 @@ Then("the sidebar does not show {string}", async ({ page }, text: string) => {
   ).toHaveCount(0);
 });
 
-Then("the search results show {string}", async ({ page }, text: string) => {
-  await expect(
-    page.getByRole("region", { name: "Search results" }).getByText(text, { exact: true }),
-  ).toBeVisible();
+Then("the palette shows {string}", async ({ page }, text: string) => {
+  await expect(palette(page).getByText(text, { exact: true })).toBeVisible();
 });
 
-Then("the search results do not show {string}", async ({ page }, text: string) => {
-  await expect(
-    page.getByRole("region", { name: "Search results" }).getByText(text, { exact: true }),
-  ).toHaveCount(0);
+Then("the palette does not show {string}", async ({ page }, text: string) => {
+  await expect(palette(page).getByText(text, { exact: true })).toHaveCount(0);
 });
 
 // Rows are table body rows whose cells include the exact text.
@@ -185,6 +187,10 @@ When("I add the tag {string}", async ({ page }, tag: string) => {
 
 Then("I do not see {string}", async ({ page }, text: string) => {
   await expect(page.getByText(text, { exact: true })).toHaveCount(0);
+});
+
+Then("I do not see the dialog {string}", async ({ page }, name: string) => {
+  await expect(dialog(page, name)).toHaveCount(0);
 });
 
 Then("I see the dialog {string}", async ({ page }, name: string) => {
